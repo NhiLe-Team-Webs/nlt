@@ -101,5 +101,44 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
+    font-family: 'Inter', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+@layer utilities {
+  .dropdown-menu {
+    transition: opacity 0.2s ease-out, transform 0.2s ease-out, visibility 0.2s;
+    visibility: hidden;
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  
+  .dropdown-menu.open {
+    visibility: visible;
+    opacity: 1;
+    transform: translateY(0);
+  }
+  
+  .nav-link {
+    position: relative;
+    transition: color 0.3s ease;
+  }
+  
+  .nav-link::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 2px;
+    bottom: -4px;
+    left: 50%;
+    background-color: hsl(var(--blue-600, 217.2 91.2% 59.8%));
+    transition: all 0.3s ease-in-out;
+  }
+  
+  .nav-link:hover::after {
+    width: 100%;
+    left: 0;
   }
 }
