@@ -1,11 +1,12 @@
 import { useState, useRef, useEffect } from 'react';
+import { useNavigate } from "react-router-dom";
 import { ChevronDownIcon, Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
-
 interface HeaderProps {
   onNavigate: (target: string, href?: string) => void;
 }
 
 export const Header = ({ onNavigate }: HeaderProps) => {
+  const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const [openMobileAccordion, setOpenMobileAccordion] = useState<string | null>(null);
@@ -23,7 +24,11 @@ export const Header = ({ onNavigate }: HeaderProps) => {
   }, []);
 
   const handleNavClick = (target: string, href?: string) => {
-    onNavigate(target, href);
+    if (href) {
+      window.location.href = href;
+    } else {
+      navigate(`/${target}`);
+    }
     setIsMobileMenuOpen(false);
     setOpenDropdown(null);
   };
@@ -57,7 +62,6 @@ export const Header = ({ onNavigate }: HeaderProps) => {
             >
               Câu chuyện
             </button>
-            
             {/* Community Dropdown */}
             <div className="relative" ref={dropdownRef}>
               <button 

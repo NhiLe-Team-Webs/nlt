@@ -1,5 +1,5 @@
 interface FooterProps {
-  onNavigate: (target: string) => void;
+  onNavigate: (target: string, href?: string) => void;
 }
 
 export const Footer = ({ onNavigate }: FooterProps) => {
