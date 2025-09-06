@@ -13,8 +13,8 @@ export const CommunityLeadersSection = () => {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Leader Card 1: Founder */}
-          <div className="text-center p-6 bg-white rounded-2xl shadow-lg card-hover-effect border border-slate-200/80">
-            <img className="w-40 h-40 rounded-full mx-auto ring-4 ring-slate-100" src="https://placehold.co/400x400/e2e8f0/334155?text=Nhi+Le" alt="Chân dung Nhi Le" />
+          <div className="group text-center p-6 bg-white rounded-2xl shadow-lg border border-slate-200/80 transition-all duration-300 ease-in-out hover:shadow-2xl hover:-translate-y-2 hover:scale-[1.04]">
+            <img className="w-40 h-40 rounded-full mx-auto ring-4 ring-slate-100 transition-all duration-300 group-hover:scale-105 group-hover:shadow-xl" src="https://placehold.co/400x400/e2e8f0/334155?text=Nhi+Le" alt="Chân dung Nhi Le" />
             <div className="mt-4">
               <h3 className="text-xl font-bold text-slate-900">Nhi Le</h3>
               <p className="text-slate-500 font-medium">Người Sáng Lập</p>
@@ -37,8 +37,8 @@ export const CommunityLeadersSection = () => {
           </div>
 
           {/* Other Leader Cards */}
-          <div className="text-center p-6 bg-white rounded-2xl shadow-lg card-hover-effect border border-slate-200/80">
-            <img className="w-40 h-40 rounded-full mx-auto ring-4 ring-slate-100" src="https://placehold.co/400x400/e2e8f0/334155?text=Leader+A" alt="Chân dung Leader A" />
+          <div className="group text-center p-6 bg-white rounded-2xl shadow-lg border border-slate-200/80 transition-all duration-300 ease-in-out hover:shadow-2xl hover:-translate-y-2 hover:scale-[1.04]">
+            <img className="w-40 h-40 rounded-full mx-auto ring-4 ring-slate-100 transition-all duration-300 group-hover:scale-105 group-hover:shadow-xl" src="https://placehold.co/400x400/e2e8f0/334155?text=Leader+A" alt="Chân dung Leader A" />
             <div className="mt-4">
               <h3 className="text-xl font-bold text-slate-900">Trần Minh Anh</h3>
               <p className="text-slate-500 font-medium">Trưởng Ban Đào Tạo</p>
@@ -60,8 +60,8 @@ export const CommunityLeadersSection = () => {
             </div>
           </div>
 
-          <div className="text-center p-6 bg-white rounded-2xl shadow-lg card-hover-effect border border-slate-200/80">
-            <img className="w-40 h-40 rounded-full mx-auto ring-4 ring-slate-100" src="https://placehold.co/400x400/e2e8f0/334155?text=Leader+B" alt="Chân dung Leader B" />
+          <div className="group text-center p-6 bg-white rounded-2xl shadow-lg border border-slate-200/80 transition-all duration-300 ease-in-out hover:shadow-2xl hover:-translate-y-2 hover:scale-[1.04]">
+            <img className="w-40 h-40 rounded-full mx-auto ring-4 ring-slate-100 transition-all duration-300 group-hover:scale-105 group-hover:shadow-xl" src="https://placehold.co/400x400/e2e8f0/334155?text=Leader+B" alt="Chân dung Leader B" />
             <div className="mt-4">
               <h3 className="text-xl font-bold text-slate-900">Lê Hoàng Bách</h3>
               <p className="text-slate-500 font-medium">Quản Lý Cộng Đồng</p>
@@ -83,8 +83,8 @@ export const CommunityLeadersSection = () => {
             </div>
           </div>
 
-          <div className="text-center p-6 bg-white rounded-2xl shadow-lg card-hover-effect border border-slate-200/80">
-            <img className="w-40 h-40 rounded-full mx-auto ring-4 ring-slate-100" src="https://placehold.co/400x400/e2e8f0/334155?text=Leader+C" alt="Chân dung Leader C" />
+          <div className="group text-center p-6 bg-white rounded-2xl shadow-lg border border-slate-200/80 transition-all duration-300 ease-in-out hover:shadow-2xl hover:-translate-y-2 hover:scale-[1.04]">
+            <img className="w-40 h-40 rounded-full mx-auto ring-4 ring-slate-100 transition-all duration-300 group-hover:scale-105 group-hover:shadow-xl" src="https://placehold.co/400x400/e2e8f0/334155?text=Leader+C" alt="Chân dung Leader C" />
             <div className="mt-4">
               <h3 className="text-xl font-bold text-slate-900">Phạm Thuỳ Linh</h3>
               <p className="text-slate-500 font-medium">Trưởng Dự Án Đối Ngoại</p>
