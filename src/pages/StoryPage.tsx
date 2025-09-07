@@ -18,7 +18,6 @@ const StoryPage = () => {
       </main>
       
       <Footer onNavigate={(target, href) => {
-        // Xử lý navigation trong footer nếu cần
         if (href) {
           window.location.href = href;
         }
