@@ -15,6 +15,8 @@ import AchievementsPage from "./pages/AchievementsPage";
 import ProjectCommunityDetailPage from "./pages/ProjectCommunityDetailPage";  
 import BlogPage from "./pages/BlogPage";
 import FaqPage from "./pages/FaqPage"; 
+import PrivacyStatement from "./pages/PrivacyStatement";
+import TermsOfUse from "./pages/TermsOfUse";
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -35,6 +37,8 @@ const App = () => (
           <Route path="/project-community-detail" element={<ProjectCommunityDetailPage />} /> // 👈 Thêm route
           <Route path="/blog" element={<BlogPage />} />
           <Route path="/faq" element={<FaqPage />} />
+          <Route path="/privacy-statement" element={<PrivacyStatement />} />
+          <Route path="/terms-of-use" element={<TermsOfUse />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
