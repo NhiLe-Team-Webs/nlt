@@ -51,7 +51,11 @@ const Index = () => {
       <main>
         {renderCurrentPage()}
       </main>
-      <Footer onNavigate={handleNavigate} />
+      <Footer onNavigate={(target, href) => {
+        if (href) {
+          window.location.href = href;
+        }
+      }}/>
     </div>
   );
 };
