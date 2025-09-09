@@ -23,31 +23,11 @@ export const Header = ({ onNavigate }: HeaderProps) => {
         setOpenDropdown(null);
       }
     };
-
-    // Sử dụng 'click' thay vì 'mousedown' để tránh xung đột
     document.addEventListener('click', handleClickOutside);
     return () => document.removeEventListener('click', handleClickOutside);
   }, []);
 
-  // Giải pháp 1: Sử dụng setTimeout để delay việc đóng dropdown
   const handleNavClick = (target: string, href?: string) => {
-    // Delay nhỏ để đảm bảo click event được xử lý trước
-    setTimeout(() => {
-      if (href) {
-        window.location.href = href;
-      } else {
-        navigate(`/${target}`);
-      }
-      setIsMobileMenuOpen(false);
-      setOpenDropdown(null);
-    }, 0);
-  };
-
-  // Giải pháp 2: Ngăn chặn event propagation khi click vào dropdown items
-  const handleDropdownItemClick = (target: string, event: React.MouseEvent, href?: string) => {
-    event.preventDefault();
-    event.stopPropagation();
-    
     if (href) {
       window.location.href = href;
     } else {
@@ -105,15 +85,16 @@ export const Header = ({ onNavigate }: HeaderProps) => {
                 className={`dropdown-menu absolute -left-8 top-full z-10 mt-5 w-56 rounded-xl bg-white p-2 shadow-lg ring-1 ring-slate-900/5 ${
                   openDropdown === 'community' ? 'open' : ''
                 }`}
+                onClick={(e) => e.stopPropagation()} // Stop propagation to prevent closing on inner click
               >
                 <button 
-                  onClick={(e) => handleDropdownItemClick('community-leaders', undefined, e)} 
+                  onClick={() => handleNavClick('community-leaders')} 
                   className="block rounded-lg px-3 py-2 text-sm font-medium leading-6 text-slate-900 hover:bg-slate-50 w-full text-left"
                 >
                   Leaders cộng đồng
                 </button>
                 <button 
-                  onClick={(e) => handleDropdownItemClick('community-synergy', undefined, e)} 
+                  onClick={() => handleNavClick('community-synergy')} 
                   className="block rounded-lg px-3 py-2 text-sm font-medium leading-6 text-slate-900 hover:bg-slate-50 w-full text-left"
                 >
                   Cộng đồng cộng hưởng
@@ -148,15 +129,16 @@ export const Header = ({ onNavigate }: HeaderProps) => {
                 className={`dropdown-menu absolute -left-8 top-full z-10 mt-5 w-56 rounded-xl bg-white p-2 shadow-lg ring-1 ring-slate-900/5 ${
                   openDropdown === 'partner' ? 'open' : ''
                 }`}
+                onClick={(e) => e.stopPropagation()} // Stop propagation to prevent closing on inner click
               >
                 <button 
-                  onClick={(e) => handleDropdownItemClick('partner-projects', undefined, e)} 
+                  onClick={() => handleNavClick('partner-projects')} 
                   className="block rounded-lg px-3 py-2 text-sm font-medium leading-6 text-slate-900 hover:bg-slate-50 w-full text-left"
                 >
                   Dự án đã hoàn thành
                 </button>
                 <button 
-                  onClick={(e) => handleDropdownItemClick('partner-testimonials', undefined, e)} 
+                  onClick={() => handleNavClick('partner-testimonials')} 
                   className="block rounded-lg px-3 py-2 text-sm font-medium leading-6 text-slate-900 hover:bg-slate-50 w-full text-left"
                 >
                   Đối tác của chúng tôi
