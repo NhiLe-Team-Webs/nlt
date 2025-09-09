@@ -50,3 +50,7 @@
 .read-the-docs {
   color: #888;
 }
+
+:target {
+  scroll-margin-top: 5rem; /* Khoảng cách an toàn, lớn hơn chiều cao của header */
+}

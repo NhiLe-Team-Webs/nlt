@@ -1,61 +1,37 @@
-import { useState } from 'react';
+import { useEffect } from 'react';
 import { Header } from '../components/Header';
 import { HomePage } from '../components/HomePage';
 import { Footer } from '../components/Footer';
+import { useNavigate } from 'react-router-dom';
 
 const Index = () => {
-  const [currentPage, setCurrentPage] = useState('home');
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (window.location.hash) {
+      const element = document.getElementById(window.location.hash.substring(1));
+      if (element) {
+        // Cuộn mượt đến phần tử mà không bị header che
+        element.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+  }, []);
 
   const handleNavigate = (target: string, href?: string) => {
-    setCurrentPage(target);
-    
-    if (target === 'home' && href && href.startsWith('#')) {
-      setTimeout(() => {
-        const element = document.querySelector(href);
-        if (element) {
-          element.scrollIntoView({ behavior: 'smooth' });
-        }
-      }, 0);
-    } else if (target === 'home') {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (href) {
+      window.location.href = href;
     } else {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-  };
-
-  const renderCurrentPage = () => {
-    switch (currentPage) {
-      case 'home':
-        return <HomePage onNavigate={handleNavigate} />;
-      default:
-        return (
-          <div className="min-h-screen flex items-center justify-center bg-background">
-            <div className="text-center">
-              <h1 className="text-4xl font-bold mb-4">Trang {currentPage}</h1>
-              <p className="text-xl text-muted-foreground">Đang phát triển...</p>
-              <button 
-                onClick={() => handleNavigate('home')}
-                className="mt-4 bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                Về trang chủ
-              </button>
-            </div>
-          </div>
-        );
+      navigate(target);
     }
   };
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen flex flex-col">
       <Header onNavigate={handleNavigate} />
-      <main>
-        {renderCurrentPage()}
+      <main className="flex-grow">
+        <HomePage />
       </main>
-      <Footer onNavigate={(target, href) => {
-        if (href) {
-          window.location.href = href;
-        }
-      }}/>
+      <Footer onNavigate={handleNavigate} />
     </div>
   );
 };

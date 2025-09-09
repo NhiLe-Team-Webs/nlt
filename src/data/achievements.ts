@@ -56,8 +56,7 @@ import nBonding_8 from '../asset/N Bonding/8.jpeg';
 import nBonding_9 from '../asset/N Bonding/9.jpeg';
 import nBonding_10 from '../asset/N Bonding/10.jpeg';
 import nBonding_11 from '../asset/N Bonding/11.jpeg';
-import nBonding_12 from '../asset/N Bonding/12.jpg';
-import nBonding_13 from '../asset/N Bonding/13.jpeg';
+import nBonding_12 from '../asset/N Bonding/12.jpeg';
 
 
 export const achievementCategories = [
@@ -170,7 +169,6 @@ export const achievementCategories = [
           { src: nBonding_7, alt: "N Bonding" }, { src: nBonding_8, alt: "N Bonding" },
           { src: nBonding_9, alt: "N Bonding" }, { src: nBonding_10, alt: "N Bonding" },
           { src: nBonding_11, alt: "N Bonding" }, { src: nBonding_12, alt: "N Bonding" },
-          { src: nBonding_13, alt: "N Bonding" },
         ],
       },
     ],

@@ -3,8 +3,9 @@ import { useState, useRef, useEffect } from 'react';
 // Import all necessary images
 import nsaImage from '../../asset/nsa.jpg';
 import nsa2Image from '../../asset/nsa2.jpg';
+import teamrise1Image from '../../asset/teamrise1.jpg';
 import teamrise2Image from '../../asset/teamrise2.jpg';
-import teamrise4Image from '../../asset/teamrise3.jpg';
+import teamrise3Image from '../../asset/teamrise3.jpg';
 import thisIsHome1 from '../../asset/This is Home/this_is_home_1.png';
 import thisIsHome2 from '../../asset/This is Home/this_is_home_2.png';
 import thisIsHome3 from '../../asset/This is Home/this_is_home_3.png';
@@ -24,7 +25,7 @@ export const PartnerProjectsSection = () => {
     {
       title: 'Dự Án TeamRise',
       description: 'TeamRise đồng hành cùng các doanh nghiệp vừa và nhỏ thông qua giáo dục lãnh đạo chuyên sâu và phát triển tổ chức. Từ huấn luyện cơ bản đến các chiến lược phát triển bền vững, TeamRise tạo ra các liên minh chiến lược và xây dựng cộng đồng doanh nghiệp vững mạnh, thúc đẩy sự tăng trưởng và ảnh hưởng trong thị trường.',
-      images: [teamrise2Image, teamrise4Image],
+      images: [teamrise1Image, teamrise2Image, teamrise3Image],
       span: 'md:col-span-2',
     },
     {

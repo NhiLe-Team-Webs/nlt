@@ -31,7 +31,7 @@ export const Header = ({ onNavigate }: HeaderProps) => {
     if (href) {
       window.location.href = href;
     } else {
-      navigate(`/${target}`);
+      navigate(target);
     }
     setIsMobileMenuOpen(false);
     setOpenDropdown(null);
@@ -51,7 +51,7 @@ export const Header = ({ onNavigate }: HeaderProps) => {
         <div className="relative flex h-16 items-center justify-between">
           {/* Logo */}
           <div className="flex-shrink-0">
-            <button onClick={() => handleNavClick('home')}>
+            <button onClick={() => handleNavClick('/home')}>
               <h1 className="text-2xl font-bold bg-gradient-to-r from-slate-700 to-slate-900 bg-clip-text text-transparent">
                 NhiLe Team
               </h1>
@@ -61,7 +61,7 @@ export const Header = ({ onNavigate }: HeaderProps) => {
           {/* Desktop Navigation */}
           <nav className="hidden sm:ml-6 sm:flex sm:space-x-8 items-center">
             <button 
-              onClick={() => handleNavClick('story')} 
+              onClick={() => handleNavClick('/story')} 
               className="text-slate-600 hover:text-slate-900 text-sm font-medium relative transition-colors nav-link"
             >
               Câu chuyện
@@ -85,16 +85,16 @@ export const Header = ({ onNavigate }: HeaderProps) => {
                 className={`dropdown-menu absolute -left-8 top-full z-10 mt-5 w-56 rounded-xl bg-white p-2 shadow-lg ring-1 ring-slate-900/5 ${
                   openDropdown === 'community' ? 'open' : ''
                 }`}
-                onClick={(e) => e.stopPropagation()} // Stop propagation to prevent closing on inner click
+                onClick={(e) => e.stopPropagation()}
               >
                 <button 
-                  onClick={() => handleNavClick('community-leaders')} 
+                  onClick={() => handleNavClick('/community-leaders')} 
                   className="block rounded-lg px-3 py-2 text-sm font-medium leading-6 text-slate-900 hover:bg-slate-50 w-full text-left"
                 >
                   Leaders cộng đồng
                 </button>
                 <button 
-                  onClick={() => handleNavClick('community-synergy')} 
+                  onClick={() => handleNavClick('/community-synergy')} 
                   className="block rounded-lg px-3 py-2 text-sm font-medium leading-6 text-slate-900 hover:bg-slate-50 w-full text-left"
                 >
                   Cộng đồng cộng hưởng
@@ -129,16 +129,16 @@ export const Header = ({ onNavigate }: HeaderProps) => {
                 className={`dropdown-menu absolute -left-8 top-full z-10 mt-5 w-56 rounded-xl bg-white p-2 shadow-lg ring-1 ring-slate-900/5 ${
                   openDropdown === 'partner' ? 'open' : ''
                 }`}
-                onClick={(e) => e.stopPropagation()} // Stop propagation to prevent closing on inner click
+                onClick={(e) => e.stopPropagation()}
               >
                 <button 
-                  onClick={() => handleNavClick('partner-projects')} 
+                  onClick={() => handleNavClick('/partner-projects')} 
                   className="block rounded-lg px-3 py-2 text-sm font-medium leading-6 text-slate-900 hover:bg-slate-50 w-full text-left"
                 >
                   Dự án đã hoàn thành
                 </button>
                 <button 
-                  onClick={() => handleNavClick('partner-testimonials')} 
+                  onClick={() => handleNavClick('/partner-testimonials')} 
                   className="block rounded-lg px-3 py-2 text-sm font-medium leading-6 text-slate-900 hover:bg-slate-50 w-full text-left"
                 >
                   Đối tác của chúng tôi
@@ -147,19 +147,19 @@ export const Header = ({ onNavigate }: HeaderProps) => {
             </div>
 
             <button 
-              onClick={() => handleNavClick('achievements')} 
+              onClick={() => handleNavClick('/achievements')} 
               className="text-slate-600 hover:text-slate-900 text-sm font-medium relative nav-link"
             >
               Thành tựu
             </button>
             <button 
-              onClick={() => handleNavClick('blog')} 
+              onClick={() => handleNavClick('/blog')} 
               className="text-slate-600 hover:text-slate-900 text-sm font-medium relative nav-link"
             >
               Blog
             </button>
             <button 
-              onClick={() => handleNavClick('faq')} 
+              onClick={() => handleNavClick('/faq')} 
               className="text-slate-600 hover:text-slate-900 text-sm font-medium relative nav-link"
             >
               FAQ
@@ -169,7 +169,7 @@ export const Header = ({ onNavigate }: HeaderProps) => {
           {/* Right side items */}
           <div className="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
             <button 
-              onClick={() => handleNavClick('home', '#register-form')} 
+              onClick={() => handleNavClick('/home#register-form')} 
               className="bg-blue-600 text-white font-semibold py-2 px-5 rounded-full hover:bg-blue-700 transition-colors duration-300 hidden sm:block"
             >
               Tham gia ngay
@@ -199,7 +199,7 @@ export const Header = ({ onNavigate }: HeaderProps) => {
         <div className="sm:hidden">
           <div className="space-y-1 px-2 pb-3 pt-2">
             <button 
-              onClick={() => handleNavClick('story')} 
+              onClick={() => handleNavClick('/story')} 
               className="text-slate-700 hover:bg-slate-50 hover:text-slate-900 block rounded-md px-3 py-2 text-base font-medium w-full text-left"
             >
               Câu chuyện
@@ -221,13 +221,13 @@ export const Header = ({ onNavigate }: HeaderProps) => {
               {openMobileAccordion === 'community' && (
                 <div className="mt-1 space-y-1 pl-5">
                   <button 
-                    onClick={() => handleNavClick('community-leaders')} 
+                    onClick={() => handleNavClick('/community-leaders')} 
                     className="text-slate-600 hover:bg-slate-50 hover:text-slate-900 block rounded-md px-3 py-2 text-base font-medium w-full text-left"
                   >
                     Leaders cộng đồng
                   </button>
                   <button 
-                    onClick={() => handleNavClick('community-synergy')} 
+                    onClick={() => handleNavClick('/community-synergy')} 
                     className="text-slate-600 hover:bg-slate-50 hover:text-slate-900 block rounded-md px-3 py-2 text-base font-medium w-full text-left"
                   >
                     Cộng đồng cộng hưởng
@@ -261,13 +261,13 @@ export const Header = ({ onNavigate }: HeaderProps) => {
               {openMobileAccordion === 'partner' && (
                 <div className="mt-1 space-y-1 pl-5">
                   <button 
-                    onClick={() => handleNavClick('partner-projects')} 
+                    onClick={() => handleNavClick('/partner-projects')} 
                     className="text-slate-600 hover:bg-slate-50 hover:text-slate-900 block rounded-md px-3 py-2 text-base font-medium w-full text-left"
                   >
                     Dự án đã hoàn thành
                   </button>
                   <button 
-                    onClick={() => handleNavClick('partner-testimonials')} 
+                    onClick={() => handleNavClick('/partner-testimonials')} 
                     className="text-slate-600 hover:bg-slate-50 hover:text-slate-900 block rounded-md px-3 py-2 text-base font-medium w-full text-left"
                   >
                     Đối tác của chúng tôi
@@ -277,25 +277,25 @@ export const Header = ({ onNavigate }: HeaderProps) => {
             </div>
 
             <button 
-              onClick={() => handleNavClick('achievements')} 
+              onClick={() => handleNavClick('/achievements')} 
               className="text-slate-700 hover:bg-slate-50 hover:text-slate-900 block rounded-md px-3 py-2 text-base font-medium w-full text-left"
             >
               Thành tựu
             </button>
             <button 
-              onClick={() => handleNavClick('blog')} 
+              onClick={() => handleNavClick('/blog')} 
               className="text-slate-700 hover:bg-slate-50 hover:text-slate-900 block rounded-md px-3 py-2 text-base font-medium w-full text-left"
             >
               Blog
             </button>
             <button 
-              onClick={() => handleNavClick('faq')} 
+              onClick={() => handleNavClick('/faq')} 
               className="text-slate-700 hover:bg-slate-50 hover:text-slate-900 block rounded-md px-3 py-2 text-base font-medium w-full text-left"
             >
               FAQ
             </button>
             <button 
-              onClick={() => handleNavClick('home', '#register-form')} 
+              onClick={() => handleNavClick('/home#register-form')} 
               className="mt-4 bg-blue-600 text-white block rounded-md px-3 py-2 text-base font-medium text-center w-full"
             >
               Tham gia ngay

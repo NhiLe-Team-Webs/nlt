@@ -72,6 +72,10 @@ export const CommunityLeadersSection = () => {
     },
   ];
 
+  const scrollToRegistrationForm = () => {
+    window.location.href = '/home#register-form';
+  };
+
   return (
     <section 
       id="community-leaders-page" 
@@ -129,12 +133,12 @@ export const CommunityLeadersSection = () => {
           <p className="mt-3 text-slate-600 max-w-xl mx-auto">
             Hãy tham gia cùng chúng tôi để phát triển tiềm năng của bạn và cùng nhau tạo ra sự thay đổi.
           </p>
-          <a 
-            href="#register-form" 
+          <button 
+            onClick={scrollToRegistrationForm}
             className="mt-6 bg-blue-600 text-white font-semibold py-3 px-8 rounded-full hover:bg-blue-700 transition-colors duration-300 text-lg inline-block"
           >
             Trở thành thành viên
-          </a>
+          </button>
         </div>
       </div>
     </section>

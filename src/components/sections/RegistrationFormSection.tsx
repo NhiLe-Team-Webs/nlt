@@ -1,3 +1,5 @@
+// src/components/sections/RegistrationFormSection.tsx
+
 import { useState, useRef, useEffect } from "react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
@@ -11,6 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
+import { submitForm } from "../../lib/submitForm"; // Import hàm submitForm
 
 interface FormData {
   name: string;
@@ -87,11 +90,14 @@ export const RegistrationFormSection = () => {
     e.preventDefault();
     setLoading(true);
 
-    // Fake API call
-    await new Promise((resolve) => setTimeout(resolve, 1200));
-    console.log("📩 Submitted:", formData);
+    const result = await submitForm(formData);
 
-    setIsSubmitted(true);
+    if (result.success) {
+      setIsSubmitted(true);
+    } else {
+      alert('Đã xảy ra lỗi khi gửi form. Vui lòng thử lại sau.');
+    }
+
     setLoading(false);
   };
 

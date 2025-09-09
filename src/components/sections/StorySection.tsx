@@ -21,6 +21,10 @@ export const StorySection = () => {
     return () => observer.disconnect();
   }, []);
 
+  const scrollToRegistrationForm = () => {
+    window.location.href = '/home#register-form';
+  };
+
   return (
     <section
       id="full-story-page"
@@ -114,12 +118,12 @@ export const StorySection = () => {
             </p>
           </div>
           <div className="pt-8 text-center">
-            <a
-              href="#register-form"
+            <button 
+              onClick={scrollToRegistrationForm}
               className="bg-blue-600 text-white font-semibold py-3 px-8 rounded-full hover:bg-blue-700 transition-colors duration-300 text-lg inline-block"
             >
               Tham gia vào NhiLe team ngay
-            </a>
+            </button>
           </div>
         </div>
       </div>
