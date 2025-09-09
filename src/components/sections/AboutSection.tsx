@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import nhileAvt from '../../asset/nhile-avt.jpg';
 
 export const AboutSection = () => {
   const [isVisible, setIsVisible] = useState(false);
@@ -33,7 +34,7 @@ export const AboutSection = () => {
         <div className="grid md:grid-cols-2 gap-12 items-center">
           <div>
             <img 
-              src="src/asset/nhile-avt.jpg" 
+              src={nhileAvt} 
               alt="Người sáng lập Nhi Le" 
               className="rounded-2xl shadow-2xl w-full"
             />
