@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from "react-router-dom";
 import { ChevronDownIcon, Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
+
 interface HeaderProps {
   onNavigate: (target: string, href?: string) => void;
 }
@@ -11,19 +12,42 @@ export const Header = ({ onNavigate }: HeaderProps) => {
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const [openMobileAccordion, setOpenMobileAccordion] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const partnerDropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) &&
+        (partnerDropdownRef.current && !partnerDropdownRef.current.contains(event.target as Node))
+      ) {
         setOpenDropdown(null);
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    // Sử dụng 'click' thay vì 'mousedown' để tránh xung đột
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
   }, []);
 
+  // Giải pháp 1: Sử dụng setTimeout để delay việc đóng dropdown
   const handleNavClick = (target: string, href?: string) => {
+    // Delay nhỏ để đảm bảo click event được xử lý trước
+    setTimeout(() => {
+      if (href) {
+        window.location.href = href;
+      } else {
+        navigate(`/${target}`);
+      }
+      setIsMobileMenuOpen(false);
+      setOpenDropdown(null);
+    }, 0);
+  };
+
+  // Giải pháp 2: Ngăn chặn event propagation khi click vào dropdown items
+  const handleDropdownItemClick = (target: string, event: React.MouseEvent, href?: string) => {
+    event.preventDefault();
+    event.stopPropagation();
+    
     if (href) {
       window.location.href = href;
     } else {
@@ -62,6 +86,7 @@ export const Header = ({ onNavigate }: HeaderProps) => {
             >
               Câu chuyện
             </button>
+            
             {/* Community Dropdown */}
             <div className="relative" ref={dropdownRef}>
               <button 
@@ -82,13 +107,13 @@ export const Header = ({ onNavigate }: HeaderProps) => {
                 }`}
               >
                 <button 
-                  onClick={() => handleNavClick('community-leaders')} 
+                  onClick={(e) => handleDropdownItemClick('community-leaders', undefined, e)} 
                   className="block rounded-lg px-3 py-2 text-sm font-medium leading-6 text-slate-900 hover:bg-slate-50 w-full text-left"
                 >
                   Leaders cộng đồng
                 </button>
                 <button 
-                  onClick={() => handleNavClick('community-synergy')} 
+                  onClick={(e) => handleDropdownItemClick('community-synergy', undefined, e)} 
                   className="block rounded-lg px-3 py-2 text-sm font-medium leading-6 text-slate-900 hover:bg-slate-50 w-full text-left"
                 >
                   Cộng đồng cộng hưởng
@@ -106,7 +131,7 @@ export const Header = ({ onNavigate }: HeaderProps) => {
             </a>
 
             {/* Partner Dropdown */}
-            <div className="relative">
+            <div className="relative" ref={partnerDropdownRef}>
               <button 
                 type="button" 
                 className="text-slate-600 hover:text-slate-900 inline-flex items-center gap-x-1 text-sm font-medium relative nav-link"
@@ -125,13 +150,13 @@ export const Header = ({ onNavigate }: HeaderProps) => {
                 }`}
               >
                 <button 
-                  onClick={() => handleNavClick('partner-projects')} 
+                  onClick={(e) => handleDropdownItemClick('partner-projects', undefined, e)} 
                   className="block rounded-lg px-3 py-2 text-sm font-medium leading-6 text-slate-900 hover:bg-slate-50 w-full text-left"
                 >
                   Dự án đã hoàn thành
                 </button>
                 <button 
-                  onClick={() => handleNavClick('partner-testimonials')} 
+                  onClick={(e) => handleDropdownItemClick('partner-testimonials', undefined, e)} 
                   className="block rounded-lg px-3 py-2 text-sm font-medium leading-6 text-slate-900 hover:bg-slate-50 w-full text-left"
                 >
                   Đối tác của chúng tôi
