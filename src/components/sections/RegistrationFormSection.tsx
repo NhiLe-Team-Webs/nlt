@@ -1,6 +1,16 @@
-import { useState } from "react";
-import { Dialog } from "../ui/dialog";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "../ui/button";
+import { Input } from "../ui/input";
+import { Textarea } from "../ui/textarea";
+import { Label } from "../ui/label";
+import { Checkbox } from "../ui/checkbox";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select";
 
 interface FormData {
   name: string;
@@ -14,14 +24,28 @@ interface FormData {
   privacy_commitment: boolean;
 }
 
-interface RegistrationFormSectionProps {
-  open: boolean;
-  setOpen: (value: boolean) => void;
-}
-
-export const RegistrationFormSection = ({ open, setOpen }: RegistrationFormSectionProps) => {
+export const RegistrationFormSection = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const sectionRef = useRef<HTMLElement>(null);
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (sectionRef.current) {
+      observer.observe(sectionRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
 
   const [formData, setFormData] = useState<FormData>({
     name: "",
@@ -36,12 +60,26 @@ export const RegistrationFormSection = ({ open, setOpen }: RegistrationFormSecti
   });
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
-    const { name, value, type, checked } = e.target as HTMLInputElement;
+    const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: type === "checkbox" ? checked : value,
+      [name]: value,
+    }));
+  };
+
+  const handleSelectChange = (name: keyof FormData) => (value: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleCheckboxChange = (name: keyof FormData) => (checked: boolean) => {
+    setFormData((prev) => ({
+      ...prev,
+      [name]: checked,
     }));
   };
 
@@ -49,7 +87,7 @@ export const RegistrationFormSection = ({ open, setOpen }: RegistrationFormSecti
     e.preventDefault();
     setLoading(true);
 
-    // Fake API
+    // Fake API call
     await new Promise((resolve) => setTimeout(resolve, 1200));
     console.log("📩 Submitted:", formData);
 
@@ -57,123 +95,172 @@ export const RegistrationFormSection = ({ open, setOpen }: RegistrationFormSecti
     setLoading(false);
   };
 
-  const handleClose = () => {
-    setOpen(false);
-    setIsSubmitted(false);
-  };
-
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <div className="bg-white p-8 rounded-2xl shadow-2xl max-w-xl mx-auto">
-        {isSubmitted ? (
-          <div className="text-center space-y-4">
-            <h3 className="text-2xl font-bold text-green-600">✅ Cảm ơn bạn đã đăng ký!</h3>
-            <Button onClick={handleClose}>Đóng</Button>
-          </div>
-        ) : (
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <input
-              type="text"
-              name="name"
-              placeholder="Họ và tên"
-              value={formData.name}
-              onChange={handleChange}
-              required
-              className="w-full px-4 py-2 border rounded"
-            />
-            <input
-              type="email"
-              name="email"
-              placeholder="Email"
-              value={formData.email}
-              onChange={handleChange}
-              required
-              className="w-full px-4 py-2 border rounded"
-            />
-            <input
-              type="text"
-              name="telegram"
-              placeholder="Telegram"
-              value={formData.telegram}
-              onChange={handleChange}
-              className="w-full px-4 py-2 border rounded"
-            />
-            <textarea
-              name="motivation"
-              placeholder="Tại sao bạn muốn tham gia?"
-              value={formData.motivation}
-              onChange={handleChange}
-              required
-              className="w-full px-4 py-2 border rounded"
-            />
-            <textarea
-              name="goals"
-              placeholder="Mục tiêu của bạn..."
-              value={formData.goals}
-              onChange={handleChange}
-              required
-              className="w-full px-4 py-2 border rounded"
-            />
-            <select
-              name="source"
-              value={formData.source}
-              onChange={handleChange}
-              className="w-full px-4 py-2 border rounded"
-            >
-              <option value="">Bạn biết đến từ đâu?</option>
-              <option value="youtube">YouTube</option>
-              <option value="facebook">Facebook</option>
-              <option value="friend">Bạn bè</option>
-              <option value="other">Khác</option>
-            </select>
-            <select
-              name="time_commitment"
-              value={formData.time_commitment}
-              onChange={handleChange}
-              className="w-full px-4 py-2 border rounded"
-            >
-              <option value="">Thời gian cam kết / tuần</option>
-              <option value="5-10">5 - 10 giờ</option>
-              <option value="10-15">10 - 15 giờ</option>
-              <option value="15-20">15 - 20 giờ</option>
-              <option value="20+">Hơn 20 giờ</option>
-            </select>
-
-            <div className="flex items-center space-x-2">
-              <input
-                type="checkbox"
-                name="values_commitment"
-                checked={formData.values_commitment}
-                onChange={handleChange}
-                required
-              />
-              <label>Cam kết đồng hành cùng Tâm - Tầm - Đức</label>
+    <section 
+      id="register-form" 
+      ref={sectionRef}
+      className={`py-16 md:py-24 transition-all duration-700 ${
+        isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-5'
+      }`}
+    >
+      <div className="container mx-auto px-6">
+        <div className="max-w-xl mx-auto text-center">
+          <h2 className="text-3xl md:text-4xl font-bold text-slate-900">Trở Thành Một Phần Của Hành Trình</h2>
+          <p className="text-slate-600 mt-4 mb-8">
+            Điền vào biểu mẫu dưới đây để đăng ký tham gia NhiLe Team. Chúng tôi sẽ liên hệ với bạn trong thời gian sớm nhất.
+          </p>
+        </div>
+        <div id="form-container" className="max-w-xl mx-auto bg-white p-8 sm:p-10 rounded-2xl shadow-2xl">
+          {isSubmitted ? (
+            <div id="success-message" className="max-w-xl mx-auto text-center bg-green-100 border border-green-200 text-green-800 px-6 py-8 rounded-2xl">
+              <h3 className="text-2xl font-bold mb-2">Cảm ơn bạn đã đăng ký!</h3>
+              <p>Chúng tôi đã nhận được đơn đăng ký của bạn và sẽ xem xét cẩn thận. Chào mừng bạn đến với hành trình của NhiLe Team!</p>
             </div>
-            <div className="flex items-center space-x-2">
-              <input
-                type="checkbox"
-                name="privacy_commitment"
-                checked={formData.privacy_commitment}
-                onChange={handleChange}
-                required
-              />
-              <label>Thông tin sẽ được bảo mật</label>
-            </div>
-
-            <div className="flex justify-between pt-4">
-              <Button type="submit" disabled={loading} className="bg-blue-600 text-white">
-                {loading ? "Đang gửi..." : "Gửi Đơn"}
+          ) : (
+            <form onSubmit={handleSubmit}>
+              <h3 className="text-lg font-semibold text-slate-800 mb-4 border-b pb-2">Thông Tin Cá Nhân</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-6">
+                <div>
+                  <Label htmlFor="name" className="block mb-2 text-sm font-medium text-slate-700">Họ và Tên</Label>
+                  <Input 
+                    id="name" 
+                    name="name" 
+                    placeholder="Nguyễn Văn A" 
+                    className="w-full px-4 py-3 bg-slate-100 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 transition" 
+                    required 
+                    value={formData.name}
+                    onChange={handleChange}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="email" className="block mb-2 text-sm font-medium text-slate-700">Địa chỉ Email</Label>
+                  <Input 
+                    id="email" 
+                    name="email" 
+                    type="email" 
+                    placeholder="email@example.com" 
+                    className="w-full px-4 py-3 bg-slate-100 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 transition" 
+                    required 
+                    value={formData.email}
+                    onChange={handleChange}
+                  />
+                </div>
+              </div>
+              <div className="mb-6">
+                <Label htmlFor="telegram" className="block mb-2 text-sm font-medium text-slate-700">Telegram Username</Label>
+                <Input 
+                  id="telegram" 
+                  name="telegram" 
+                  placeholder="@username" 
+                  className="w-full px-4 py-3 bg-slate-100 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 transition" 
+                  required 
+                  value={formData.telegram}
+                  onChange={handleChange}
+                />
+              </div>
+              <h3 className="text-lg font-semibold text-slate-800 mb-4 mt-8 border-b pb-2">Nhu Cầu & Mục Tiêu</h3>
+              <div className="mb-6">
+                <Label htmlFor="motivation" className="block mb-2 text-sm font-medium text-slate-700">Tại sao bạn muốn tham gia NhiLe Team?</Label>
+                <Textarea 
+                  id="motivation" 
+                  name="motivation" 
+                  rows={4} 
+                  placeholder="Chia sẻ lý do và câu chuyện của bạn..." 
+                  className="w-full px-4 py-3 bg-slate-100 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 transition" 
+                  required 
+                  value={formData.motivation}
+                  onChange={handleChange}
+                />
+              </div>
+              <div className="mb-6">
+                <Label htmlFor="goals" className="block mb-2 text-sm font-medium text-slate-700">Bạn mong muốn nhận được điều gì nhất từ NhiLe Team (ví dụ: học kỹ năng, kết nối, cơ hội nghề nghiệp)?</Label>
+                <Textarea 
+                  id="goals" 
+                  name="goals" 
+                  rows={4} 
+                  placeholder="Mục tiêu cụ thể của bạn là gì..." 
+                  className="w-full px-4 py-3 bg-slate-100 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 transition" 
+                  required 
+                  value={formData.goals}
+                  onChange={handleChange}
+                />
+              </div>
+              <div className="mb-6">
+                <Label htmlFor="source" className="block mb-2 text-sm font-medium text-slate-700">Bạn biết đến NhiLe Team từ đâu?</Label>
+                <Select
+                  name="source"
+                  value={formData.source}
+                  onValueChange={handleSelectChange('source')}
+                >
+                  <SelectTrigger className="w-full px-4 py-3 bg-slate-100 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 transition">
+                    <SelectValue placeholder="Vui lòng chọn" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="youtube">Kênh YouTube của chị Nhi Lê</SelectItem>
+                    <SelectItem value="facebook">Facebook</SelectItem>
+                    <SelectItem value="friend">Bạn bè giới thiệu</SelectItem>
+                    <SelectItem value="other">Nguồn khác</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <h3 className="text-lg font-semibold text-slate-800 mb-4 mt-8 border-b pb-2">Cam Kết</h3>
+              <div className="mb-6">
+                <Label htmlFor="time_commitment" className="block mb-2 text-sm font-medium text-slate-700">Bạn có thể cam kết dành bao nhiêu thời gian mỗi tuần cho việc học và thực tập cùng team?</Label>
+                <Select
+                  name="time_commitment"
+                  value={formData.time_commitment}
+                  onValueChange={handleSelectChange('time_commitment')}
+                >
+                  <SelectTrigger className="w-full px-4 py-3 bg-slate-100 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 transition">
+                    <SelectValue placeholder="Vui lòng chọn" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="5-10">5 - 10 giờ / tuần</SelectItem>
+                    <SelectItem value="10-15">10 - 15 giờ / tuần</SelectItem>
+                    <SelectItem value="15-20">15 - 20 giờ / tuần</SelectItem>
+                    <SelectItem value="20+">Hơn 20 giờ / tuần</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="mb-8 space-y-4">
+                <div className="flex items-start">
+                  <Checkbox 
+                    id="values_commitment" 
+                    name="values_commitment"
+                    className="h-4 w-4 text-blue-600 border-slate-300 rounded focus:ring-blue-600 mt-1" 
+                    checked={formData.values_commitment}
+                    onCheckedChange={handleCheckboxChange('values_commitment')}
+                    required 
+                  />
+                  <Label htmlFor="values_commitment" className="ml-3 text-sm text-slate-700">
+                    Tôi đã đọc và cam kết đồng hành cùng các giá trị cốt lõi của NhiLe Team: <strong>Tâm - Tầm - Đức.</strong>
+                  </Label>
+                </div>
+                <div className="flex items-start">
+                  <Checkbox 
+                    id="privacy_commitment" 
+                    name="privacy_commitment"
+                    className="h-4 w-4 text-blue-600 border-slate-300 rounded focus:ring-blue-600 mt-1" 
+                    checked={formData.privacy_commitment}
+                    onCheckedChange={handleCheckboxChange('privacy_commitment')}
+                    required 
+                  />
+                  <Label htmlFor="privacy_commitment" className="ml-3 text-sm text-slate-700">
+                    Tôi hiểu rằng tất cả thông tin cung cấp sẽ được <strong>bảo mật hoàn toàn</strong> và chỉ sử dụng cho mục đích tuyển chọn của NhiLe Team.
+                  </Label>
+                </div>
+              </div>
+              <Button 
+                type="submit" 
+                className="w-full bg-blue-600 text-white font-bold py-4 px-6 rounded-lg hover:bg-blue-700 transition-colors duration-300"
+                disabled={loading}
+              >
+                {loading ? "Đang gửi..." : "Gửi Đơn Đăng Ký"}
               </Button>
-              <Button type="button" className="bg-green-600 text-white" onClick={handleSubmit}>
-                Tham gia ngay
-              </Button>
-              <Button type="button" variant="outline" onClick={handleClose}>
-                Hủy / Đóng
-              </Button>
-            </div>
-          </form>
-        )}
+            </form>
+          )}
+        </div>
       </div>
-    </Dialog>
+    </section>
   );
 };
