@@ -1,4 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
+import nhileAvt from '../../asset/nhile-avt.jpg';
+import hueAvt from '../../asset/hue-avt.jpg';
+import sonleAvt from '../../asset/sonle-avt.jpeg';
+import danhAvt from '../../asset/danh-avt.jpeg';
+import thuyAvt from '../../asset/thuy-avt.jpeg';
+import hanAvt from '../../asset/han-avt.jpeg';
 
 export const CommunityLeadersSection = () => {
   const [isVisible, setIsVisible] = useState(false);
@@ -26,42 +32,42 @@ export const CommunityLeadersSection = () => {
       name: 'Nhi Le',
       role: 'Người Sáng Lập',
       description: 'Với tầm nhìn và đam mê, Nhi Le đã đặt những viên gạch đầu tiên, xây dựng NhiLe Team từ con số 0 trở thành một cộng đồng lớn mạnh.',
-      image: 'src/asset/nhile-avt.jpg',
+      image: nhileAvt,
       linkedin: 'https://www.linkedin.com/in/nhisg/',
     },
     {
       name: 'Phạm Đình Huê',
       role: 'Leader Quản lý & Đánh giá chất lượng',
       description: 'Chịu trách nhiệm quản lý, đánh giá chất lượng nghệ thuật – sáng tạo trong toàn bộ dự án và sản phẩm của NhiLe Team.',
-      image: 'src/asset/hue-avt.jpg',
+      image: hueAvt,
       linkedin: 'https://www.linkedin.com/in/hue-pham-9646aa220/',
     },
     {
       name: 'Lê Hoàng Khắc Sơn',
       role: 'Leader Công nghệ & AI',
       description: 'Chịu trách nhiệm xây dựng hệ thống công nghệ, phát triển ứng dụng và triển khai các giải pháp trí tuệ nhân tạo hỗ trợ vận hành cho NhiLe Team.',
-      image: 'src/asset/sonle-avt.jpeg',
+      image: sonleAvt,
       linkedin: 'https://www.linkedin.com/in/le-hoang-khac-son-7335861b2/',
     },
     {
       name: 'Ngô Đức Danh',
       role: 'Leader Vận hành & Media',
       description: 'Chịu trách nhiệm vận hành, phát triển hệ thống làm việc, đồng thời điều phối và phát triển tổ Media trong NhiLe Team.',
-      image: 'src/asset/danh-avt.jpeg',
+      image: danhAvt,
       linkedin: 'https://www.linkedin.com/in/đức-danh-ngô-528645224/',
     },
     {
       name: 'Phạm Thị Thanh Thùy',
       role: 'Leader Vận hành Tổng & Sự kiện',
       description: 'Chịu trách nhiệm vận hành tổng thể, tổ chức các sự kiện lớn và nhỏ, đảm bảo mọi hoạt động diễn ra suôn sẻ và hiệu quả.',
-      image: 'src/asset/thuy-avt.jpeg',
+      image: thuyAvt,
       linkedin: 'https://www.linkedin.com/in/tynanlt/',
     },
     {
       name: 'La Ngọc Hân',
       role: 'Leader Social Media',
       description: 'Chịu trách nhiệm xây dựng chiến lược, quản lý nội dung và phát triển các kênh mạng xã hội, fanpage của NhiLe Team.',
-      image: 'src/asset/han-avt.jpeg',
+      image: hanAvt,
       linkedin: 'https://www.linkedin.com/in/la-ngoc-han-436b71235/',
     },
   ];
