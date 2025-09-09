@@ -5,6 +5,13 @@ import { Textarea } from "../ui/textarea";
 import { Label } from "../ui/label";
 import { Checkbox } from "../ui/checkbox";
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "../ui/dialog";
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -24,7 +31,12 @@ interface FormData {
   privacy_commitment: boolean;
 }
 
-export const RegistrationFormSection = () => {
+interface RegistrationFormSectionProps {
+  open: boolean;
+  setOpen: React.Dispatch<React.SetStateAction<boolean>>;
+}
+
+export const RegistrationFormSection = ({ open, setOpen }: RegistrationFormSectionProps) => {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const sectionRef = useRef<HTMLElement>(null);
@@ -96,20 +108,14 @@ export const RegistrationFormSection = () => {
   };
 
   return (
-    <section 
-      id="register-form" 
-      ref={sectionRef}
-      className={`py-16 md:py-24 transition-all duration-700 ${
-        isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-5'
-      }`}
-    >
-      <div className="container mx-auto px-6">
-        <div className="max-w-xl mx-auto text-center">
-          <h2 className="text-3xl md:text-4xl font-bold text-slate-900">Trở Thành Một Phần Của Hành Trình</h2>
-          <p className="text-slate-600 mt-4 mb-8">
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogContent className="max-w-xl">
+        <DialogHeader>
+          <DialogTitle>Trở Thành Một Phần Của Hành Trình</DialogTitle>
+          <DialogDescription>
             Điền vào biểu mẫu dưới đây để đăng ký tham gia NhiLe Team. Chúng tôi sẽ liên hệ với bạn trong thời gian sớm nhất.
-          </p>
-        </div>
+          </DialogDescription>
+        </DialogHeader>
         <div id="form-container" className="max-w-xl mx-auto bg-white p-8 sm:p-10 rounded-2xl shadow-2xl">
           {isSubmitted ? (
             <div id="success-message" className="max-w-xl mx-auto text-center bg-green-100 border border-green-200 text-green-800 px-6 py-8 rounded-2xl">
@@ -260,7 +266,7 @@ export const RegistrationFormSection = () => {
             </form>
           )}
         </div>
-      </div>
-    </section>
+      </DialogContent>
+    </Dialog>
   );
 };

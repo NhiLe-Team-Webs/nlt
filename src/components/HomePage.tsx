@@ -5,9 +5,6 @@ import { CoreValuesSection } from './sections/CoreValuesSection';
 import { MemberJourneySection } from './sections/MemberJourneySection';
 import { RegistrationFormSection } from './sections/RegistrationFormSection';
 import { ExploreCommunitiesSection } from './sections/ExploreCommunitiesSection';
-import { StorySection } from './sections/StorySection';
-import { CommunityLeadersSection } from './sections/CommunityLeadersSection';
-import { Button } from './ui/button';
 
 export const HomePage = () => {
   const [isFormOpen, setIsFormOpen] = useState(false);
