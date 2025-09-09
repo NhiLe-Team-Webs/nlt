@@ -1,10 +1,14 @@
 import { useState, useRef, useEffect } from 'react';
+
+// Import all necessary images
 import nsaImage from '../../asset/nsa.jpg';
 import nsa2Image from '../../asset/nsa2.jpg';
 import teamriseImage from '../../asset/teamrise.jpg';
 import teamrise2Image from '../../asset/teamrise2.jpg';
 import teamrise4Image from '../../asset/teamrise3.jpg';
-import thisIsHomeImage from '../../asset/this_is_home.jpg';
+import thisIsHome1 from '../../asset/This is Home/this_is_home_1.png';
+import thisIsHome2 from '../../asset/This is Home/this_is_home_2.png';
+import thisIsHome3 from '../../asset/This is Home/this_is_home_3.png';
 
 export const PartnerProjectsSection = () => {
   const [isVisible, setIsVisible] = useState(false);
@@ -15,7 +19,7 @@ export const PartnerProjectsSection = () => {
     {
       title: 'Dự Án This Is Home',
       description: 'This Is Home chuyên cung cấp giải pháp toàn diện, kết nối du khách với văn hoá bản địa và cá nhân hoá hành trình tại Việt Nam. Với cam kết mang đến trải nghiệm độc đáo và chân thực, mỗi chuyến đi cùng This Is Home không chỉ là hành trình tham quan, mà còn là cơ hội để bạn sống trọn vẹn cùng nhịp sống người Việt – từ văn hoá, ẩm thực đến những câu chuyện đời thường.',
-      images: [thisIsHomeImage],
+      images: [thisIsHome1, thisIsHome2, thisIsHome3],
       span: 'md:col-span-2',
     },
     {

@@ -1,30 +1,52 @@
 // src/components/sections/ProjectCommunityDetailSection.tsx
 import { Link } from "react-router-dom";
+import { useState, useRef, useEffect } from 'react';
 
+// Import all necessary images
+import ninetyNineDays1 from '../../asset/99days/1.jpg';
+import ninetyNineDays2 from '../../asset/99days/2.jpg';
+import datingWithNLT1 from '../../asset/Dating with NLT/1.jpeg';
+import datingWithNLT2 from '../../asset/Dating with NLT/2.jpeg';
+import datingWithNLT3 from '../../asset/Dating with NLT/3.jpeg';
+import datingWithNLT4 from '../../asset/Dating with NLT/4.jpeg';
+import datingWithNLT5 from '../../asset/Dating with NLT/5.jpeg';
+import datingWithNLT6 from '../../asset/Dating with NLT/6.jpeg';
 export const ProjectCommunityDetailSection = () => {
+  const [isVisible, setIsVisible] = useState(false);
+  const sectionRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (sectionRef.current) {
+      observer.observe(sectionRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
+
   const projects = [
     {
-      title: "Dự án: Xây dựng Cộng đồng Học tập",
+      title: "Dự án: 99 days",
       description:
-        "Một hành trình đáng nhớ trong việc tạo ra không gian kết nối, chia sẻ và phát triển cho hơn 5000 người Việt trẻ trên toàn cầu.",
-      stats: [
-        { number: "5000+", label: "Thành viên" },
-        { number: "300+", label: "Thành viên cốt cán" },
-        { number: "50+", label: "Workshops đã tổ chức" },
-        { number: "10+", label: "Nhóm học tập chuyên sâu" },
-      ],
+        "Tập thể dục và phát triển bản thân cùng cộng đồng NhiLe Team. Dự án khuyến khích các thành viên duy trì thói quen tích cực trong 99 ngày liên tiếp, từ đó hình thành lối sống lành mạnh và bền vững.",
       album: [
-        { src: "https://placehold.co/800x800/1e293b/ffffff?text=Community+Event", alt: "Community event" },
-        { src: "https://placehold.co/400x400/475569/ffffff?text=Workshop", alt: "Workshop" },
-        { src: "https://placehold.co/400x400/94a3b8/ffffff?text=Team+Building", alt: "Team building" },
-        { src: "https://placehold.co/400x400/64748b/ffffff?text=Group+Discussion", alt: "Group discussion" },
-        { src: "https://placehold.co/400x400/334155/ffffff?text=Online+Meeting", alt: "Online meeting" },
-      ],
+        // 5 ảnh lớn
+        { src: ninetyNineDays1, alt: "Ngày 1 của thử thách" },
+        { src: ninetyNineDays2, alt: "Hoàn thành thử thách" },
+       ],
     },
     {
-      title: "Dự án: Kết nối Tri thức",
+      title: "Dự án: Dating with NhiLe Team",
       description:
-        "Lan tỏa giá trị tri thức tới cộng đồng thông qua workshop, sự kiện online và offline.",
+        "Chuỗi sự kiện kết nối các thành viên trong cộng đồng NhiLe Team. Dự án giúp mọi người hiểu nhau hơn, xây dựng tình bạn và tinh thần làm việc nhóm thông qua các hoạt động tương tác thú vị và ý nghĩa.",
       stats: [
         { number: "2000+", label: "Người tham dự" },
         { number: "100+", label: "Khóa học trực tuyến" },
@@ -32,53 +54,24 @@ export const ProjectCommunityDetailSection = () => {
         { number: "15+", label: "Quốc gia tham gia" },
       ],
       album: [
-        { src: "https://placehold.co/800x800/3b82f6/ffffff?text=Knowledge+Hub", alt: "Knowledge Hub" },
-        { src: "https://placehold.co/400x400/0ea5e9/ffffff?text=Workshop+Online", alt: "Workshop Online" },
-        { src: "https://placehold.co/400x400/38bdf8/ffffff?text=Mentor+Session", alt: "Mentor session" },
-        { src: "https://placehold.co/400x400/0284c7/ffffff?text=Panel+Talk", alt: "Panel talk" },
-        { src: "https://placehold.co/400x400/0369a1/ffffff?text=Networking", alt: "Networking" },
+        { src: datingWithNLT1, alt: "Dating with NLT" },
+        { src: datingWithNLT2, alt: "Dating with NLT" },
+        { src: datingWithNLT3, alt: "Dating with NLT" },
+        { src: datingWithNLT4, alt: "Dating with NLT" },
+        { src: datingWithNLT5, alt: "Dating with NLT" },
+        { src: datingWithNLT6, alt: "Dating with NLT" },
       ],
-    },
-    {
-      title: "Dự án: Hành trình Lãnh đạo trẻ",
-      description:
-        "Chương trình huấn luyện kỹ năng lãnh đạo cho các bạn trẻ tiềm năng.",
-      stats: [
-        { number: "1000+", label: "Bạn trẻ tham gia" },
-        { number: "60+", label: "Khóa đào tạo lãnh đạo" },
-        { number: "25+", label: "Mentor đồng hành" },
-        { number: "5+", label: "Trại hè lãnh đạo" },
-      ],
-      album: [
-        { src: "https://placehold.co/800x800/16a34a/ffffff?text=Leadership+Camp", alt: "Leadership Camp" },
-        { src: "https://placehold.co/400x400/22c55e/ffffff?text=Workshop+Leader", alt: "Workshop Leader" },
-        { src: "https://placehold.co/400x400/4ade80/ffffff?text=Case+Study", alt: "Case study" },
-        { src: "https://placehold.co/400x400/15803d/ffffff?text=Group+Challenge", alt: "Group Challenge" },
-        { src: "https://placehold.co/400x400/166534/ffffff?text=Final+Pitch", alt: "Final Pitch" },
-      ],
-    },
-    {
-      title: "Dự án: Chia sẻ vì Cộng đồng",
-      description:
-        "Hoạt động thiện nguyện, gây quỹ và hỗ trợ người yếu thế nhằm lan tỏa tinh thần nhân ái.",
-      stats: [
-        { number: "700+", label: "Trẻ em được hỗ trợ" },
-        { number: "$50,000+", label: "Quỹ quyên góp" },
-        { number: "120+", label: "Tình nguyện viên" },
-        { number: "30+", label: "Chuyến đi thiện nguyện" },
-      ],
-      album: [
-        { src: "https://placehold.co/800x800/f97316/ffffff?text=Charity+Event", alt: "Charity event" },
-        { src: "https://placehold.co/400x400/f59e0b/ffffff?text=Fundraising", alt: "Fundraising" },
-        { src: "https://placehold.co/400x400/fbbf24/ffffff?text=Donation+Drive", alt: "Donation drive" },
-        { src: "https://placehold.co/400x400/fcd34d/ffffff?text=Helping+Hand", alt: "Helping hand" },
-        { src: "https://placehold.co/400x400/facc15/ffffff?text=Community+Care", alt: "Community care" },
-      ],
-    },
+    }
   ];
 
   return (
-    <section id="project-community-detail-page" className="py-16 md:py-24 bg-white">
+    <section 
+      id="project-community-detail-page" 
+      ref={sectionRef} 
+      className={`py-16 md:py-24 bg-white transition-all duration-700 ${
+        isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-5'
+      }`}
+    >
       <div className="container mx-auto px-6 max-w-5xl">
         <div className="mb-8">
           <Link
@@ -97,26 +90,20 @@ export const ProjectCommunityDetailSection = () => {
             <p className="text-lg text-slate-600 mt-4 max-w-3xl">
               {project.description}
             </p>
-
-            {/* Thành tựu nổi bật */}
-            <div className="mt-12">
-              <h3 className="text-2xl font-bold text-slate-900 mb-6">Thành tựu nổi bật</h3>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
-                {project.stats.map((stat, i) => (
-                  <div key={i} className="bg-slate-100 p-6 rounded-2xl">
-                    <p className="text-4xl font-bold apple-gradient-text">{stat.number}</p>
-                    <p className="text-slate-600 mt-2 font-medium">{stat.label}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-
             {/* Album */}
             <div className="mt-16">
               <h3 className="text-2xl font-bold text-slate-900 mb-6">Album hình ảnh cộng đồng</h3>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                 {project.album.map((img, j) => (
-                  <div key={j} className={`rounded-2xl overflow-hidden ${j === 0 ? "col-span-2 row-span-2" : ""}`}>
+                  <div 
+                    key={j} 
+                    className={`rounded-2xl overflow-hidden ${
+                      // Tạo hiệu ứng 5 ảnh lớn, 5 ảnh nhỏ
+                      (project.title === "Dự án: 99 days") && j < 5 ? "col-span-1 row-span-1" :
+                      (project.title === "Dự án: 99 days" && j >= 5 && j < 10 ? "col-span-1 row-span-1" : 
+                      (j === 0 ? "col-span-2 row-span-2" : ""))}
+                    `}
+                  >
                     <img
                       src={img.src}
                       alt={img.alt}

@@ -10,10 +10,10 @@ export const AchievementsSection = () => {
 
           {/* Project Item 1 */}
           <div className="border-b border-slate-200 pb-10">
-            <h3 className="text-xl font-semibold text-slate-900">Xây dựng Cộng đồng Học tập trên 5000 thành viên</h3>
-            <p className="text-slate-500 mt-1">NhiLe Team Community</p>
+            <h3 className="text-xl font-semibold text-slate-900">Những hoạt động cộng đồng</h3>
+            <p className="text-slate-500 mt-1">NhiLe Team</p>
             <p className="mt-4 text-slate-700 leading-relaxed">
-              Phát triển và quản lý cộng đồng học tập trực tuyến, tạo ra một môi trường tích cực nơi các thành viên có thể chia sẻ kiến thức, hỗ trợ lẫn nhau và cùng phát triển các kỹ năng về công nghệ, AI, và kỹ năng mềm.
+              Đây là phần ghi lại các sự kiện cộng đồng mà NhiLe Team đã tổ chức. Nó bao gồm các hoạt động kết nối, chia sẻ kiến thức, và tạo sân chơi cho các thành viên, giúp xây dựng một cộng đồng vững mạnh và gắn kết.
             </p>
             <Link to="/project-community-detail" className="mt-4 inline-block font-semibold text-blue-600 hover:text-blue-700">
               Xem chi tiết dự án &rarr;
@@ -22,24 +22,33 @@ export const AchievementsSection = () => {
 
           {/* Project Item 2 */}
           <div className="border-b border-slate-200 pb-10">
-            <h3 className="text-xl font-semibold text-slate-900">Chương trình Đào tạo và Cung ứng Nhân sự cho NhiLe Holding</h3>
-            <p className="text-slate-500 mt-1">NhiLe Holding & NhiLe Foundation</p>
+            <h3 className="text-xl font-semibold text-slate-900">Tham quan các di tích, địa điểm lịch sử</h3>
+            <p className="text-slate-500 mt-1">NhiLe Team & NhiLe Foundation</p>
             <p className="mt-4 text-slate-700 leading-relaxed">
-              Thiết kế và triển khai thành công các khóa học nghề chuyên sâu (AI, Vận hành, Editing). Nhiều học viên sau khi tốt nghiệp đã trở thành nhân viên chính thức, đóng góp trực tiếp vào sự phát triển của các công ty trong hệ sinh thái NhiLe Holding.
+              Đây là phần dành cho các dự án thiện nguyện hoặc hoạt động xã hội của team, tập trung vào việc bảo tồn hoặc quảng bá các di tích và địa điểm lịch sử. Nó thể hiện sự quan tâm của NhiLe Team đến giá trị văn hóa và lịch sử của đất nước.
             </p>
             <a href="#" data-target="home" className="mt-4 inline-block font-semibold text-blue-600 hover:text-blue-700">Tìm hiểu cơ hội &rarr;</a>
           </div>
 
           {/* Project Item 3 */}
           <div>
-            <h3 className="text-xl font-semibold text-slate-900">Dự án thiện nguyện "Ánh Sáng Tri Thức"</h3>
-            <p className="text-slate-500 mt-1">NhiLe Foundation</p>
+            <h3 className="text-xl font-semibold text-slate-900">Các buổi gặp mặt trực tuyến</h3>
+            <p className="text-slate-500 mt-1">NhiLe Team</p>
             <p className="mt-4 text-slate-700 leading-relaxed">
-              Tổ chức thành công chuỗi hoạt động gây quỹ và các chuyến đi thiện nguyện, trao tặng sách vở và các suất học bổng công nghệ cho trẻ em có hoàn cảnh khó khăn tại các vùng sâu vùng xa, lan tỏa giá trị của tri thức và lòng nhân ái.
+              Đây là nơi lưu trữ các tài liệu, biên bản và ghi chép của các cuộc họp trực tuyến. Phần này phản ánh cách NhiLe Team vận hành một cách chuyên nghiệp, minh bạch và có tổ chức, đảm bảo mọi thành viên đều nắm bắt được thông tin và tiến độ công việc.
             </p>
             <a href="https://nlf.sg/" target="_blank" rel="noopener noreferrer" className="mt-4 inline-block font-semibold text-blue-600 hover:text-blue-700">Xem dự án &rarr;</a>
           </div>
 
+          {/* Project Item 4*/}
+          <div>
+            <h3 className="text-xl font-semibold text-slate-900">Các buổi Team Building</h3>
+            <p className="text-slate-500 mt-1">NhiLe Team</p>
+            <p className="mt-4 text-slate-700 leading-relaxed">
+              Đây là phần tổng hợp các hoạt động xây dựng đội ngũ. Nó cho thấy NhiLe Team không chỉ tập trung vào công việc mà còn chú trọng tạo ra một môi trường làm việc tích cực, nơi các thành viên có thể giao lưu, tăng cường sự hiểu biết và tin tưởng lẫn nhau.
+            </p>
+            <a href="https://nlf.sg/" target="_blank" rel="noopener noreferrer" className="mt-4 inline-block font-semibold text-blue-600 hover:text-blue-700">Xem dự án &rarr;</a>
+          </div>
         </div>
       </div>
     </section>
