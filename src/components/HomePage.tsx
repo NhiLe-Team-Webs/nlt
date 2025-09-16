@@ -4,23 +4,26 @@ import { CoreValuesSection } from './sections/CoreValuesSection';
 import { MemberJourneySection } from './sections/MemberJourneySection';
 import { RegistrationFormSection } from './sections/RegistrationFormSection';
 import { ExploreCommunitiesSection } from './sections/ExploreCommunitiesSection';
-import { StorySection } from './sections/StorySection';
-import { CommunityLeadersSection } from './sections/CommunityLeadersSection';
-interface HomePageProps {
-  onNavigate: (target: string, href?: string) => void;
-}
+import { useState } from 'react';
 
-export const HomePage = ({ onNavigate }: HomePageProps) => {
+export const HomePage = () => {
+  const [isFormOpen, setIsFormOpen] = useState(false);
+
+  const handleNavigate = (target: string) => {
+    const sectionElement = document.getElementById(target);
+    if (sectionElement) {
+      sectionElement.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   return (
     <div>
       <HeroSection />
       <AboutSection />
       <CoreValuesSection />
       <MemberJourneySection />
-      <StorySection />
-      <CommunityLeadersSection />
       <RegistrationFormSection />
-      <ExploreCommunitiesSection onNavigate={onNavigate} />
+      <ExploreCommunitiesSection onNavigate={handleNavigate} />
     </div>
   );
 };

@@ -143,3 +143,7 @@ All colors MUST be HSL.
     left: 0;
   }
 }
+
+#register-form {
+  scroll-margin-bottom: 150rem;
+}
