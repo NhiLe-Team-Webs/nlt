@@ -1,5 +1,3 @@
-// src/components/sections/RegistrationFormSection.tsx
-
 import { useState, useRef, useEffect } from "react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
@@ -13,7 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
-import { submitForm } from "../../lib/submitForm"; // Import hàm submitForm
+import { submitForm } from "../../lib/submitForm";
 
 interface FormData {
   name: string;
@@ -136,6 +134,7 @@ export const RegistrationFormSection = () => {
                     required 
                     value={formData.name}
                     onChange={handleChange}
+                    autoComplete="name"
                   />
                 </div>
                 <div>
@@ -149,6 +148,7 @@ export const RegistrationFormSection = () => {
                     required 
                     value={formData.email}
                     onChange={handleChange}
+                    autoComplete="email"
                   />
                 </div>
               </div>
@@ -162,6 +162,7 @@ export const RegistrationFormSection = () => {
                   required 
                   value={formData.telegram}
                   onChange={handleChange}
+                  autoComplete="off"
                 />
               </div>
               <h3 className="text-lg font-semibold text-slate-800 mb-4 mt-8 border-b pb-2">Nhu Cầu & Mục Tiêu</h3>
@@ -176,6 +177,7 @@ export const RegistrationFormSection = () => {
                   required 
                   value={formData.motivation}
                   onChange={handleChange}
+                  autoComplete="off"
                 />
               </div>
               <div className="mb-6">
@@ -189,6 +191,7 @@ export const RegistrationFormSection = () => {
                   required 
                   value={formData.goals}
                   onChange={handleChange}
+                  autoComplete="off"
                 />
               </div>
               <div className="mb-6">
@@ -198,7 +201,7 @@ export const RegistrationFormSection = () => {
                   value={formData.source}
                   onValueChange={handleSelectChange('source')}
                 >
-                  <SelectTrigger className="w-full px-4 py-3 bg-slate-100 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 transition">
+                  <SelectTrigger className="w-full px-4 py-3 bg-slate-100 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 transition" id="source">
                     <SelectValue placeholder="Vui lòng chọn" />
                   </SelectTrigger>
                   <SelectContent>
@@ -217,7 +220,7 @@ export const RegistrationFormSection = () => {
                   value={formData.time_commitment}
                   onValueChange={handleSelectChange('time_commitment')}
                 >
-                  <SelectTrigger className="w-full px-4 py-3 bg-slate-100 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 transition">
+                  <SelectTrigger className="w-full px-4 py-3 bg-slate-100 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 transition" id="time_commitment">
                     <SelectValue placeholder="Vui lòng chọn" />
                   </SelectTrigger>
                   <SelectContent>
