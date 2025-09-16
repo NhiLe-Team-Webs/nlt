@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from "react-router-dom";
 import { ChevronDownIcon, Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
+import nltLogo from '../asset/nlt-logo.png';
 
 interface HeaderProps {
   onNavigate: (target: string, href?: string) => void;
@@ -52,9 +53,7 @@ export const Header = ({ onNavigate }: HeaderProps) => {
           {/* Logo */}
           <div className="flex-shrink-0">
             <button onClick={() => handleNavClick('/home')}>
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-slate-700 to-slate-900 bg-clip-text text-transparent">
-                NhiLe Team
-              </h1>
+              <img src={nltLogo} alt="NhiLeTam Logo" className="h-12 w-auto" />
             </button>
           </div>
 
