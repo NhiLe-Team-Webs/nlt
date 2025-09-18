@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 120">
+  <!-- Nhóm chữ, nghiêng toàn bộ -->
+  <g transform="skewX(-10)">
+    <!-- Chữ N màu xanh lá, to -->
+    <text x="10" y="100" font-family="Arial, sans-serif" font-size="100" font-weight="bold" fill="#16a34a">
+      N
+    </text>
+    <!-- Chữ ơi nhỏ, đặt như mũ -->
+    <text x="85" y="40" font-family="Arial, sans-serif" font-size="42" font-weight="bold" fill="#16a34a">
+      ơi
+    </text>
+  </g>
+</svg>
