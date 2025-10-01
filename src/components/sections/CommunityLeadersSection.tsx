@@ -6,6 +6,7 @@ import danhAvt from '../../asset/danh-avt.jpeg';
 import thuyAvt from '../../asset/thuy-avt.jpeg';
 import hanAvt from '../../asset/han-avt.jpeg';
 
+
 export const CommunityLeadersSection = () => {
   const [isVisible, setIsVisible] = useState(false);
   const sectionRef = useRef<HTMLElement>(null);

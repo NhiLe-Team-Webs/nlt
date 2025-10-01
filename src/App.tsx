@@ -1,10 +1,12 @@
 // src/App.tsx
 
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useParams, useNavigate } from "react-router-dom";
+
 
 // Components
 import Index from "./pages/Index";
@@ -16,7 +18,7 @@ import PartnerProjectsPage from "./pages/PartnerProjectsPage";
 import PartnerTestimonialsPage from "./pages/PartnerTestimonialsPage";
 import AchievementsPage from "./pages/AchievementsPage";
 import BlogPage from "./pages/BlogPage";
-import FaqPage from "./pages/FaqPage"; 
+import FaqPage from "./pages/FaqPage";
 import PrivacyStatement from "./pages/PrivacyStatement";
 import TermsOfUse from "./pages/TermsOfUse";
 import { Header } from "@/components/Header";
@@ -24,13 +26,16 @@ import { Footer } from "@/components/Footer";
 import { ProjectCommunityDetailSection } from "./components/sections/ProjectCommunityDetailSection";
 import { achievementCategories } from "./data/achievements";
 
+
 const queryClient = new QueryClient();
+
 
 // Component mới để xử lý trang của từng hạng mục thành tựu
 const AchievementCategoryPage = () => {
   const { categorySlug } = useParams();
   const navigate = useNavigate();
   const category = achievementCategories.find(c => c.slug === categorySlug);
+
 
   const handleNavigate = (target: string, href?: string) => {
     if (href) {
@@ -40,9 +45,11 @@ const AchievementCategoryPage = () => {
     }
   };
 
+
   if (!category) {
     return <NotFound />;
   }
+
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -73,6 +80,8 @@ const AchievementCategoryPage = () => {
 };
 
 
+
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -87,13 +96,13 @@ const App = () => (
           <Route path="/community-synergy" element={<CommunitySynergyPage />} />
           <Route path="/partner-projects" element={<PartnerProjectsPage />} />
           <Route path="/partner-testimonials" element={<PartnerTestimonialsPage />} />
-          
+         
           {/* Route cho trang tổng quan thành tựu */}
           <Route path="/achievements" element={<AchievementsPage />} />
-          
+         
           {/* Route động cho các trang thành tựu cụ thể */}
           <Route path="/achievements/:categorySlug" element={<AchievementCategoryPage />} />
-          
+         
           <Route path="/blog" element={<BlogPage />} />
           <Route path="/faq" element={<FaqPage />} />
           <Route path="/privacy-statement" element={<PrivacyStatement />} />
@@ -105,4 +114,6 @@ const App = () => (
   </QueryClientProvider>
 );
 
+
 export default App;
+

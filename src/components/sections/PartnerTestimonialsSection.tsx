@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 
+
 // Import all necessary images
 import annyLongAvt from '../../asset/anny_long-avt.png';
 import denisAvt from '../../asset/denis-avt.jpg';
@@ -7,9 +8,11 @@ import hieuPcAvt from '../../asset/hieu_pc-avt.png';
 import paulineAvt from '../../asset/pauline-avt.png';
 import yanJiangAvt from '../../asset/yan_jiang-avt.jpg';
 
+
 export const PartnerTestimonialsSection = () => {
   const [isVisible, setIsVisible] = useState(false);
   const sectionRef = useRef<HTMLElement>(null);
+
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -21,12 +24,15 @@ export const PartnerTestimonialsSection = () => {
       { threshold: 0.1 }
     );
 
+
     if (sectionRef.current) {
       observer.observe(sectionRef.current);
     }
 
+
     return () => observer.disconnect();
   }, []);
+
 
   const testimonials = [
     {
@@ -71,10 +77,11 @@ export const PartnerTestimonialsSection = () => {
     },
   ];
 
+
   return (
-    <section 
-      id="partner-testimonials-page" 
-      ref={sectionRef} 
+    <section
+      id="partner-testimonials-page"
+      ref={sectionRef}
       className={`py-16 md:py-24 bg-white transition-all duration-700 ${
         isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-5'
       }`}
@@ -88,14 +95,14 @@ export const PartnerTestimonialsSection = () => {
         </div>
         <div className="space-y-20">
           {testimonials.map((testimonial, index) => (
-            <div 
-              key={index} 
+            <div
+              key={index}
               className={`flex flex-col items-center gap-8 ${testimonial.alignment}`}
-            > 
-              <img 
-                src={testimonial.image} 
-                alt={testimonial.name} 
-                className="w-40 h-40 rounded-full object-cover shadow-lg flex-shrink-0" 
+            >
+              <img
+                src={testimonial.image}
+                alt={testimonial.name}
+                className="w-40 h-40 rounded-full object-cover shadow-lg flex-shrink-0"
               />
               <div className={`text-center ${testimonial.textAlign}`}>
                 <p className="text-xl text-slate-700 italic leading-relaxed">"{testimonial.quote}"</p>
@@ -109,3 +116,4 @@ export const PartnerTestimonialsSection = () => {
     </section>
   );
 };
+
