@@ -2,6 +2,7 @@
 import { CommunityLeadersSection } from "@/components/sections/CommunityLeadersSection";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
+import { LeaderList } from '../components/CommunityLeaders/LeaderList'
 
 const CommunityLeadersPage = () => {
   return (
@@ -26,3 +27,4 @@ const CommunityLeadersPage = () => {
 };
 
 export default CommunityLeadersPage;
+
