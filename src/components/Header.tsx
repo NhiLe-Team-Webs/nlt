@@ -53,9 +53,14 @@
         
 <div className="flex-shrink-0">
   <button onClick={() => handleNavClick('/home')}>
-    <img src="/logo.svg" alt="N Ơi" className="h-10 md:h-12 w-auto" />
+    <img 
+      src="/logo.svg" 
+      alt="NhiLe Team Logo" 
+      className="h-10 md:h-12 w-auto" 
+    />
   </button>
 </div>
+
             {/* Desktop Navigation */}
             <nav className="hidden sm:ml-6 sm:flex sm:space-x-8 items-center">
               <button 
