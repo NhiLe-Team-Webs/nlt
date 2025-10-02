@@ -23,6 +23,7 @@ interface FormData {
   time_commitment: string;
   values_commitment: boolean;
   privacy_commitment: boolean;
+  source_detail?: string;
 }
 
 export const RegistrationFormSection = () => {
@@ -212,6 +213,20 @@ export const RegistrationFormSection = () => {
                   </SelectContent>
                 </Select>
               </div>
+              
+              {formData.source === 'other' && (
+  <div className="mb-6">
+    <Label htmlFor="source_detail">Vui lòng mô tả nguồn bạn biết đến chúng tôi</Label>
+    <Input
+      id="source_detail"
+      name="source_detail"
+      placeholder="Ví dụ: TikTok, podcast, sự kiện..."
+      value={formData.source_detail || ""}
+      onChange={handleChange}
+    />
+  </div>
+)}
+
               <h3 className="text-lg font-semibold text-slate-800 mb-4 mt-8 border-b pb-2">Cam Kết</h3>
               <div className="mb-6">
                 <Label htmlFor="time_commitment" className="block mb-2 text-sm font-medium text-slate-700">Bạn có thể cam kết dành bao nhiêu thời gian mỗi tuần cho việc học và thực tập cùng team?</Label>

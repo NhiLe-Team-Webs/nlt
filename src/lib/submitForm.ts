@@ -1,5 +1,5 @@
 // src/lib/submitForm.ts
-
+import { supabase } from './supabaseClient';
 // Định nghĩa một kiểu dữ liệu cụ thể cho form
 interface FormData {
   name: string;
@@ -11,6 +11,7 @@ interface FormData {
   time_commitment: string;
   values_commitment: boolean;
   privacy_commitment: boolean;
+  source_detail?: string;
 }
 
 // Get the API URL from the environment variable
