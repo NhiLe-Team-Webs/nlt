@@ -86,6 +86,11 @@ export const RegistrationFormSection = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!formData.source || !formData.time_commitment) {
+      alert('Vui lòng chọn đầy đủ nguồn bạn biết đến NhiLe Team và thời gian cam kết.');
+      return;
+    }
+
     setLoading(true);
 
     const result = await submitForm(formData);

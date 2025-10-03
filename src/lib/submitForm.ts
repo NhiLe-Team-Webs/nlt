@@ -1,5 +1,7 @@
 // src/lib/submitForm.ts
 
+import { supabase } from "./supabaseClient";
+
 // Định nghĩa một kiểu dữ liệu cụ thể cho form
 interface FormData {
   name: string;
@@ -13,30 +15,32 @@ interface FormData {
   privacy_commitment: boolean;
 }
 
-// Get the API URL from the environment variable
-const SCRIPT_URL = import.meta.env.VITE_APPS_SCRIPT_URL;
-
 export const submitForm = async (formData: FormData) => {
   try {
-    // Chuyển đổi formData thành một đối tượng có thể sử dụng với URLSearchParams
-    const formDataEntries = Object.entries(formData).map(([key, value]) => [key, String(value)]);
-
-    const response = await fetch(SCRIPT_URL, {
-      method: 'POST',
-      body: new URLSearchParams(formDataEntries),
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-    });
-
-    const data = await response.json();
-
-    if (data.result === 'success') {
-      return { success: true };
-    } else {
-      console.error('Submission failed:', data.error);
-      return { success: false, error: 'Submission failed' };
+    const payload = {
+      full_name: formData.name.trim(),
+      email: formData.email.trim(),
+      telegram: formData.telegram.trim() || null,
+      motivation: formData.motivation.trim(),
+      goals: formData.goals.trim(),
+      source: formData.source,
+      time_commitment: formData.time_commitment || null,
+      values_commitment: formData.values_commitment,
+      privacy_commitment: formData.privacy_commitment,
     }
+
+    const { error } = await supabase
+      .from('applicants')
+      .insert(payload)
+      .select('id')
+      .single()
+
+    if (error) {
+      console.error('Submission failed:', error)
+      return { success: false, error: 'Submission failed' }
+    }
+
+    return { success: true }
   } catch (error) {
     console.error('Fetch error:', error);
     return { success: false, error: 'Network error' };
