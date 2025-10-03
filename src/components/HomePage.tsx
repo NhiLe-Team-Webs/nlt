@@ -23,21 +23,7 @@ export const HomePage = ({ onNavigate }: HomePageProps) => {
       <AboutSection />
       <CoreValuesSection />
       <MemberJourneySection />
-      <StorySection />
-      <CommunityLeadersSection />
 
-      {/* Các nút gọi form */}
-      <div className="text-center py-12 space-y-6">
-        <Button className="bg-green-600 text-white" onClick={() => setOpen(true)}>
-          Tham gia ngay
-        </Button>
-        <Button className="bg-blue-600 text-white" onClick={() => setOpen(true)}>
-          Trở thành thành viên
-        </Button>
-        <Button className="bg-purple-600 text-white" onClick={() => setOpen(true)}>
-          Tham gia vào NhiLe Team ngay
-        </Button>
-      </div>
 
       {/* Form chung, quản lý bằng open/setOpen */}
       <RegistrationFormSection open={open} setOpen={setOpen} />
