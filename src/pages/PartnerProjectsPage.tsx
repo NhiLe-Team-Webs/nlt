@@ -10,11 +10,11 @@ const PartnerProjectsPage = () => {
           window.location.href = href;
         }
       }} />
-      
+
       <main className="flex-grow">
         <PartnerProjectsSection />
       </main>
-      
+
       <Footer onNavigate={(target, href) => {
         if (href) {
           window.location.href = href;
@@ -25,3 +25,4 @@ const PartnerProjectsPage = () => {
 };
 
 export default PartnerProjectsPage;
+
