@@ -2,7 +2,7 @@
 import { useState } from "react";
 import ReactMarkdown from "react-markdown";
 // Từ FaqSection.tsx (components/sections) đi lên hooks là ../../hooks
-import { useFaqs } from "src/hooks/useFaqs";
+import { useFaqs } from "../../hooks/useFaqs";
 
 export const FaqSection = () => {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
