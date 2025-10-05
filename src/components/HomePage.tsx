@@ -1,29 +1,34 @@
+import { useState } from "react";
 import { HeroSection } from './sections/HeroSection';
 import { AboutSection } from './sections/AboutSection';
 import { CoreValuesSection } from './sections/CoreValuesSection';
 import { MemberJourneySection } from './sections/MemberJourneySection';
 import { RegistrationFormSection } from './sections/RegistrationFormSection';
 import { ExploreCommunitiesSection } from './sections/ExploreCommunitiesSection';
-import { useState } from 'react';
+import { StorySection } from './sections/StorySection';
+import { CommunityLeadersSection } from './sections/CommunityLeadersSection';
+import { Button } from "./ui/button";
 
-export const HomePage = () => {
-  const [isFormOpen, setIsFormOpen] = useState(false);
+interface HomePageProps {
+  onNavigate: (target: string, href?: string) => void;
+}
 
-  const handleNavigate = (target: string) => {
-    const sectionElement = document.getElementById(target);
-    if (sectionElement) {
-      sectionElement.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
+export const HomePage = ({ onNavigate }: HomePageProps) => {
+  const [open, setOpen] = useState(false);
 
   return (
     <div>
       <HeroSection />
+
       <AboutSection />
       <CoreValuesSection />
       <MemberJourneySection />
-      <RegistrationFormSection />
-      <ExploreCommunitiesSection onNavigate={handleNavigate} />
+
+
+      {/* Form chung, quản lý bằng open/setOpen */}
+      <RegistrationFormSection open={open} setOpen={setOpen} />
+
+      <ExploreCommunitiesSection onNavigate={onNavigate} />
     </div>
   );
 };

@@ -13,7 +13,12 @@ const ProjectCommunityDetailPage = () => {
       }} />
       
       <main className="flex-grow">
-        <ProjectCommunityDetailSection />
+        <ProjectCommunityDetailSection project={{
+          projectTitle: "Sample Project Title",
+          projectDescription: "Sample project description goes here.",
+          slug: "sample-project-slug",
+          album: [] // Replace with actual album data if needed
+        }} />
       </main>
       
       <Footer onNavigate={(target, href) => {

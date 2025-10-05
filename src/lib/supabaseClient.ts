@@ -1,7 +1,8 @@
 import { createClient } from '@supabase/supabase-js'
 
-// You'll need to replace these with your actual Supabase project URL and anon key
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://your-project.supabase.co'
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'your-anon-key'
+// 👇 Lấy từ file .env của bạn
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string
 
+// Khởi tạo client
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
