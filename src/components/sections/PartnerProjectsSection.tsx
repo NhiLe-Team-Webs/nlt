@@ -1,17 +1,11 @@
-<<<<<<< HEAD
-import { useState, useRef, useEffect } from 'react';
-import { usePartnerProjects } from '../../hooks/usePartnerProjects';
-=======
-// src/components/sections/PartnerProjectsSection.tsx
 import { useState, useRef, useEffect } from "react";
 import { usePartnerProjects } from "@/hooks/use-partner-projects";
->>>>>>> 16c4fa0d6a85c2ffc92f2d579479079f1de599c8
 
 // Fallbacks
-const FALLBACK_IMAGE = "/images/placeholder-project.svg"; // nhớ có file này trong public/images
+const FALLBACK_IMAGE = "/images/placeholder-project.svg";
 const FALLBACK_BG = "#F5F5F7";
 
-// Kiểu state cho index ảnh hiện tại của từng project (theo vị trí trong mảng)
+// Kiểu state cho index ảnh hiện tại của từng project
 type IndexMap = Record<number, number>;
 
 export const PartnerProjectsSection = () => {
@@ -19,16 +13,8 @@ export const PartnerProjectsSection = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState<IndexMap>({});
   const sectionRef = useRef<HTMLElement>(null);
 
-<<<<<<< HEAD
-  const { projects, loading, error } = usePartnerProjects();
-
-  // Fallbacks
-  const defaultBg = 'bg-slate-700';
-  const defaultImage = nsaImage; // Hoặc chọn ảnh mặc định phù hợp
-=======
-  // hook lấy dữ liệu từ API (đã lọc is_published=true & sort display_order trong service)
+  // hook lấy dữ liệu từ API
   const { data, isLoading, isError, error, refetch } = usePartnerProjects();
->>>>>>> 16c4fa0d6a85c2ffc92f2d579479079f1de599c8
 
   // OBSERVER: hiệu ứng xuất hiện
   useEffect(() => {
@@ -40,8 +26,7 @@ export const PartnerProjectsSection = () => {
     return () => observer.disconnect();
   }, []);
 
-  // Chuẩn hoá data từ API -> cấu trúc giống projects cũ
-  // API hiện trả 1 ảnh (image_url). Nếu sau này backend cho nhiều ảnh, chỉ cần map vào mảng images.
+  // Chuẩn hoá data từ API
   const projects = (data ?? []).map((p) => ({
     title: p.name,
     description: p.description ?? "",
@@ -50,60 +35,45 @@ export const PartnerProjectsSection = () => {
     bg: p.background_color || FALLBACK_BG,
   }));
 
-  // Nếu chưa có dữ liệu API, vẫn cho hiển thị mock = rỗng -> sẽ ra empty state
-  // (Không import ảnh tĩnh nữa)
+  // Touch handlers
+  const handleTouchStart = (e: React.TouchEvent, index: number) => {
+    const touch = e.touches[0];
+    (e.currentTarget as HTMLElement).setAttribute('data-touch-start-x', touch.clientX.toString());
+  };
 
-  // ====== Swipe logic (giữ nguyên tinh thần code cũ) ======
-  const handleSwipe = (projectIndex: number, direction: "next" | "prev") => {
+  const handleTouchEnd = (e: React.TouchEvent, index: number) => {
+    const touch = e.changedTouches[0];
+    const touchStartX = parseFloat((e.currentTarget as HTMLElement).getAttribute('data-touch-start-x') || '0');
+    const diff = touchStartX - touch.clientX;
+
+    if (Math.abs(diff) > 50) {
+      handleSwipe(index, diff > 0 ? "next" : "prev");
+    }
+  };
+
+  const handleSwipe = (index: number, direction: "prev" | "next") => {
+    const project = projects[index];
+    if (!project || project.images.length <= 1) return;
+
     setCurrentImageIndex((prev) => {
-      const currentIndex = prev[projectIndex] || 0;
-      const imagesLength = projects[projectIndex].images.length;
-      const newIndex =
-        direction === "next"
-          ? (currentIndex + 1) % imagesLength
-          : currentIndex === 0
-            ? imagesLength - 1
-            : currentIndex - 1;
-      return { ...prev, [projectIndex]: newIndex };
+      const current = prev[index] || 0;
+      let next = direction === "next" ? current + 1 : current - 1;
+      
+      if (next >= project.images.length) next = 0;
+      if (next < 0) next = project.images.length - 1;
+      
+      return { ...prev, [index]: next };
     });
   };
 
-  // Lưu điểm chạm theo projectIndex để không đụng vào dataset/target
-  const touchStartXRef = useRef<Record<number, number>>({});
-
-  const handleTouchStart = (
-    e: React.TouchEvent<HTMLDivElement>,
-    projectIndex: number
-  ) => {
-    touchStartXRef.current[projectIndex] = e.touches[0].clientX;
-  };
-
-  const handleTouchEnd = (
-    e: React.TouchEvent<HTMLDivElement>,
-    projectIndex: number
-  ) => {
-    const startX = touchStartXRef.current[projectIndex] ?? e.changedTouches[0].clientX;
-    const endX = e.changedTouches[0].clientX;
-    const diff = startX - endX;
-    if (Math.abs(diff) > 50) handleSwipe(projectIndex, diff > 0 ? "next" : "prev");
-  };
-
-  // ====== UI states ======
   if (isLoading) {
     return (
-      <section className="py-16 md:py-24 bg-white" ref={sectionRef}>
+      <section className="py-16 md:py-24 bg-white">
         <div className="container mx-auto px-6">
-          <h2 className="text-4xl md:text-5xl font-extrabold text-slate-900 text-center mb-8">
-            Dự án đã hoàn thành
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="rounded-2xl border p-6 animate-pulse">
-                <div className="h-6 w-2/3 bg-gray-200 rounded mb-3" />
-                <div className="h-4 w-3/4 bg-gray-200 rounded mb-4" />
-                <div className="h-56 w-full bg-gray-200 rounded" />
-              </div>
-            ))}
+          <div className="text-center">
+            <h2 className="text-4xl md:text-5xl font-extrabold text-slate-900 mb-4">
+              Đang tải dự án...
+            </h2>
           </div>
         </div>
       </section>
@@ -112,19 +82,17 @@ export const PartnerProjectsSection = () => {
 
   if (isError) {
     return (
-      <section className="py-16 md:py-24 bg-white" ref={sectionRef}>
+      <section className="py-16 md:py-24 bg-white">
         <div className="container mx-auto px-6">
-          <h2 className="text-4xl md:text-5xl font-extrabold text-slate-900 text-center mb-8">
-            Dự án đã hoàn thành
-          </h2>
-          <div className="rounded-xl border p-6 bg-red-50 text-center">
-            <p className="text-red-700 font-medium">
-              Không tải được danh sách dự án.
-            </p>
-            <p className="text-sm text-red-500 mt-1">{error}</p>
-            <button
+          <div className="text-center">
+            <h2 className="text-4xl md:text-5xl font-extrabold text-slate-900 mb-4">
+              Lỗi tải dữ liệu
+            </h2>
+            <p className="text-red-600 mb-4">{error}</p>
+            <button 
+              type="button"
               onClick={refetch}
-              className="mt-4 px-4 py-2 rounded-lg border hover:bg-gray-50"
+              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
             >
               Thử lại
             </button>
@@ -134,66 +102,23 @@ export const PartnerProjectsSection = () => {
     );
   }
 
-  if (!projects.length) {
-    return (
-      <section className="py-16 md:py-24 bg-white" ref={sectionRef}>
-        <div className="container mx-auto px-6 text-center">
-          <h2 className="text-4xl md:text-5xl font-extrabold text-slate-900 mb-4">
-            Dự án đã hoàn thành
-          </h2>
-          <p className="text-slate-600">Chưa có dự án nào được publish.</p>
-          <button
-            onClick={refetch}
-            className="mt-4 px-4 py-2 rounded-lg border hover:bg-gray-50"
-          >
-            Làm mới
-          </button>
-        </div>
-      </section>
-    );
-  }
-
-  // ====== RENDER ======
   return (
-    <section
-      id="partner-projects-page"
+    <section 
       ref={sectionRef}
-      className={`py-16 md:py-24 bg-white transition-all duration-700 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-5"
-        }`}
+      className="py-16 md:py-24 bg-white"
     >
       <div className="container mx-auto px-6">
-        <div className="text-center max-w-3xl mx-auto mb-12 md:mb-16">
+        <div className="text-center mb-12 md:mb-16">
           <h2 className="text-4xl md:text-5xl font-extrabold text-slate-900 leading-tight">
-            Dự án đã hoàn thành
+            Dự án đối tác
           </h2>
           <p className="text-lg text-slate-600 mt-4">
-            Những câu chuyện thành công được viết nên từ sự hợp tác và tin tưởng.
+            Khám phá các dự án đặc biệt mà chúng tôi đã thực hiện cùng với các đối tác
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {projects.map((project, index) => {
-<<<<<<< HEAD
-            // Fallbacks
-            const bgColor = project.background_color || defaultBg;
-            const imageUrl = project.image_url || defaultImage;
-            return (
-              <div
-                key={project.id}
-                className={`group relative overflow-hidden rounded-2xl ${bgColor}`}
-              >
-                <div className="relative w-full h-full cursor-pointer">
-                  <img
-                    src={imageUrl}
-                    alt={project.name}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
-                </div>
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent pointer-events-none">
-                  <div className="absolute bottom-0 left-0 p-8">
-                    <h3 className="text-2xl font-bold text-white">{project.name}</h3>
-                    <p className="text-slate-300 mt-1">{project.description}</p>
-=======
             const currentIndex = currentImageIndex[index] || 0;
             const img = project.images[currentIndex] || FALLBACK_IMAGE;
 
@@ -222,80 +147,60 @@ export const PartnerProjectsSection = () => {
                   {project.images.length > 1 && (
                     <>
                       <button
+                        type="button"
+                        aria-label="Previous image"
                         onClick={(e) => {
                           e.stopPropagation();
                           handleSwipe(index, "prev");
                         }}
                         className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/30 hover:bg-black/50 text-white rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                       >
-                        <svg
-                          className="w-5 h-5"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M15 19l-7-7 7-7"
-                          />
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                         </svg>
                       </button>
                       <button
+                        type="button"
+                        aria-label="Next image"
                         onClick={(e) => {
                           e.stopPropagation();
                           handleSwipe(index, "next");
                         }}
                         className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/30 hover:bg-black/50 text-white rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                       >
-                        <svg
-                          className="w-5 h-5"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M9 5l7 7-7 7"
-                          />
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                         </svg>
                       </button>
                     </>
                   )}
+
+                  {/* Image indicators */}
+                  {project.images.length > 1 && (
+                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-2">
+                      {project.images.map((_, imgIndex) => (
+                        <button
+                          type="button"
+                          aria-label={`Go to image ${imgIndex + 1}`}
+                          key={imgIndex}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setCurrentImageIndex(prev => ({ ...prev, [index]: imgIndex }));
+                          }}
+                          className={`w-2 h-2 rounded-full transition-colors ${
+                            imgIndex === currentIndex ? 'bg-white' : 'bg-white/50'
+                          }`}
+                        />
+                      ))}
+                    </div>
+                  )}
                 </div>
 
+                {/* Project info overlay */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent pointer-events-none">
                   <div className="absolute bottom-0 left-0 p-8">
-                    <h3 className="text-2xl font-bold text-white">
-                      {project.title}
-                    </h3>
-                    {project.description && (
-                      <p className="text-slate-300 mt-1">{project.description}</p>
-                    )}
-                    {project.images.length > 1 && (
-                      <div className="flex mt-3 space-x-2">
-                        {project.images.map((_, imgIndex) => (
-                          <button
-                            key={imgIndex}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setCurrentImageIndex((prev) => ({
-                                ...prev,
-                                [index]: imgIndex,
-                              }));
-                            }}
-                            className={`w-2 h-2 rounded-full transition-colors duration-200 pointer-events-auto ${imgIndex === currentIndex
-                                ? "bg-white"
-                                : "bg-white/50 hover:bg-white/75"
-                              }`}
-                          />
-                        ))}
-                      </div>
-                    )}
->>>>>>> 16c4fa0d6a85c2ffc92f2d579479079f1de599c8
+                    <h3 className="text-2xl font-bold text-white">{project.title}</h3>
+                    <p className="text-slate-300 mt-1">{project.description}</p>
                   </div>
                 </div>
               </div>
@@ -303,13 +208,14 @@ export const PartnerProjectsSection = () => {
           })}
         </div>
 
-        {/* Nút refetch để test publish/unpublish */}
-        <div className="text-center mt-6">
-          <button
+        {/* Refetch button for testing */}
+        <div className="text-center mt-8">
+          <button 
+            type="button"
             onClick={refetch}
-            className="px-4 py-2 rounded-lg border hover:bg-gray-50"
+            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
           >
-            Làm mới
+            Làm mới dữ liệu
           </button>
         </div>
       </div>
