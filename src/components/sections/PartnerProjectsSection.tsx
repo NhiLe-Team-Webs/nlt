@@ -1,11 +1,6 @@
-<<<<<<< HEAD
-import { useState, useRef, useEffect } from 'react';
-import { usePartnerProjects } from '../../hooks/usePartnerProjects';
-=======
 // src/components/sections/PartnerProjectsSection.tsx
 import { useState, useRef, useEffect } from "react";
 import { usePartnerProjects } from "@/hooks/use-partner-projects";
->>>>>>> 16c4fa0d6a85c2ffc92f2d579479079f1de599c8
 
 // Fallbacks
 const FALLBACK_IMAGE = "/images/placeholder-project.svg"; // nhớ có file này trong public/images
@@ -19,16 +14,8 @@ export const PartnerProjectsSection = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState<IndexMap>({});
   const sectionRef = useRef<HTMLElement>(null);
 
-<<<<<<< HEAD
-  const { projects, loading, error } = usePartnerProjects();
-
-  // Fallbacks
-  const defaultBg = 'bg-slate-700';
-  const defaultImage = nsaImage; // Hoặc chọn ảnh mặc định phù hợp
-=======
   // hook lấy dữ liệu từ API (đã lọc is_published=true & sort display_order trong service)
   const { data, isLoading, isError, error, refetch } = usePartnerProjects();
->>>>>>> 16c4fa0d6a85c2ffc92f2d579479079f1de599c8
 
   // OBSERVER: hiệu ứng xuất hiện
   useEffect(() => {
@@ -41,7 +28,6 @@ export const PartnerProjectsSection = () => {
   }, []);
 
   // Chuẩn hoá data từ API -> cấu trúc giống projects cũ
-  // API hiện trả 1 ảnh (image_url). Nếu sau này backend cho nhiều ảnh, chỉ cần map vào mảng images.
   const projects = (data ?? []).map((p) => ({
     title: p.name,
     description: p.description ?? "",
@@ -49,9 +35,6 @@ export const PartnerProjectsSection = () => {
     span: "md:col-span-2" as const,
     bg: p.background_color || FALLBACK_BG,
   }));
-
-  // Nếu chưa có dữ liệu API, vẫn cho hiển thị mock = rỗng -> sẽ ra empty state
-  // (Không import ảnh tĩnh nữa)
 
   // ====== Swipe logic (giữ nguyên tinh thần code cũ) ======
   const handleSwipe = (projectIndex: number, direction: "next" | "prev") => {
@@ -62,13 +45,12 @@ export const PartnerProjectsSection = () => {
         direction === "next"
           ? (currentIndex + 1) % imagesLength
           : currentIndex === 0
-            ? imagesLength - 1
-            : currentIndex - 1;
+          ? imagesLength - 1
+          : currentIndex - 1;
       return { ...prev, [projectIndex]: newIndex };
     });
   };
 
-  // Lưu điểm chạm theo projectIndex để không đụng vào dataset/target
   const touchStartXRef = useRef<Record<number, number>>({});
 
   const handleTouchStart = (
@@ -158,8 +140,9 @@ export const PartnerProjectsSection = () => {
     <section
       id="partner-projects-page"
       ref={sectionRef}
-      className={`py-16 md:py-24 bg-white transition-all duration-700 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-5"
-        }`}
+      className={`py-16 md:py-24 bg-white transition-all duration-700 ${
+        isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-5"
+      }`}
     >
       <div className="container mx-auto px-6">
         <div className="text-center max-w-3xl mx-auto mb-12 md:mb-16">
@@ -173,27 +156,6 @@ export const PartnerProjectsSection = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {projects.map((project, index) => {
-<<<<<<< HEAD
-            // Fallbacks
-            const bgColor = project.background_color || defaultBg;
-            const imageUrl = project.image_url || defaultImage;
-            return (
-              <div
-                key={project.id}
-                className={`group relative overflow-hidden rounded-2xl ${bgColor}`}
-              >
-                <div className="relative w-full h-full cursor-pointer">
-                  <img
-                    src={imageUrl}
-                    alt={project.name}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
-                </div>
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent pointer-events-none">
-                  <div className="absolute bottom-0 left-0 p-8">
-                    <h3 className="text-2xl font-bold text-white">{project.name}</h3>
-                    <p className="text-slate-300 mt-1">{project.description}</p>
-=======
             const currentIndex = currentImageIndex[index] || 0;
             const img = project.images[currentIndex] || FALLBACK_IMAGE;
 
@@ -218,7 +180,6 @@ export const PartnerProjectsSection = () => {
                     loading="lazy"
                   />
 
-                  {/* Navigation arrows for desktop */}
                   {project.images.length > 1 && (
                     <>
                       <button
@@ -287,15 +248,15 @@ export const PartnerProjectsSection = () => {
                                 [index]: imgIndex,
                               }));
                             }}
-                            className={`w-2 h-2 rounded-full transition-colors duration-200 pointer-events-auto ${imgIndex === currentIndex
+                            className={`w-2 h-2 rounded-full transition-colors duration-200 pointer-events-auto ${
+                              imgIndex === currentIndex
                                 ? "bg-white"
                                 : "bg-white/50 hover:bg-white/75"
-                              }`}
+                            }`}
                           />
                         ))}
                       </div>
                     )}
->>>>>>> 16c4fa0d6a85c2ffc92f2d579479079f1de599c8
                   </div>
                 </div>
               </div>
@@ -303,7 +264,6 @@ export const PartnerProjectsSection = () => {
           })}
         </div>
 
-        {/* Nút refetch để test publish/unpublish */}
         <div className="text-center mt-6">
           <button
             onClick={refetch}
