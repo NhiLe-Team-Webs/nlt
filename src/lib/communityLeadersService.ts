@@ -1,6 +1,36 @@
 import { supabase } from '../lib/supabaseClient'
 import { uploadAvatar } from '../lib/uploadAvatar'
 
+// Fetch published leaders ordered by display_order
+export const getPublishedLeaders = async () => {
+  try {
+    // Try with the new columns first
+    let { data, error } = await supabase
+      .from('community_leaders')
+      .select('*')
+      .eq('is_published', true)
+      .order('display_order', { ascending: true })
+
+    // If is_published column doesn't exist, fallback to simpler query
+    if (error && error.message.includes('is_published')) {
+      console.log('is_published column not found, falling back to simple query...')
+      const fallbackResult = await supabase
+        .from('community_leaders')
+        .select('*')
+        .order('id', { ascending: true })
+      
+      data = fallbackResult.data
+      error = fallbackResult.error
+    }
+
+    if (error) throw error
+    return data || []
+  } catch (err) {
+    console.error('Error fetching published leaders:', err)
+    throw err
+  }
+}
+
 // insert
 export const addLeader = async (leader: {
   name: string
