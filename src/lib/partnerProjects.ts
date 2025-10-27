@@ -4,6 +4,21 @@ import type { PartnerProject } from "@/types/partner";
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
+type PartnerProjectsRestRow = {
+    id: number;
+    slug?: string | null;
+    name?: string | null;
+    partner?: string | null;
+    subtitle?: string | null;
+    description?: string | null;
+    image_url?: string | null;
+    background_color?: string | null;
+    display_order?: number | null;
+    is_published?: boolean;
+    published_at?: string | null;
+    [key: string]: unknown;
+};
+
 // Chuẩn hóa màu để fallback an toàn
 function normalizeColor(input?: string | null, fallback = "#F5F5F7") {
     if (!input) return fallback;
@@ -95,10 +110,16 @@ export async function fetchPartnerProjects(): Promise<PartnerProject[]> {
         }
     }
 
-    const raw = (await res.json()) as any[];
+    const raw = (await res.json()) as PartnerProjectsRestRow[];
 
     return raw.map((p) => ({
         ...p,
+        slug: typeof p?.slug === "string" ? p.slug.trim() : p?.slug,
+        name: typeof p?.name === "string" ? p.name.trim() : p?.name,
+        partner: typeof p?.partner === "string" ? p.partner.trim() : p?.partner,
+        subtitle: typeof p?.subtitle === "string" ? p.subtitle.trim() : p?.subtitle,
+        description:
+            typeof p?.description === "string" ? p.description.trim() : p?.description,
         background_color: normalizeColor(p?.background_color),
         image_url: p?.image_url?.trim() || null,
     })) as PartnerProject[];
