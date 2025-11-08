@@ -229,10 +229,10 @@ export const RegistrationFormSection = () => {
                     <SelectValue placeholder="Vui lòng chọn" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="5-10">5 - 10 giờ / tuần</SelectItem>
-                    <SelectItem value="10-15">10 - 15 giờ / tuần</SelectItem>
-                    <SelectItem value="15-20">15 - 20 giờ / tuần</SelectItem>
-                    <SelectItem value="20+">Hơn 20 giờ / tuần</SelectItem>
+                    <SelectItem value="3">3 giờ / ngày</SelectItem>
+                    <SelectItem value="4">4 giờ / ngày</SelectItem>
+                    <SelectItem value="5">5 giờ / ngày</SelectItem>
+                    <SelectItem value="6">6 giờ / ngày</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
