@@ -102,13 +102,66 @@ export const submitForm = async (formData: FormData) => {
 
     const data = await response.json();
 
+    // Log toàn bộ response từ App Script để debug
+    console.log('🔍 App Script Response:', JSON.stringify(data, null, 2));
+    console.log('🔍 Kiểu dữ liệu của data.row_number:', typeof data.row_number, 'giá trị:', data.row_number);
+    console.log('🔍 Kiểu dữ liệu của data.rowNumber:', typeof data.rowNumber, 'giá trị:', data.rowNumber);
+    console.log('🔍 Kiểu dữ liệu của data.row:', typeof data.row, 'giá trị:', data.row);
+
     if (data.result === 'success') {
       console.log('✅ Form đã được gửi thành công đến App Script');
       
       // Lấy row number từ response của App Script (nếu có)
-      const rowNumber = data.rowNumber || data.row || null;
+      // Đảm bảo row number là một con số, không phải mảng
+      let rowNumber: number | null = null;
+      
+      // Ưu tiên row_number (từ App Script)
+      if (data.row_number !== undefined && data.row_number !== null) {
+        // Nếu là mảng, lấy phần tử đầu tiên
+        if (Array.isArray(data.row_number)) {
+          rowNumber = typeof data.row_number[0] === 'number' ? data.row_number[0] : null;
+          console.log('🔍 data.row_number là mảng, phần tử đầu tiên:', data.row_number[0]);
+        } else if (typeof data.row_number === 'number') {
+          rowNumber = data.row_number;
+          console.log('🔍 data.row_number là số:', data.row_number);
+        } else if (typeof data.row_number === 'string') {
+          // Chuyển đổi string sang number nếu có thể
+          const parsed = parseInt(data.row_number, 10);
+          rowNumber = isNaN(parsed) ? null : parsed;
+          console.log('🔍 data.row_number là string, sau khi parse:', parsed);
+        }
+      } else if (data.rowNumber !== undefined && data.rowNumber !== null) {
+        // Fallback cho rowNumber (camelCase)
+        if (Array.isArray(data.rowNumber)) {
+          rowNumber = typeof data.rowNumber[0] === 'number' ? data.rowNumber[0] : null;
+          console.log('🔍 data.rowNumber là mảng, phần tử đầu tiên:', data.rowNumber[0]);
+        } else if (typeof data.rowNumber === 'number') {
+          rowNumber = data.rowNumber;
+          console.log('🔍 data.rowNumber là số:', data.rowNumber);
+        } else if (typeof data.rowNumber === 'string') {
+          const parsed = parseInt(data.rowNumber, 10);
+          rowNumber = isNaN(parsed) ? null : parsed;
+          console.log('🔍 data.rowNumber là string, sau khi parse:', parsed);
+        }
+      } else if (data.row !== undefined && data.row !== null) {
+        // Fallback cho row
+        if (Array.isArray(data.row)) {
+          rowNumber = typeof data.row[0] === 'number' ? data.row[0] : null;
+          console.log('🔍 data.row là mảng, phần tử đầu tiên:', data.row[0]);
+        } else if (typeof data.row === 'number') {
+          rowNumber = data.row;
+          console.log('🔍 data.row là số:', data.row);
+        } else if (typeof data.row === 'string') {
+          const parsed = parseInt(data.row, 10);
+          rowNumber = isNaN(parsed) ? null : parsed;
+          console.log('🔍 data.row là string, sau khi parse:', parsed);
+        }
+      }
+      
       if (rowNumber) {
         console.log(`📊 Dữ liệu được lưu tại dòng: ${rowNumber}`);
+      } else {
+        console.log('⚠️ Không thể xác định row number từ App Script response');
       }
       
       // Gửi đến webhook sau khi App Script thành công
