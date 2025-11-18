@@ -25,7 +25,9 @@ const sendToWebhook = async (formData: FormData) => {
   }
 
   console.log('🚀 Bắt đầu gửi dữ liệu đến webhook...');
-  console.log('📤 Webhook URL:', WEBHOOK_URL);
+  // Ẩn URL để bảo mật, chỉ hiển thị domain
+  const webhookDomain = WEBHOOK_URL ? new URL(WEBHOOK_URL).hostname : 'unknown';
+  console.log(`📤 Webhook Domain: ${webhookDomain}`);
   console.log('📋 Dữ liệu gửi đi:', {
     event: 'form_submission',
     data: {
