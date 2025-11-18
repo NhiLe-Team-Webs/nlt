@@ -15,6 +15,73 @@ interface FormData {
 
 // Get the API URL from the environment variable
 const SCRIPT_URL = import.meta.env.VITE_APPS_SCRIPT_URL;
+const WEBHOOK_URL = import.meta.env.VITE_WEBHOOK_URL;
+
+// Hàm gửi dữ liệu đến webhook
+const sendToWebhook = async (formData: FormData) => {
+  if (!WEBHOOK_URL) {
+    console.log('⚠️ Webhook URL không được cấu hình, bỏ qua gửi webhook');
+    return { success: true };
+  }
+
+  console.log('🚀 Bắt đầu gửi dữ liệu đến webhook...');
+  console.log('📤 Webhook URL:', WEBHOOK_URL);
+  console.log('📋 Dữ liệu gửi đi:', {
+    event: 'form_submission',
+    data: {
+      name: formData.name,
+      email: formData.email,
+      telegram: formData.telegram,
+      source: formData.source
+    },
+    timestamp: new Date().toISOString()
+  });
+
+  try {
+    const response = await fetch(WEBHOOK_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        event: 'form_submission',
+        data: formData,
+        timestamp: new Date().toISOString(),
+      }),
+    });
+
+    if (!response.ok) {
+      console.error(`❌ Webhook response status: ${response.status}`);
+      throw new Error(`Webhook response status: ${response.status}`);
+    }
+
+    // Xử lý response - có thể không phải là JSON
+    let responseData;
+    const contentType = response.headers.get('content-type');
+    
+    try {
+      if (contentType && contentType.includes('application/json')) {
+        responseData = await response.json();
+      } else {
+        // Nếu không phải JSON, lấy text response
+        const responseText = await response.text();
+        console.log('📄 Response text:', responseText);
+        responseData = { message: responseText };
+      }
+    } catch (parseError) {
+      console.warn('⚠️ Không thể parse response:', parseError);
+      responseData = { message: 'Response received but could not be parsed' };
+    }
+    
+    console.log('✅ Webhook gửi thành công!');
+    console.log('📥 Phản hồi từ webhook:', responseData);
+
+    return { success: true };
+  } catch (error) {
+    console.error('❌ Lỗi khi gửi đến webhook:', error);
+    return { success: false, error: 'Webhook failed' };
+  }
+};
 
 export const submitForm = async (formData: FormData) => {
   try {
@@ -32,9 +99,21 @@ export const submitForm = async (formData: FormData) => {
     const data = await response.json();
 
     if (data.result === 'success') {
+      console.log('✅ Form đã được gửi thành công đến App Script');
+      
+      // Gửi đến webhook sau khi App Script thành công
+      const webhookResult = await sendToWebhook(formData);
+      
+      if (!webhookResult.success) {
+        console.error('⚠️ Webhook failed but form was submitted to App Script:', webhookResult.error);
+        // Vẫn trả về success vì form đã được gửi đến App Script thành công
+      } else {
+        console.log('🎉 Toàn bộ quy trình hoàn tất: App Script + Webhook');
+      }
+      
       return { success: true };
     } else {
-      console.error('Submission failed:', data.error);
+      console.error('❌ Submission failed:', data.error);
       return { success: false, error: 'Submission failed' };
     }
   } catch (error) {

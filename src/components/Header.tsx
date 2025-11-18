@@ -32,7 +32,30 @@ export const Header = ({ onNavigate }: HeaderProps) => {
     if (href) {
       window.location.href = href;
     } else {
-      navigate(target);
+      // Kiểm tra nếu target chứa hash để scroll đến phần tử
+      if (target.includes('#')) {
+        const [path, hash] = target.split('#');
+        
+        // Nếu đang ở trang home, chỉ cần scroll
+        if (window.location.pathname === '/' || window.location.pathname === '/home') {
+          const element = document.getElementById(hash);
+          if (element) {
+            element.scrollIntoView({ behavior: 'smooth' });
+          }
+        } else {
+          // Nếu không ở trang home, navigate đến trang home với hash
+          navigate(target);
+          // Chờ một chút rồi scroll
+          setTimeout(() => {
+            const element = document.getElementById(hash);
+            if (element) {
+              element.scrollIntoView({ behavior: 'smooth' });
+            }
+          }, 100);
+        }
+      } else {
+        navigate(target);
+      }
     }
     setIsMobileMenuOpen(false);
     setOpenDropdown(null);
