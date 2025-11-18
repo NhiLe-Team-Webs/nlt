@@ -18,7 +18,7 @@ const SCRIPT_URL = import.meta.env.VITE_APPS_SCRIPT_URL;
 const WEBHOOK_URL = import.meta.env.VITE_WEBHOOK_URL;
 
 // Hàm gửi dữ liệu đến webhook
-const sendToWebhook = async (formData: FormData) => {
+const sendToWebhook = async (formData: FormData, rowNumber?: number | null) => {
   if (!WEBHOOK_URL) {
     console.log('⚠️ Webhook URL không được cấu hình, bỏ qua gửi webhook');
     return { success: true };
@@ -36,6 +36,7 @@ const sendToWebhook = async (formData: FormData) => {
       telegram: formData.telegram,
       source: formData.source
     },
+    rowNumber: rowNumber,
     timestamp: new Date().toISOString()
   });
 
@@ -48,6 +49,7 @@ const sendToWebhook = async (formData: FormData) => {
       body: JSON.stringify({
         event: 'form_submission',
         data: formData,
+        rowNumber: rowNumber,
         timestamp: new Date().toISOString(),
       }),
     });
@@ -103,8 +105,14 @@ export const submitForm = async (formData: FormData) => {
     if (data.result === 'success') {
       console.log('✅ Form đã được gửi thành công đến App Script');
       
+      // Lấy row number từ response của App Script (nếu có)
+      const rowNumber = data.rowNumber || data.row || null;
+      if (rowNumber) {
+        console.log(`📊 Dữ liệu được lưu tại dòng: ${rowNumber}`);
+      }
+      
       // Gửi đến webhook sau khi App Script thành công
-      const webhookResult = await sendToWebhook(formData);
+      const webhookResult = await sendToWebhook(formData, rowNumber);
       
       if (!webhookResult.success) {
         console.error('⚠️ Webhook failed but form was submitted to App Script:', webhookResult.error);

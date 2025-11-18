@@ -43,9 +43,15 @@ Webhook sẽ nhận dữ liệu với định dạng JSON:
     "values_commitment": true,
     "privacy_commitment": true
   },
+  "rowNumber": 15,
   "timestamp": "2023-11-18T08:45:00.000Z"
 }
 ```
+
+**Lưu ý về rowNumber:**
+- `rowNumber` là số dòng mà App Script đã lưu dữ liệu vào Google Sheets
+- Giá trị này giúp bạn xác định chính xác vị trí của dữ liệu trong spreadsheet
+- Nếu App Script không trả về row number, giá trị này sẽ là `null`
 
 ## Ví dụ triển khai webhook
 
