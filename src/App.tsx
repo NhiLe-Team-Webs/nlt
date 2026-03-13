@@ -6,6 +6,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useParams, useNavigate } from "react-router-dom";
+import { Agentation } from "agentation";
 
 
 // Components
@@ -25,6 +26,9 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { ProjectCommunityDetailSection } from "./components/sections/ProjectCommunityDetailSection";
 import { achievementCategories } from "./data/achievements";
+import Dashboard from "./pages/Dashboard.tsx";
+import SelectRole from "./pages/SelectRole";
+import VerifyCCCD from "./pages/VerifyCCCD";
 
 
 const queryClient = new QueryClient();
@@ -107,6 +111,12 @@ const App = () => (
           <Route path="/faq" element={<FaqPage />} />
           <Route path="/privacy-statement" element={<PrivacyStatement />} />
           <Route path="/terms-of-use" element={<TermsOfUse />} />
+
+          {/* New Dashboard Route */}
+          <Route path="/select-role" element={<SelectRole />} />
+          <Route path="/verify-cccd" element={<VerifyCCCD />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

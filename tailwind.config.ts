@@ -91,22 +91,7 @@ export default {
 				'accordion-up': 'accordion-up 0.2s ease-out'
 			},
 			fontFamily: {
-				sans: [
-					'"Be Vietnam Pro"',
-					'ui-sans-serif',
-					'system-ui',
-					'-apple-system',
-					'"Segoe UI"',
-					'Roboto',
-					'Inter',
-					'"Helvetica Neue"',
-					'Arial',
-					'"Noto Sans"',
-					'sans-serif',
-					'"Apple Color Emoji"',
-					'"Segoe UI Emoji"',
-					'"Segoe UI Symbol"'
-				]
+				sans: ['"Be Vietnam Pro"', "sans-serif"]
 			}
 		}
 	},

@@ -1,8 +1,27 @@
-import { createClient } from '@supabase/supabase-js'
+// MOCK SUPABASE CLIENT - DISABLING SUPABASE TEMPORARILY
+// This mock prevents errors when supabase is not configured or the library is missing.
 
-// 👇 Lấy từ file .env của bạn
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string
+const mockResult = {
+  data: [],
+  error: null,
+  count: 0,
+  status: 200,
+  statusText: "OK",
+};
 
-// Khởi tạo client
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+const mockHandler = {
+  get: function(target: any, prop: string): any {
+    if (prop === 'from') {
+      return () => new Proxy({}, mockHandler);
+    }
+    if (['select', 'insert', 'update', 'delete', 'upsert', 'eq', 'order', 'single', 'limit', 'range', 'match', 'or', 'filter'].includes(prop)) {
+      return () => new Proxy(mockResult, mockHandler);
+    }
+    if (prop === 'then') {
+      return (cb: any) => Promise.resolve(cb(mockResult));
+    }
+    return target[prop] || (() => new Proxy(mockResult, mockHandler));
+  }
+};
+
+export const supabase = new Proxy({}, mockHandler) as any;

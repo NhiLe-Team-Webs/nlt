@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { supabase } from '../lib/supabaseClient';
+import { MOCK_PARTNER_PROJECTS } from '../data/mockData';
 
 export interface PartnerProject {
   id: number;
@@ -9,7 +9,6 @@ export interface PartnerProject {
   image_url?: string;
   display_order: number;
   is_published: boolean;
-  // ...other fields
 }
 
 export function usePartnerProjects() {
@@ -21,18 +20,12 @@ export function usePartnerProjects() {
     async function fetchProjects() {
       setLoading(true);
       setError(null);
-      const { data, error } = await supabase
-        .from('partner_projects')
-        .select('*')
-        .eq('is_published', true)
-        .order('display_order', { ascending: true });
-      if (error) {
-        setError(error.message);
-        setProjects([]);
-      } else {
-        setProjects(data || []);
-      }
-      setLoading(false);
+      
+      // Simulate API call
+      setTimeout(() => {
+        setProjects(MOCK_PARTNER_PROJECTS);
+        setLoading(false);
+      }, 500);
     }
     fetchProjects();
   }, []);
