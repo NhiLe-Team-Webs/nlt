@@ -353,25 +353,6 @@ const Dashboard = () => {
       desc: "Kiểm tra email cá nhân thường xuyên để nhận kết quả nhé.",
       icon: <Video className="w-6 h-6" />,
       status: currentStep === 4 ? "active" : currentStep > 4 ? "completed" : "locked",
-      customContent: (
-        <div className="mt-6 space-y-4">
-          <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100 rounded-2xl p-6 flex gap-4 items-start">
-            <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center shrink-0 shadow-md shadow-blue-200">
-              <Video size={18} className="text-white" />
-            </div>
-            <div className="space-y-1">
-              <p className="font-black text-[#1D1D1F] text-base leading-snug">Kết quả phỏng vấn sắp tới rồi!</p>
-              <p className="text-sm font-medium text-gray-500 leading-relaxed">
-                Sau khi phỏng vấn với HR, bạn kiểm tra email cá nhân thường xuyên để nhận kết quả nhé.
-              </p>
-            </div>
-          </div>
-          <button onClick={() => { setCurrentStep(5); window.scrollTo({ top: 0, behavior: "smooth" }); }}
-            className="bg-gradient-to-r from-[#2563EB] to-[#3B82F6] text-white px-10 py-4 rounded-2xl font-black text-sm shadow-xl shadow-blue-600/30 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2 w-full sm:w-auto">
-            Tiếp tục <ArrowRight size={16} />
-          </button>
-        </div>
-      ),
     },
     {
       id: 5,
