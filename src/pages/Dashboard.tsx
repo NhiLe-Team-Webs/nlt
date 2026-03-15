@@ -15,7 +15,6 @@ import {
   Zap,
   RotateCcw,
   XCircle,
-  Mail,
   Send,
 } from "lucide-react";
 
@@ -93,6 +92,7 @@ const Dashboard = () => {
   const [selectedTime, setSelectedTime] = useState("");
   const [selectedDate, setSelectedDate] = useState<number | null>(null);
   const [showScheduleConfirm, setShowScheduleConfirm] = useState(false);
+  const [isImageFullscreen, setIsImageFullscreen] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -218,8 +218,8 @@ const Dashboard = () => {
           <p className="text-sm font-bold text-gray-600 leading-relaxed">
             Hãy dành 5 phút để đọc và tìm hiểu bài test văn hoá của NhiLe Team nhé.
           </p>
-          <div className="rounded-2xl overflow-hidden border border-gray-100 shadow-sm">
-            <img src="https://lh3.googleusercontent.com/d/1dZvgi4ZLZoTD1-hGLeHStSO4v3J2CYzV" alt="Văn hoá NhiLe Team" className="w-full object-cover max-h-72" />
+          <div className="rounded-2xl overflow-hidden border border-gray-100 shadow-sm cursor-zoom-in" onClick={() => setIsImageFullscreen(true)}>
+            <img src="https://lh3.googleusercontent.com/d/1dZvgi4ZLZoTD1-hGLeHStSO4v3J2CYzV" alt="Văn hoá NhiLe Team" className="w-full object-cover max-h-72 hover:scale-105 transition-transform duration-300" />
           </div>
           <button onClick={() => openQuiz("culture")} className="bg-blue-600 text-white px-8 py-3.5 rounded-2xl font-black text-sm shadow-lg shadow-blue-600/20 hover:bg-blue-700 active:scale-95 transition-all flex items-center gap-2 w-full sm:w-auto justify-center">
             Làm bài test văn hoá <ArrowRight size={16} />
@@ -251,7 +251,6 @@ const Dashboard = () => {
       icon: <Calendar className="w-6 h-6" />,
       status: currentStep === 3 ? "active" : currentStep > 3 ? "completed" : "locked",
       customContent: (() => {
-        const VN_DAYS = ["Chủ Nhật", "Thứ Hai", "Thứ Ba", "Thứ Tư", "Thứ Năm", "Thứ Sáu", "Thứ Bảy"];
         // March 2026: day 1 = Sunday → offset = 0 empty cells before "1"
         const firstDayOfWeek = new Date(2026, 2, 1).getDay(); // 0 = Sun
         // Reorder so Monday=0 ... Sunday=6
@@ -259,41 +258,19 @@ const Dashboard = () => {
         const isAvailableDate = (d: number) => [2, 3, 5].includes(new Date(2026, 2, d).getDay()); // Tue=2,Wed=3,Fri=5
 
         if (showScheduleConfirm && selectedDate && selectedTime) {
-          const dayName = VN_DAYS[new Date(2026, 2, selectedDate).getDay()];
-          const formattedDate = `${String(selectedDate).padStart(2, "0")}/03/2026`;
           return (
-            <div className="mt-6 space-y-4 transition-all duration-300">
-              <div className="flex items-center gap-2 text-green-600 font-black text-sm">
-                <CheckCircle2 size={18} /> Email xác nhận đã được gửi!
-              </div>
-              {/* Email preview card */}
-              <div className="border border-gray-200 rounded-2xl overflow-hidden shadow-sm text-left">
-                {/* Email header */}
-                <div className="bg-[#1a73e8] px-5 py-3 flex items-center gap-3">
-                  <Mail size={18} className="text-white" />
-                  <span className="text-white font-black text-sm">Xác nhận lịch phỏng vấn</span>
+            <div className="mt-6 space-y-5 transition-all duration-300">
+              <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100 rounded-2xl p-6 flex gap-4 items-start">
+                <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center shrink-0 shadow-md shadow-blue-200">
+                  <CheckCircle2 size={20} className="text-white" />
                 </div>
-                <div className="px-5 py-4 space-y-1 bg-gray-50 border-b border-gray-100">
-                  <p className="text-[11px] text-gray-400 font-bold">Từ: <span className="text-gray-600">hr@nhileteam.com</span></p>
-                  <p className="text-[11px] text-gray-400 font-bold">Đến: <span className="text-gray-600">email của bạn</span></p>
-                </div>
-                {/* Email body */}
-                <div className="px-5 py-5 space-y-3 text-sm text-gray-700 leading-relaxed bg-white">
-                  <p>Chào bạn,</p>
-                  <p>Lịch phỏng vấn của bạn cùng với HR NhiLe Team đã được đặt lịch vào <strong>{dayName}, ngày {formattedDate}</strong> vào lúc <strong>{selectedTime} giờ (+GMT 7)</strong>.</p>
-                  <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 space-y-1">
-                    <p className="font-black text-[#1D1D1F] text-xs uppercase tracking-wider mb-2">Thông tin phòng Zoom</p>
-                    <p>• <strong>Meeting ID:</strong> 915 0873 2817</p>
-                    <p>• <strong>Passcode:</strong> 818527</p>
-                  </div>
-                  <div className="space-y-1">
-                    <p className="font-black text-[#1D1D1F]">📌 Trước khi vào phỏng vấn:</p>
-                    <p>• Mở Camera</p>
-                    <p>• Mở Mic</p>
-                    <p>• Chuẩn bị mạng ổn định (3G/Wifi)</p>
-                    <p>• Tham gia phòng zoom trước 10 phút.</p>
-                  </div>
-                  <p className="text-gray-500">Trân trọng,<br /><strong>HR NhiLe Team.</strong></p>
+                <div className="space-y-1">
+                  <p className="font-black text-[#1D1D1F] text-base leading-snug">
+                    Lịch phỏng vấn của bạn đã được xác nhận.
+                  </p>
+                  <p className="text-sm font-medium text-gray-500 leading-relaxed">
+                    Bạn kiểm tra email để nhận được đầy đủ thông tin hơn nhé.
+                  </p>
                 </div>
               </div>
               <button
@@ -625,10 +602,7 @@ const Dashboard = () => {
                               <div className="flex items-center gap-3 mb-1">
                                 <span className="text-xl">{TEAM_INFO[team].emoji}</span>
                                 <span className="font-black text-[#1D1D1F] text-sm">{TEAM_INFO[team].label}</span>
-                                <span className="ml-auto text-xs font-black text-indigo-600 bg-indigo-100 px-2 py-0.5 rounded-lg">
-                                  {finalRoleScoresRef.current[team]} điểm
-                                </span>
-                              </div>
+                                              </div>
                               <p className="text-xs text-gray-500 font-medium pl-9">{TEAM_INFO[team].desc}</p>
                             </div>
                           ))}
@@ -646,6 +620,24 @@ const Dashboard = () => {
               </div>
             )}
           </div>
+        </div>
+      )}
+
+      {/* Fullscreen image lightbox */}
+      {isImageFullscreen && (
+        <div
+          className="fixed inset-0 z-[200] bg-black/90 flex items-center justify-center p-4 animate-in fade-in duration-200"
+          onClick={() => setIsImageFullscreen(false)}
+        >
+          <button className="absolute top-4 right-4 text-white/70 hover:text-white transition-colors z-10">
+            <X size={32} />
+          </button>
+          <img
+            src="https://lh3.googleusercontent.com/d/1dZvgi4ZLZoTD1-hGLeHStSO4v3J2CYzV"
+            alt="Văn hoá NhiLe Team"
+            className="max-w-full max-h-full object-contain rounded-2xl animate-in zoom-in-95 duration-200"
+            onClick={(e) => { e.stopPropagation(); }}
+          />
         </div>
       )}
 
