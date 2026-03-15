@@ -52,6 +52,18 @@ function calcEssayScore(answers: string[]): number {
   return Math.max(0, Math.min(MAX_ESSAY, good * 5 - bad * 5));
 }
 
+// ─── LocalStorage ─────────────────────────────────────────────────────────────
+
+const LS = {
+  PHASE: "nlt_rtq_phase",
+  MC_IDX: "nlt_rtq_mc_idx",
+  MC_ANS: "nlt_rtq_mc_ans",
+  ESSAY_ANS: "nlt_rtq_essay_ans",
+  RESULT: "nlt_rtq_result",
+} as const;
+
+const clearQuizStorage = () => Object.values(LS).forEach(k => localStorage.removeItem(k));
+
 // ─── Component ────────────────────────────────────────────────────────────────
 
 type Phase = "mc" | "essay" | "result";
@@ -59,13 +71,20 @@ type Phase = "mc" | "essay" | "result";
 interface Props { isOpen: boolean; onPass: () => void; onFail: () => void; onClose: () => void; }
 
 export default function ReturnMemberQuizModal({ isOpen, onPass, onFail, onClose }: Props) {
-  const [phase, setPhase] = useState<Phase>("mc");
-  const [mcIndex, setMcIndex] = useState(0);
-  const [mcAnswers, setMcAnswers] = useState<number[]>([]);
-  const [essayAnswers, setEssayAnswers] = useState<string[]>(Array(6).fill(""));
+  const [phase, setPhase] = useState<Phase>(() => (localStorage.getItem(LS.PHASE) as Phase) || "mc");
+  const [mcIndex, setMcIndex] = useState(() => parseInt(localStorage.getItem(LS.MC_IDX) || "0"));
+  const [mcAnswers, setMcAnswers] = useState<number[]>(() => { try { return JSON.parse(localStorage.getItem(LS.MC_ANS) || "[]"); } catch { return []; } });
+  const [essayAnswers, setEssayAnswers] = useState<string[]>(() => { try { return JSON.parse(localStorage.getItem(LS.ESSAY_ANS) || "null") || Array(6).fill(""); } catch { return Array(6).fill(""); } });
   const [timer, setTimer] = useState(TIMER_SECONDS);
-  const [result, setResult] = useState<{ mc: number; essay: number; total: number; passed: boolean } | null>(null);
+  const [result, setResult] = useState<{ mc: number; essay: number; total: number; passed: boolean } | null>(() => { try { return JSON.parse(localStorage.getItem(LS.RESULT) || "null"); } catch { return null; } });
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Save state to localStorage
+  useEffect(() => { localStorage.setItem(LS.PHASE, phase); }, [phase]);
+  useEffect(() => { localStorage.setItem(LS.MC_IDX, mcIndex.toString()); }, [mcIndex]);
+  useEffect(() => { localStorage.setItem(LS.MC_ANS, JSON.stringify(mcAnswers)); }, [mcAnswers]);
+  useEffect(() => { localStorage.setItem(LS.ESSAY_ANS, JSON.stringify(essayAnswers)); }, [essayAnswers]);
+  useEffect(() => { if (result) localStorage.setItem(LS.RESULT, JSON.stringify(result)); }, [result]);
 
   useEffect(() => {
     if (phase !== "mc") return;
@@ -211,7 +230,7 @@ export default function ReturnMemberQuizModal({ isOpen, onPass, onFail, onClose 
                 <div className="flex justify-center gap-2">
                   {["-0.3s", "-0.15s", "0s"].map(d => <div key={d} className="w-2 h-2 bg-green-500 rounded-full animate-bounce" style={{ animationDelay: d }} />)}
                 </div>
-                <button onClick={() => { onPass(); onClose(); }}
+                <button onClick={() => { clearQuizStorage(); onPass(); onClose(); }}
                   className="flex items-center gap-2 mx-auto bg-[#6366F1] text-white px-8 py-3.5 rounded-2xl font-black text-sm shadow-lg shadow-indigo-500/20 hover:bg-indigo-700 active:scale-95 transition-all">
                   Tiếp tục <ArrowRight size={16} />
                 </button>
@@ -232,7 +251,7 @@ export default function ReturnMemberQuizModal({ isOpen, onPass, onFail, onClose 
                   Cảm ơn bạn đã dành thời gian làm bài test và quan tâm quay lại với NhiLe Team. Sau khi kiểm tra kết quả, chỉ số hiện tại chưa phù hợp với yêu cầu để tham gia vòng phỏng vấn.<br /><br />
                   Bạn có thể đăng ký làm lại bài test sau <strong>03 tháng</strong>. Chúc bạn có thêm nhiều trải nghiệm tích cực và hành trình phía trước diễn ra thuận lợi.
                 </p>
-                <button onClick={() => { onFail(); onClose(); }}
+                <button onClick={() => { clearQuizStorage(); onFail(); onClose(); }}
                   className="flex items-center gap-2 mx-auto bg-gray-100 hover:bg-gray-200 text-gray-600 px-8 py-3.5 rounded-2xl font-black text-sm transition-all">
                   Đóng
                 </button>

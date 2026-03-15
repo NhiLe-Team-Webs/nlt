@@ -23,6 +23,7 @@ const SelectRole = () => {
 
   const handleContinue = () => {
     if (role) {
+      localStorage.setItem("nlt_userType", role);
       navigate("/dashboard", { state: { userType: role } });
     }
   };

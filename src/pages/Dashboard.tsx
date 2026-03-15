@@ -88,12 +88,16 @@ const PASS_SCORE = 8;
 const Dashboard = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const userType = location.state?.userType || "new";
+  const userType = location.state?.userType || localStorage.getItem("nlt_userType") || "new";
   const isActiveMember = userType === "active";
   const isReturning = userType === "returning";
   const totalSteps = isActiveMember ? 3 : 5;
 
-  const [currentStep, setCurrentStep] = useState(1);
+  const [currentStep, setCurrentStep] = useState(() =>
+    (location.state?.userType || "new") === "returning"
+      ? parseInt(localStorage.getItem("nlt_rt_step") || "1")
+      : 1
+  );
   const [selectedTime, setSelectedTime] = useState("");
   const [selectedDate, setSelectedDate] = useState<number | null>(null);
 
@@ -113,8 +117,8 @@ const Dashboard = () => {
   const finalRoleScoresRef = useRef<Record<TeamKey, number>>({ ...EMPTY_SCORES });
 
   // Return test states
-  const [returnTestOpened, setReturnTestOpened] = useState(false);
-  const [returnTestResult, setReturnTestResult] = useState<"none" | "pass" | "fail">("none");
+  const [returnTestOpened, setReturnTestOpened] = useState(() => localStorage.getItem("nlt_rt_opened") === "true");
+  const [returnTestResult, setReturnTestResult] = useState<"none" | "pass" | "fail">(() => (localStorage.getItem("nlt_rt_result") as "none" | "pass" | "fail") || "none");
   const [showReturnQuiz, setShowReturnQuiz] = useState(false);
 
   // Step 5 states
@@ -146,6 +150,9 @@ const Dashboard = () => {
   }, [currentQuestionIndex, isQuizModalOpen, showQuizResult]);
 
   useEffect(() => { setIsLoaded(true); }, []);
+  useEffect(() => { if (isReturning) localStorage.setItem("nlt_rt_opened", returnTestOpened.toString()); }, [returnTestOpened, isReturning]);
+  useEffect(() => { if (isReturning) localStorage.setItem("nlt_rt_result", returnTestResult); }, [returnTestResult, isReturning]);
+  useEffect(() => { if (isReturning) localStorage.setItem("nlt_rt_step", currentStep.toString()); }, [currentStep, isReturning]);
 
   const openQuiz = (type: "culture" | "role") => {
     const resuming = activeQuizType === type && quizAnswers.length > 0 && !showQuizResult;
@@ -478,19 +485,36 @@ const Dashboard = () => {
             <p className="font-black text-sm text-green-700">Bài test đã hoàn thành — bạn đã đạt! 🎉</p>
           </div>
         ) : (
-          <button
-            disabled={returnTestOpened}
-            onClick={() => { setReturnTestOpened(true); setShowReturnQuiz(true); }}
-            className="w-full flex items-center gap-3 p-5 rounded-2xl border-2 border-blue-200 bg-blue-50 hover:bg-blue-100 transition-all text-left disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center shrink-0">
-              <ClipboardCheck size={18} className="text-white" />
-            </div>
-            <div>
-              <p className="font-black text-sm text-[#1D1D1F]">{returnTestOpened ? "Tiếp tục bài test" : "Bắt đầu bài test"}</p>
-              <p className="text-xs text-gray-400 font-medium mt-0.5">20 câu trắc nghiệm + 6 câu tự luận · chỉ làm 1 lần</p>
-            </div>
-          </button>
+          <>
+            {returnTestOpened && (() => {
+              const phase = localStorage.getItem("nlt_rtq_phase");
+              const mcAns: number[] = (() => { try { return JSON.parse(localStorage.getItem("nlt_rtq_mc_ans") || "[]"); } catch { return []; } })();
+              const hasResult = !!localStorage.getItem("nlt_rtq_result");
+              if (hasResult) return null;
+              let label = "";
+              let pct = 0;
+              if (phase === "essay") { label = "Phần tự luận"; pct = 100; }
+              else if (mcAns.length > 0) { label = `${mcAns.length}/20 câu — ${Math.round((mcAns.length / 20) * 100)}%`; pct = (mcAns.length / 20) * 100; }
+              if (!label) return null;
+              return (
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between text-xs font-black text-gray-400 uppercase tracking-wider">
+                    <span>Đang làm dở</span>
+                    <span>{label}</span>
+                  </div>
+                  <div className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
+                    <div className="h-full bg-[#6366F1] rounded-full transition-all duration-500" style={{ width: `${pct}%` }} />
+                  </div>
+                </div>
+              );
+            })()}
+            <button
+              onClick={() => { setReturnTestOpened(true); setShowReturnQuiz(true); }}
+              className="bg-gradient-to-r from-[#6366F1] to-[#8B5CF6] text-white px-8 py-3.5 rounded-2xl font-black text-sm shadow-lg shadow-indigo-500/20 hover:opacity-90 active:scale-95 transition-all flex items-center gap-2 w-full sm:w-auto justify-center"
+            >
+              {returnTestOpened ? "Tiếp tục bài test" : "Bắt đầu bài test"} <ArrowRight size={16} />
+            </button>
+          </>
         )}
       </div>
     ),
