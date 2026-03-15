@@ -113,6 +113,7 @@ const Dashboard = () => {
   const [profileDone, setProfileDone] = useState(false);
   const [signDone, setSignDone] = useState(false);
   const [showChotDon, setShowChotDon] = useState(false);
+  const [screenshotFile, setScreenshotFile] = useState<File | null>(null);
 
   // Per-question timer
   const [timer, setTimer] = useState(TIMER_SECONDS);
@@ -379,8 +380,22 @@ const Dashboard = () => {
             </div>
           </button>
 
+          {/* Screenshot upload */}
+          {profileDone && signDone && (
+            <label className={`w-full flex items-center gap-4 p-5 rounded-2xl border-2 border-dashed cursor-pointer transition-all ${screenshotFile ? "border-green-400 bg-green-50" : "border-gray-300 bg-white hover:border-blue-300 hover:bg-blue-50/50"}`}>
+              <input type="file" accept="image/*" className="hidden" onChange={(e) => { const f = (e.target as HTMLInputElement).files; setScreenshotFile(f?.[0] ?? null); }} />
+              <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 text-lg ${screenshotFile ? "bg-green-500" : "bg-gray-100"}`}>
+                {screenshotFile ? <CheckCircle2 size={20} className="text-white" /> : "📸"}
+              </div>
+              <div className="flex-1">
+                <p className={`font-black text-sm ${screenshotFile ? "text-green-700" : "text-[#1D1D1F]"}`}>Gửi ảnh xác nhận</p>
+                <p className="text-xs text-gray-400 font-medium mt-0.5">{screenshotFile ? screenshotFile.name : "Chụp màn hình xác nhận ký & tải lên"}</p>
+              </div>
+            </label>
+          )}
+
           {/* Hoàn thành button */}
-          {profileDone && signDone && !showChotDon && (
+          {profileDone && signDone && screenshotFile && !showChotDon && (
             <button
               onClick={() => setShowChotDon(true)}
               className="w-full bg-gradient-to-r from-[#2563EB] to-[#3B82F6] text-white px-10 py-4 rounded-2xl font-black text-sm shadow-xl shadow-blue-600/30 hover:scale-[1.02] active:scale-95 transition-all"
