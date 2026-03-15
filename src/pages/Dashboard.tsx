@@ -353,13 +353,21 @@ const Dashboard = () => {
       desc: "Kiểm tra email cá nhân thường xuyên để nhận kết quả nhé.",
       icon: <Video className="w-6 h-6" />,
       status: currentStep === 4 ? "active" : currentStep > 4 ? "completed" : "locked",
+      customContent: (
+        <div className="mt-6">
+          <button onClick={() => { setCurrentStep(5); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+            className="bg-gradient-to-r from-[#2563EB] to-[#3B82F6] text-white px-10 py-4 rounded-2xl font-black text-sm shadow-xl shadow-blue-600/30 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2 w-full sm:w-auto">
+            Tiếp tục <ArrowRight size={16} />
+          </button>
+        </div>
+      ),
     },
     {
       id: 5,
       title: "Về nhà thôi!",
       desc: "Hoàn thiện hồ sơ cuối để chính thức bắt đầu hành trình.",
       icon: <PartyPopper className="w-6 h-6" />,
-      status: currentStep === 5 ? "active" : "locked",
+      status: currentStep === 5 ? "active" : currentStep > 5 ? "completed" : "locked",
       customContent: (
         <div className="mt-8">
           <div className="relative overflow-hidden bg-gradient-to-br from-[#3B82F6] to-[#8B5CF6] p-8 rounded-[2.5rem] shadow-2xl shadow-purple-500/20">
