@@ -56,9 +56,9 @@ function calcEssayScore(answers: string[]): number {
 
 type Phase = "mc" | "essay" | "result";
 
-interface Props { onPass: () => void; onFail: () => void; onClose: () => void; }
+interface Props { isOpen: boolean; onPass: () => void; onFail: () => void; onClose: () => void; }
 
-export default function ReturnMemberQuizModal({ onPass, onFail, onClose }: Props) {
+export default function ReturnMemberQuizModal({ isOpen, onPass, onFail, onClose }: Props) {
   const [phase, setPhase] = useState<Phase>("mc");
   const [mcIndex, setMcIndex] = useState(0);
   const [mcAnswers, setMcAnswers] = useState<number[]>([]);
@@ -101,6 +101,8 @@ export default function ReturnMemberQuizModal({ onPass, onFail, onClose }: Props
 
   const timerPercent = (timer / TIMER_SECONDS) * 100;
   const mcProgress = Math.round(((mcIndex + 1) / MC_QUESTIONS.length) * 100);
+
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">

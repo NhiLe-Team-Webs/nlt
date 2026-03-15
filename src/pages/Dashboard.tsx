@@ -148,14 +148,19 @@ const Dashboard = () => {
   useEffect(() => { setIsLoaded(true); }, []);
 
   const openQuiz = (type: "culture" | "role") => {
-    setActiveQuizType(type);
-    setCurrentQuestionIndex(0);
-    setQuizAnswers([]);
-    setQuizScore(0);
-    setShowQuizResult(false);
-    setQuizPassed(false);
-    setRoleScores({ ...EMPTY_SCORES });
-    finalRoleScoresRef.current = { ...EMPTY_SCORES };
+    const resuming = activeQuizType === type && quizAnswers.length > 0 && !showQuizResult;
+    if (!resuming) {
+      setActiveQuizType(type);
+      setCurrentQuestionIndex(0);
+      setQuizAnswers([]);
+      setQuizScore(0);
+      setShowQuizResult(false);
+      setQuizPassed(false);
+      setRoleScores({ ...EMPTY_SCORES });
+      finalRoleScoresRef.current = { ...EMPTY_SCORES };
+    } else {
+      setActiveQuizType(type);
+    }
     setIsQuizModalOpen(true);
   };
 
@@ -231,15 +236,26 @@ const Dashboard = () => {
       icon: <ClipboardCheck className="w-6 h-6" />,
       status: currentStep === 1 ? "active" : currentStep > 1 ? "completed" : "locked",
       customContent: (
-        <div className="mt-6 space-y-5 transition-all duration-300">
+        <div className="mt-6 space-y-4 transition-all duration-300">
           <p className="text-sm font-bold text-gray-600 leading-relaxed">
             Hãy dành 5 phút để đọc và tìm hiểu bài test văn hoá của NhiLe Team nhé.
           </p>
           <div className="rounded-2xl overflow-hidden border border-gray-100 shadow-sm cursor-zoom-in" onClick={() => setIsImageFullscreen(true)}>
             <img src="https://lh3.googleusercontent.com/d/1dZvgi4ZLZoTD1-hGLeHStSO4v3J2CYzV" alt="Văn hoá NhiLe Team" className="w-full object-cover max-h-72 hover:scale-105 transition-transform duration-300" />
           </div>
-          <button onClick={() => openQuiz("culture")} className="bg-blue-600 text-white px-8 py-3.5 rounded-2xl font-black text-sm shadow-lg shadow-blue-600/20 hover:bg-blue-700 active:scale-95 transition-all flex items-center gap-2 w-full sm:w-auto justify-center">
-            Làm bài test văn hoá <ArrowRight size={16} />
+          {activeQuizType === "culture" && quizAnswers.length > 0 && !showQuizResult && (
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between text-xs font-black text-gray-400 uppercase tracking-wider">
+                <span>Đang làm dở</span>
+                <span>{quizAnswers.length}/{cultureQuestions.length} câu — {Math.round((quizAnswers.length / cultureQuestions.length) * 100)}%</span>
+              </div>
+              <div className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
+                <div className="h-full bg-[#6366F1] rounded-full transition-all duration-500" style={{ width: `${(quizAnswers.length / cultureQuestions.length) * 100}%` }} />
+              </div>
+            </div>
+          )}
+          <button onClick={() => openQuiz("culture")} className="bg-gradient-to-r from-[#6366F1] to-[#8B5CF6] text-white px-8 py-3.5 rounded-2xl font-black text-sm shadow-lg shadow-indigo-500/20 hover:opacity-90 active:scale-95 transition-all flex items-center gap-2 w-full sm:w-auto justify-center">
+            {activeQuizType === "culture" && quizAnswers.length > 0 && !showQuizResult ? "Tiếp tục bài test" : "Làm bài test văn hoá"} <ArrowRight size={16} />
           </button>
         </div>
       ),
@@ -471,7 +487,7 @@ const Dashboard = () => {
               <ClipboardCheck size={18} className="text-white" />
             </div>
             <div>
-              <p className="font-black text-sm text-[#1D1D1F]">Bắt đầu bài test</p>
+              <p className="font-black text-sm text-[#1D1D1F]">{returnTestOpened ? "Tiếp tục bài test" : "Bắt đầu bài test"}</p>
               <p className="text-xs text-gray-400 font-medium mt-0.5">20 câu trắc nghiệm + 6 câu tự luận · chỉ làm 1 lần</p>
             </div>
           </button>
@@ -738,14 +754,13 @@ const Dashboard = () => {
         </div>
       )}
 
-      {/* Return Member Quiz Modal */}
-      {showReturnQuiz && (
-        <ReturnMemberQuizModal
-          onPass={() => { setReturnTestResult("pass"); setCurrentStep(2); window.scrollTo({ top: 0, behavior: "smooth" }); }}
-          onFail={() => setReturnTestResult("fail")}
-          onClose={() => setShowReturnQuiz(false)}
-        />
-      )}
+      {/* Return Member Quiz Modal — always mounted to preserve state on close */}
+      <ReturnMemberQuizModal
+        isOpen={showReturnQuiz}
+        onPass={() => { setReturnTestResult("pass"); setCurrentStep(2); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+        onFail={() => setReturnTestResult("fail")}
+        onClose={() => setShowReturnQuiz(false)}
+      />
 
       {/* Profile Info Modal */}
       {showProfileModal && (
