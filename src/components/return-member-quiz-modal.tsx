@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { X, ArrowRight, RotateCcw } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { X, CheckCircle2, XCircle, ArrowRight } from "lucide-react";
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
 
@@ -27,6 +27,8 @@ const MC_QUESTIONS = [
 ];
 
 const MC_SCORES = [5, 4, 2, 1];
+const OPTION_LABELS = ["A", "B", "C", "D"];
+const TIMER_SECONDS = 30;
 
 const ESSAY_QUESTIONS = [
   "Trong thời gian rời team, bạn học được hoặc nhận ra điều gì về chính mình và về team?",
@@ -40,33 +42,46 @@ const ESSAY_QUESTIONS = [
 const GOOD_KEYWORDS = ["giúp", "hỗ trợ", "sẻ chia", "cộng đồng", "lan tỏa", "đóng góp", "thương", "gắn bó", "học hỏi", "phát triển", "trau dồi", "kỹ năng", "lâu dài", "mục tiêu", "trách nhiệm", "chủ động", "cam kết", "sửa sai", "rút kinh nghiệm", "kỷ luật", "trung thực", "môi trường"];
 const BAD_KEYWORDS = ["rảnh", "thử sức", "cho biết", "tạm thời", "xem sao", "không chắc", "không hợp", "quá bận", "chán", "cố gắng", "cho vui", "xem thử", "do hoàn cảnh", "không ai hướng dẫn", "áp lực", "mất niềm tin"];
 
-const PASS_SCORE = 110;
+const PASS_TOTAL = 110;
 const MAX_ESSAY = 30;
-
-// ─── Scoring ──────────────────────────────────────────────────────────────────
 
 function calcEssayScore(answers: string[]): number {
   const combined = answers.join(" ").toLowerCase();
-  const goodHits = GOOD_KEYWORDS.filter(kw => combined.includes(kw)).length;
-  const badHits = BAD_KEYWORDS.filter(kw => combined.includes(kw)).length;
-  const raw = goodHits * 5 - badHits * 5;
-  return Math.max(0, Math.min(MAX_ESSAY, raw));
+  const good = GOOD_KEYWORDS.filter(kw => combined.includes(kw)).length;
+  const bad = BAD_KEYWORDS.filter(kw => combined.includes(kw)).length;
+  return Math.max(0, Math.min(MAX_ESSAY, good * 5 - bad * 5));
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
-interface Props { onPass: () => void; onFail: () => void; onClose: () => void; }
-
 type Phase = "mc" | "essay" | "result";
+
+interface Props { onPass: () => void; onFail: () => void; onClose: () => void; }
 
 export default function ReturnMemberQuizModal({ onPass, onFail, onClose }: Props) {
   const [phase, setPhase] = useState<Phase>("mc");
   const [mcIndex, setMcIndex] = useState(0);
   const [mcAnswers, setMcAnswers] = useState<number[]>([]);
   const [essayAnswers, setEssayAnswers] = useState<string[]>(Array(6).fill(""));
+  const [timer, setTimer] = useState(TIMER_SECONDS);
   const [result, setResult] = useState<{ mc: number; essay: number; total: number; passed: boolean } | null>(null);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    if (phase !== "mc") return;
+    setTimer(TIMER_SECONDS);
+    if (timerRef.current) clearInterval(timerRef.current);
+    timerRef.current = setInterval(() => {
+      setTimer(t => {
+        if (t <= 1) { handleMcAnswer(3); return TIMER_SECONDS; } // auto-pick D on timeout
+        return t - 1;
+      });
+    }, 1000);
+    return () => { if (timerRef.current) clearInterval(timerRef.current); };
+  }, [mcIndex, phase]);
 
   const handleMcAnswer = (idx: number) => {
+    if (timerRef.current) clearInterval(timerRef.current);
     const next = [...mcAnswers, idx];
     setMcAnswers(next);
     if (mcIndex < MC_QUESTIONS.length - 1) {
@@ -80,131 +95,150 @@ export default function ReturnMemberQuizModal({ onPass, onFail, onClose }: Props
     const mc = mcAnswers.reduce((sum, a) => sum + MC_SCORES[a], 0);
     const essay = calcEssayScore(essayAnswers);
     const total = mc + essay;
-    const passed = total >= PASS_SCORE;
-    setResult({ mc, essay, total, passed });
+    setResult({ mc, essay, total, passed: total >= PASS_TOTAL });
     setPhase("result");
   };
 
-  const progress = phase === "mc" ? Math.round(((mcIndex) / MC_QUESTIONS.length) * 100) : 100;
+  const timerPercent = (timer / TIMER_SECONDS) * 100;
+  const mcProgress = Math.round(((mcIndex + 1) / MC_QUESTIONS.length) * 100);
 
   return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm animate-in fade-in duration-300" onClick={onClose} />
+      <div className="relative w-full max-w-lg bg-white rounded-[2rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 max-h-[90vh] flex flex-col">
 
-        {/* Header */}
-        <div className="flex items-center justify-between px-7 pt-6 pb-4 border-b border-gray-100 shrink-0">
-          <div>
-            <h2 className="text-base font-black text-[#1D1D1F]">
-              {phase === "mc" ? `Câu ${mcIndex + 1} / ${MC_QUESTIONS.length}` : phase === "essay" ? "Phần tự luận" : "Kết quả"}
-            </h2>
-            {phase === "mc" && (
-              <div className="mt-2 h-1.5 w-48 bg-gray-100 rounded-full overflow-hidden">
-                <div className="h-full bg-blue-500 rounded-full transition-all duration-300" style={{ width: `${progress}%` }} />
+        {/* ── MC Phase ──────────────────────────────────────────────────── */}
+        {phase === "mc" && (
+          <>
+            {/* Header */}
+            <div className="bg-gradient-to-br from-[#6366F1] to-[#8B5CF6] p-7 sm:p-8 space-y-3 shrink-0">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-black text-white/70 uppercase tracking-widest">Test Quay Trở Lại</span>
+                <button onClick={onClose} className="text-white/60 hover:text-white transition-colors"><X size={18} /></button>
               </div>
-            )}
-          </div>
-          <button onClick={onClose} className="p-2 rounded-xl hover:bg-gray-100 text-gray-400 transition-colors">
-            <X size={20} />
-          </button>
-        </div>
+              <h3 className="text-base sm:text-lg font-black text-white leading-snug">{MC_QUESTIONS[mcIndex].q}</h3>
+            </div>
 
-        {/* Body */}
-        <div className="overflow-y-auto flex-1 px-7 py-5">
-
-          {/* MC Phase */}
-          {phase === "mc" && (
-            <div className="space-y-5">
-              <p className="font-black text-[#1D1D1F] text-base leading-snug">{MC_QUESTIONS[mcIndex].q}</p>
-              <div className="space-y-2">
-                {MC_QUESTIONS[mcIndex].opts.map((opt, i) => (
-                  <button key={i} onClick={() => handleMcAnswer(i)}
-                    className="w-full text-left flex items-start gap-3 p-4 rounded-2xl border-2 border-gray-100 hover:border-blue-300 hover:bg-blue-50/50 transition-all">
-                    <span className="w-7 h-7 rounded-lg bg-gray-100 text-gray-600 font-black text-xs flex items-center justify-center shrink-0">
-                      {String.fromCharCode(65 + i)}
-                    </span>
-                    <span className="text-sm font-medium text-gray-700 pt-0.5">{opt}</span>
-                  </button>
-                ))}
+            {/* Timer */}
+            <div className="px-7 sm:px-8 pt-4 shrink-0">
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Thời gian</span>
+                <span className={`text-xs font-black tabular-nums ${timer <= 10 ? "text-red-500" : "text-orange-500"}`}>
+                  {String(Math.floor(timer / 60)).padStart(2, "0")}:{String(timer % 60).padStart(2, "0")}
+                </span>
+              </div>
+              <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
+                <div className={`h-full rounded-full transition-all duration-1000 ${timer <= 10 ? "bg-red-500" : "bg-gradient-to-r from-orange-400 to-yellow-400"}`} style={{ width: `${timerPercent}%` }} />
               </div>
             </div>
-          )}
 
-          {/* Essay Phase */}
-          {phase === "essay" && (
-            <div className="space-y-5">
-              <p className="text-sm text-gray-500 font-medium">Trả lời 6 câu hỏi sau. Câu trả lời của bạn sẽ được phân tích tự động.</p>
+            {/* Options */}
+            <div className="px-7 sm:px-8 py-4 space-y-2 overflow-y-auto flex-1">
+              {MC_QUESTIONS[mcIndex].opts.map((opt, idx) => (
+                <button key={idx} onClick={() => handleMcAnswer(idx)}
+                  className="w-full flex items-center gap-3 p-3.5 border-2 border-gray-100 rounded-2xl font-bold text-sm text-[#1D1D1F] hover:border-[#6366F1] hover:bg-indigo-50 hover:text-[#6366F1] transition-all active:scale-[0.98] text-left">
+                  <span className="w-7 h-7 rounded-lg bg-gray-100 flex items-center justify-center text-xs font-black text-gray-500 shrink-0">
+                    {OPTION_LABELS[idx]}
+                  </span>
+                  {opt}
+                </button>
+              ))}
+            </div>
+
+            {/* Progress */}
+            <div className="px-7 sm:px-8 pb-6 shrink-0 space-y-1.5">
+              <div className="flex items-center justify-between text-[10px] font-black text-gray-400 uppercase tracking-wider">
+                <span>Tiến trình</span>
+                <span>{mcIndex + 1}/{MC_QUESTIONS.length} câu — {mcProgress}%</span>
+              </div>
+              <div className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
+                <div className="h-full bg-[#6366F1] transition-all duration-500 rounded-full" style={{ width: `${mcProgress}%` }} />
+              </div>
+            </div>
+          </>
+        )}
+
+        {/* ── Essay Phase ───────────────────────────────────────────────── */}
+        {phase === "essay" && (
+          <>
+            <div className="bg-gradient-to-br from-[#6366F1] to-[#8B5CF6] p-7 sm:p-8 space-y-1 shrink-0">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-black text-white/70 uppercase tracking-widest">Phần Tự Luận</span>
+                <button onClick={onClose} className="text-white/60 hover:text-white transition-colors"><X size={18} /></button>
+              </div>
+              <p className="text-sm text-white/80 font-medium">Trả lời 6 câu hỏi bên dưới — kết quả sẽ được phân tích tự động.</p>
+            </div>
+
+            <div className="overflow-y-auto flex-1 px-7 py-5 space-y-4">
               {ESSAY_QUESTIONS.map((q, i) => (
                 <div key={i}>
-                  <label className="block text-xs font-black text-gray-500 mb-2">{i + 1}. {q}</label>
-                  <textarea
-                    rows={3}
-                    value={essayAnswers[i]}
+                  <label className="block text-xs font-black text-gray-500 mb-1.5">{i + 1}. {q}</label>
+                  <textarea rows={3} value={essayAnswers[i]}
                     onChange={e => { const a = [...essayAnswers]; a[i] = e.target.value; setEssayAnswers(a); }}
-                    className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm font-medium text-[#1D1D1F] focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all resize-none"
+                    className="w-full border-2 border-gray-100 rounded-2xl px-4 py-3 text-sm font-medium text-[#1D1D1F] focus:outline-none focus:border-[#6366F1] focus:ring-2 focus:ring-indigo-100 transition-all resize-none"
                     placeholder="Nhập câu trả lời của bạn..."
                   />
                 </div>
               ))}
             </div>
-          )}
 
-          {/* Result Phase */}
-          {phase === "result" && result && (
-            <div className="space-y-5 py-2">
-              <div className={`rounded-2xl p-6 ${result.passed ? "bg-green-50 border border-green-200" : "bg-red-50 border border-red-200"}`}>
-                <p className={`text-2xl font-black ${result.passed ? "text-green-700" : "text-red-600"}`}>
-                  {result.passed ? "Chúc mừng! Bạn đã đạt 🎉" : "Chưa đạt yêu cầu"}
-                </p>
-                <p className={`text-sm font-medium mt-1 ${result.passed ? "text-green-600" : "text-red-500"}`}>
-                  Tổng điểm: {result.total} / 130 (yêu cầu: {PASS_SCORE})
-                </p>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="bg-gray-50 rounded-2xl p-4">
-                  <p className="text-xs font-black text-gray-400 uppercase tracking-wider">Trắc nghiệm</p>
-                  <p className="text-2xl font-black text-[#1D1D1F] mt-1">{result.mc} <span className="text-sm text-gray-400">/ 100</span></p>
-                </div>
-                <div className="bg-gray-50 rounded-2xl p-4">
-                  <p className="text-xs font-black text-gray-400 uppercase tracking-wider">Tự luận</p>
-                  <p className="text-2xl font-black text-[#1D1D1F] mt-1">{result.essay} <span className="text-sm text-gray-400">/ 30</span></p>
-                </div>
-              </div>
-              {!result.passed && (
-                <p className="text-sm text-gray-500 font-medium leading-relaxed bg-gray-50 rounded-2xl p-4">
-                  Cảm ơn bạn đã dành thời gian làm bài test và quan tâm quay lại với NhiLe Team. Sau khi kiểm tra kết quả, chỉ số hiện tại chưa phù hợp với yêu cầu để tham gia vòng phỏng vấn, vì vậy team chưa thể sắp xếp buổi phỏng vấn cho bạn trong thời điểm này.<br /><br />
-                  Team ghi nhận tinh thần chủ động và cách bạn hoàn thành bài làm. Đây là những điểm tích cực trong quá trình bạn tham gia.<br /><br />
-                  Bạn có thể đăng ký làm lại bài test sau 03 tháng, khi đã có thêm thời gian nhìn lại, học hỏi và bổ sung những kỹ năng cần thiết. Khi đến thời điểm phù hợp, team luôn sẵn sàng tiếp nhận lại hồ sơ của bạn theo đúng quy trình.<br /><br />
-                  Chúc bạn có thêm nhiều trải nghiệm tích cực và hành trình phía trước diễn ra thuận lợi.
-                </p>
-              )}
+            <div className="px-7 pb-6 pt-2 shrink-0">
+              <button onClick={handleSubmitEssay}
+                className="w-full flex items-center justify-center gap-2 bg-[#6366F1] hover:bg-indigo-700 text-white py-4 rounded-2xl font-black text-sm transition-all shadow-lg shadow-indigo-500/20 active:scale-95">
+                Nộp bài <ArrowRight size={16} />
+              </button>
             </div>
-          )}
-        </div>
-
-        {/* Footer */}
-        {phase === "essay" && (
-          <div className="px-7 py-5 border-t border-gray-100 shrink-0">
-            <button onClick={handleSubmitEssay}
-              className="w-full bg-[#2563EB] hover:bg-blue-700 text-white py-3.5 rounded-2xl font-black text-sm transition-colors flex items-center justify-center gap-2">
-              Nộp bài <ArrowRight size={16} />
-            </button>
-          </div>
+          </>
         )}
+
+        {/* ── Result Phase ──────────────────────────────────────────────── */}
         {phase === "result" && result && (
-          <div className="px-7 py-5 border-t border-gray-100 shrink-0">
+          <div className="p-10 sm:p-12 text-center space-y-6 overflow-y-auto">
             {result.passed ? (
-              <button onClick={() => { onPass(); onClose(); }}
-                className="w-full bg-green-500 hover:bg-green-600 text-white py-3.5 rounded-2xl font-black text-sm transition-colors">
-                Tiếp tục hành trình →
-              </button>
+              <>
+                <div className="w-20 h-20 bg-green-500 rounded-full flex items-center justify-center mx-auto shadow-lg shadow-green-200">
+                  <CheckCircle2 className="text-white w-10 h-10" />
+                </div>
+                <div className="space-y-2">
+                  <h3 className="text-2xl font-black text-[#1D1D1F]">Tuyệt vời! 🎉</h3>
+                  <p className="text-gray-500 font-bold">
+                    Tổng điểm: <span className="text-green-600 font-black">{result.total}/130</span> — Đủ điều kiện vào phỏng vấn!
+                  </p>
+                  <p className="text-xs text-gray-400">Trắc nghiệm: {result.mc}/100 · Tự luận: {result.essay}/30</p>
+                </div>
+                <div className="flex justify-center gap-2">
+                  {["-0.3s", "-0.15s", "0s"].map(d => <div key={d} className="w-2 h-2 bg-green-500 rounded-full animate-bounce" style={{ animationDelay: d }} />)}
+                </div>
+                <button onClick={() => { onPass(); onClose(); }}
+                  className="flex items-center gap-2 mx-auto bg-[#6366F1] text-white px-8 py-3.5 rounded-2xl font-black text-sm shadow-lg shadow-indigo-500/20 hover:bg-indigo-700 active:scale-95 transition-all">
+                  Tiếp tục <ArrowRight size={16} />
+                </button>
+              </>
             ) : (
-              <button onClick={() => { onFail(); onClose(); }}
-                className="w-full flex items-center justify-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-600 py-3.5 rounded-2xl font-black text-sm transition-colors">
-                <RotateCcw size={15} /> Đóng
-              </button>
+              <>
+                <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto">
+                  <XCircle className="text-red-500 w-10 h-10" />
+                </div>
+                <div className="space-y-2">
+                  <h3 className="text-2xl font-black text-[#1D1D1F]">Chưa đạt!</h3>
+                  <p className="text-gray-500 font-bold">
+                    Tổng điểm: <span className="text-red-500 font-black">{result.total}/130</span> — Cần ít nhất <span className="font-black text-[#1D1D1F]">{PASS_TOTAL}/130</span> để qua.
+                  </p>
+                  <p className="text-xs text-gray-400">Trắc nghiệm: {result.mc}/100 · Tự luận: {result.essay}/30</p>
+                </div>
+                <p className="text-sm text-gray-500 font-medium leading-relaxed text-left bg-gray-50 rounded-2xl p-5">
+                  Cảm ơn bạn đã dành thời gian làm bài test và quan tâm quay lại với NhiLe Team. Sau khi kiểm tra kết quả, chỉ số hiện tại chưa phù hợp với yêu cầu để tham gia vòng phỏng vấn.<br /><br />
+                  Bạn có thể đăng ký làm lại bài test sau <strong>03 tháng</strong>. Chúc bạn có thêm nhiều trải nghiệm tích cực và hành trình phía trước diễn ra thuận lợi.
+                </p>
+                <button onClick={() => { onFail(); onClose(); }}
+                  className="flex items-center gap-2 mx-auto bg-gray-100 hover:bg-gray-200 text-gray-600 px-8 py-3.5 rounded-2xl font-black text-sm transition-all">
+                  Đóng
+                </button>
+              </>
             )}
           </div>
         )}
+
       </div>
     </div>
   );
