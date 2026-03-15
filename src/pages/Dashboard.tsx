@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import ProfileInfoModal from "../components/profile-info-modal";
 import {
   CheckCircle2,
   Calendar,
@@ -106,6 +107,12 @@ const Dashboard = () => {
   const [quizPassed, setQuizPassed] = useState(false);
   const [roleScores, setRoleScores] = useState<Record<TeamKey, number>>({ ...EMPTY_SCORES });
   const finalRoleScoresRef = useRef<Record<TeamKey, number>>({ ...EMPTY_SCORES });
+
+  // Step 5 states
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  const [profileDone, setProfileDone] = useState(false);
+  const [signDone, setSignDone] = useState(false);
+  const [showChotDon, setShowChotDon] = useState(false);
 
   // Per-question timer
   const [timer, setTimer] = useState(TIMER_SECONDS);
@@ -369,18 +376,59 @@ const Dashboard = () => {
       icon: <PartyPopper className="w-6 h-6" />,
       status: currentStep === 5 ? "active" : currentStep > 5 ? "completed" : "locked",
       customContent: (
-        <div className="mt-8">
-          <div className="relative overflow-hidden bg-gradient-to-br from-[#3B82F6] to-[#8B5CF6] p-8 rounded-[2.5rem] shadow-2xl shadow-purple-500/20">
-            <div className="absolute top-0 right-0 p-4 opacity-20"><PartyPopper size={120} /></div>
-            <div className="relative z-10 space-y-6">
-              <h4 className="text-2xl sm:text-3xl font-black text-white leading-tight">Chốt đơn! Thảo Nhi đã là một mẩu của NhiLe Team! 🥳</h4>
-              <p className="text-white/80 text-sm sm:text-base font-medium leading-relaxed">Sẵn sàng nhé. Check email nhận 'bí kíp võ công' tham gia cùng anh em mình nha. 🚀</p>
-              <button onClick={() => window.open("https://t.me/+your_group_link", "_blank")}
-                className="w-full bg-white text-[#1D4ED8] py-6 px-8 rounded-[2rem] font-black text-xl shadow-lg hover:scale-[1.03] active:scale-95 transition-all flex items-center justify-center gap-4 group/btn">
-                BẮT ĐẦU HÀNH TRÌNH NGAY <Zap className="fill-current group-hover/btn:animate-bounce" size={24} />
-              </button>
+        <div className="mt-6 space-y-4">
+          {/* Box 1: Điền thông tin cá nhân */}
+          <button
+            onClick={() => setShowProfileModal(true)}
+            className={`w-full flex items-center gap-4 p-5 rounded-2xl border-2 transition-all text-left ${profileDone ? "border-green-400 bg-green-50" : "border-gray-200 bg-white hover:border-blue-300 hover:bg-blue-50/50"}`}
+          >
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 text-lg ${profileDone ? "bg-green-500" : "bg-blue-100"}`}>
+              {profileDone ? <CheckCircle2 size={20} className="text-white" /> : "📝"}
             </div>
-          </div>
+            <div className="flex-1">
+              <p className={`font-black text-sm ${profileDone ? "text-green-700" : "text-[#1D1D1F]"}`}>Điền thông tin cá nhân</p>
+              <p className="text-xs text-gray-400 font-medium mt-0.5">{profileDone ? "Đã hoàn thành" : "Nhấn để điền thông tin"}</p>
+            </div>
+          </button>
+
+          {/* Box 2: Ký bảo mật */}
+          <button
+            onClick={() => { window.open("https://sg1.documents.adobe.com/public/esignWidget?wid=CBFCIBAA3AAABLblqZhBTVety-rac_6tDkmYwnVdmNmPWQbUwl3bv6r3XwaTnqMzGtFVh1dKVNBmCztFyBBo*", "_blank"); setSignDone(true); }}
+            className={`w-full flex items-center gap-4 p-5 rounded-2xl border-2 transition-all text-left ${signDone ? "border-green-400 bg-green-50" : "border-gray-200 bg-white hover:border-blue-300 hover:bg-blue-50/50"}`}
+          >
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 text-lg ${signDone ? "bg-green-500" : "bg-indigo-100"}`}>
+              {signDone ? <CheckCircle2 size={20} className="text-white" /> : "✍️"}
+            </div>
+            <div className="flex-1">
+              <p className={`font-black text-sm ${signDone ? "text-green-700" : "text-[#1D1D1F]"}`}>Ký bảo mật</p>
+              <p className="text-xs text-gray-400 font-medium mt-0.5">{signDone ? "Đã mở trang ký" : "Nhấn để ký cam kết bảo mật"}</p>
+            </div>
+          </button>
+
+          {/* Hoàn thành button */}
+          {profileDone && signDone && !showChotDon && (
+            <button
+              onClick={() => setShowChotDon(true)}
+              className="w-full bg-gradient-to-r from-[#2563EB] to-[#3B82F6] text-white px-10 py-4 rounded-2xl font-black text-sm shadow-xl shadow-blue-600/30 hover:scale-[1.02] active:scale-95 transition-all"
+            >
+              Hoàn thành 🎉
+            </button>
+          )}
+
+          {/* Chốt đơn card */}
+          {showChotDon && (
+            <div className="relative overflow-hidden bg-gradient-to-br from-[#3B82F6] to-[#8B5CF6] p-8 rounded-[2.5rem] shadow-2xl shadow-purple-500/20 mt-2">
+              <div className="absolute top-0 right-0 p-4 opacity-20"><PartyPopper size={120} /></div>
+              <div className="relative z-10 space-y-6">
+                <h4 className="text-2xl sm:text-3xl font-black text-white leading-tight">Chốt đơn! Thảo Nhi đã là một mẩu của NhiLe Team! 🥳</h4>
+                <p className="text-white/80 text-sm sm:text-base font-medium leading-relaxed">Sẵn sàng nhé. Check email nhận 'bí kíp võ công' tham gia cùng anh em mình nha. 🚀</p>
+                <button onClick={() => window.open("https://t.me/+your_group_link", "_blank")}
+                  className="w-full bg-white text-[#1D4ED8] py-6 px-8 rounded-[2rem] font-black text-xl shadow-lg hover:scale-[1.03] active:scale-95 transition-all flex items-center justify-center gap-4 group/btn">
+                  BẮT ĐẦU HÀNH TRÌNH NGAY <Zap className="fill-current group-hover/btn:animate-bounce" size={24} />
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       ),
     },
@@ -633,6 +681,14 @@ const Dashboard = () => {
             onClick={(e) => { e.stopPropagation(); }}
           />
         </div>
+      )}
+
+      {/* Profile Info Modal */}
+      {showProfileModal && (
+        <ProfileInfoModal
+          onClose={() => setShowProfileModal(false)}
+          onSubmit={() => setProfileDone(true)}
+        />
       )}
 
       <style>{`
