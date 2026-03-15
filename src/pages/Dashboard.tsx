@@ -7,7 +7,6 @@ import {
   ArrowRight,
   User,
   LogOut,
-  ChevronRight,
   Menu,
   X,
   ClipboardCheck,
@@ -16,6 +15,8 @@ import {
   Zap,
   RotateCcw,
   XCircle,
+  Mail,
+  Send,
 } from "lucide-react";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -90,6 +91,8 @@ const Dashboard = () => {
 
   const [currentStep, setCurrentStep] = useState(1);
   const [selectedTime, setSelectedTime] = useState("");
+  const [selectedDate, setSelectedDate] = useState<number | null>(null);
+  const [showScheduleConfirm, setShowScheduleConfirm] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -247,56 +250,125 @@ const Dashboard = () => {
       desc: "Chọn thời gian phù hợp để gặp gỡ trao đổi trực tiếp nhé.",
       icon: <Calendar className="w-6 h-6" />,
       status: currentStep === 3 ? "active" : currentStep > 3 ? "completed" : "locked",
-      customContent: (
-        <div className="mt-8 space-y-8 transition-all duration-300">
-          <div className="bg-white border border-gray-100 rounded-[2rem] p-6 shadow-sm">
-            <div className="flex flex-col lg:flex-row gap-8">
-              <div className="flex-1 space-y-4">
-                <div className="flex items-center justify-between mb-2">
-                  <h4 className="font-black text-sm text-[#1D1D1F] uppercase tracking-wider">Tháng 3, 2026</h4>
-                  <div className="flex gap-2">
-                    <button className="p-2 hover:bg-gray-50 rounded-lg text-gray-400"><ChevronRight size={16} className="rotate-180" /></button>
-                    <button className="p-2 hover:bg-gray-50 rounded-lg text-gray-400"><ChevronRight size={16} /></button>
-                  </div>
+      customContent: (() => {
+        const VN_DAYS = ["Chủ Nhật", "Thứ Hai", "Thứ Ba", "Thứ Tư", "Thứ Năm", "Thứ Sáu", "Thứ Bảy"];
+        // March 2026: day 1 = Sunday → offset = 0 empty cells before "1"
+        const firstDayOfWeek = new Date(2026, 2, 1).getDay(); // 0 = Sun
+        // Reorder so Monday=0 ... Sunday=6
+        const offset = firstDayOfWeek === 0 ? 6 : firstDayOfWeek - 1;
+        const isAvailableDate = (d: number) => [2, 3, 5].includes(new Date(2026, 2, d).getDay()); // Tue=2,Wed=3,Fri=5
+
+        if (showScheduleConfirm && selectedDate && selectedTime) {
+          const dayName = VN_DAYS[new Date(2026, 2, selectedDate).getDay()];
+          const formattedDate = `${String(selectedDate).padStart(2, "0")}/03/2026`;
+          return (
+            <div className="mt-6 space-y-4 transition-all duration-300">
+              <div className="flex items-center gap-2 text-green-600 font-black text-sm">
+                <CheckCircle2 size={18} /> Email xác nhận đã được gửi!
+              </div>
+              {/* Email preview card */}
+              <div className="border border-gray-200 rounded-2xl overflow-hidden shadow-sm text-left">
+                {/* Email header */}
+                <div className="bg-[#1a73e8] px-5 py-3 flex items-center gap-3">
+                  <Mail size={18} className="text-white" />
+                  <span className="text-white font-black text-sm">Xác nhận lịch phỏng vấn</span>
                 </div>
-                <div className="grid grid-cols-7 gap-1 text-center">
-                  {["T2","T3","T4","T5","T6","T7","CN"].map((d) => <span key={d} className="text-[10px] font-black text-gray-300 uppercase py-2">{d}</span>)}
-                  {Array.from({ length: 31 }, (_, i) => i + 1).map((date) => {
-                    const isAvailable = [16, 17, 19].includes(date);
-                    const isSelected = date === 16;
-                    const isFullyBooked = [15, 18].includes(date);
-                    const isToday = date === new Date().getDate();
-                    return (
-                      <button key={date} disabled={!isAvailable}
-                        className={`aspect-square flex items-center justify-center rounded-xl text-xs font-black transition-all relative
-                          ${isSelected ? "bg-[#3B82F6] text-white scale-110 z-10" : isAvailable ? "text-[#1D1D1F] hover:bg-blue-50 hover:text-[#3B82F6]" : isFullyBooked ? "text-red-300 bg-red-50/30 cursor-not-allowed line-through" : "text-gray-200 cursor-not-allowed"}
-                          ${isToday ? "ring-2 ring-inset ring-[#3B82F6]/30" : ""}`}>
-                        {date}
-                        {isSelected && <div className="absolute inset-0 rounded-xl bg-blue-400/20 animate-ping"></div>}
-                      </button>
-                    );
-                  })}
+                <div className="px-5 py-4 space-y-1 bg-gray-50 border-b border-gray-100">
+                  <p className="text-[11px] text-gray-400 font-bold">Từ: <span className="text-gray-600">hr@nhileteam.com</span></p>
+                  <p className="text-[11px] text-gray-400 font-bold">Đến: <span className="text-gray-600">email của bạn</span></p>
+                </div>
+                {/* Email body */}
+                <div className="px-5 py-5 space-y-3 text-sm text-gray-700 leading-relaxed bg-white">
+                  <p>Chào bạn,</p>
+                  <p>Lịch phỏng vấn của bạn cùng với HR NhiLe Team đã được đặt lịch vào <strong>{dayName}, ngày {formattedDate}</strong> vào lúc <strong>{selectedTime} giờ (+GMT 7)</strong>.</p>
+                  <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 space-y-1">
+                    <p className="font-black text-[#1D1D1F] text-xs uppercase tracking-wider mb-2">Thông tin phòng Zoom</p>
+                    <p>• <strong>Meeting ID:</strong> 915 0873 2817</p>
+                    <p>• <strong>Passcode:</strong> 818527</p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="font-black text-[#1D1D1F]">📌 Trước khi vào phỏng vấn:</p>
+                    <p>• Mở Camera</p>
+                    <p>• Mở Mic</p>
+                    <p>• Chuẩn bị mạng ổn định (3G/Wifi)</p>
+                    <p>• Tham gia phòng zoom trước 10 phút.</p>
+                  </div>
+                  <p className="text-gray-500">Trân trọng,<br /><strong>HR NhiLe Team.</strong></p>
                 </div>
               </div>
-              <div className="w-full lg:w-48 space-y-4">
-                <h4 className="font-black text-sm text-[#1D1D1F] uppercase tracking-wider mb-2">Khung giờ</h4>
-                <div className="grid grid-cols-2 lg:grid-cols-1 gap-2">
-                  {["09:00","10:00","14:00","15:30","16:45"].map((t) => (
-                    <button key={t} onClick={() => setSelectedTime(t)}
-                      className={`py-3 px-4 border rounded-xl text-xs font-black transition-all text-center ${selectedTime === t ? "bg-[#1D4ED8] text-white border-transparent scale-105" : "border-gray-100 text-[#1D1D1F] hover:border-[#3B82F6] hover:text-[#3B82F6] hover:bg-blue-50"}`}>
-                      {t}
-                    </button>
-                  ))}
+              <button
+                onClick={() => { setCurrentStep(4); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+                className="bg-gradient-to-r from-[#2563EB] to-[#3B82F6] text-white px-10 py-4 rounded-2xl font-black text-sm shadow-xl shadow-blue-600/30 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2 w-full sm:w-auto"
+              >
+                Tiếp tục <ArrowRight size={18} />
+              </button>
+            </div>
+          );
+        }
+
+        return (
+          <div className="mt-6 space-y-6 transition-all duration-300">
+            <div className="bg-white border border-gray-100 rounded-[2rem] p-6 shadow-sm">
+              <div className="flex flex-col lg:flex-row gap-8">
+                {/* Calendar */}
+                <div className="flex-1 space-y-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="font-black text-sm text-[#1D1D1F] uppercase tracking-wider">Tháng 3, 2026</h4>
+                  </div>
+                  <div className="grid grid-cols-7 gap-1 text-center">
+                    {["T2","T3","T4","T5","T6","T7","CN"].map((d) => (
+                      <span key={d} className="text-[10px] font-black text-gray-300 uppercase py-2">{d}</span>
+                    ))}
+                    {/* Empty offset cells */}
+                    {Array.from({ length: offset }).map((_, i) => <div key={`e${i}`} />)}
+                    {Array.from({ length: 31 }, (_, i) => i + 1).map((date) => {
+                      const available = isAvailableDate(date);
+                      const isSelected = date === selectedDate;
+                      return (
+                        <button key={date} disabled={!available}
+                          onClick={() => available && setSelectedDate(date)}
+                          className={`aspect-square flex items-center justify-center rounded-xl text-xs font-black transition-all relative
+                            ${isSelected ? "bg-[#3B82F6] text-white scale-110 z-10 shadow-lg shadow-blue-400/30"
+                              : available ? "text-[#1D1D1F] hover:bg-blue-50 hover:text-[#3B82F6] cursor-pointer"
+                              : "text-gray-200 cursor-not-allowed"}`}>
+                          {date}
+                          {isSelected && <div className="absolute inset-0 rounded-xl bg-blue-400/20 animate-ping" />}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <p className="text-[10px] text-gray-400 font-bold">✓ Thứ 3, Thứ 4, Thứ 6 hàng tuần</p>
+                </div>
+                {/* Time slots */}
+                <div className="w-full lg:w-44 space-y-3">
+                  <h4 className="font-black text-sm text-[#1D1D1F] uppercase tracking-wider">Khung giờ</h4>
+                  <div className="grid grid-cols-2 lg:grid-cols-1 gap-2">
+                    {["19:00","19:30","20:00","20:30"].map((t) => (
+                      <button key={t} onClick={() => setSelectedTime(t)}
+                        className={`py-3 px-4 border rounded-xl text-sm font-black transition-all text-center
+                          ${selectedTime === t
+                            ? "bg-[#1D4ED8] text-white border-transparent shadow-md scale-105"
+                            : "border-gray-100 text-[#1D1D1F] hover:border-[#3B82F6] hover:text-[#3B82F6] hover:bg-blue-50"}`}>
+                        {t}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
+            {/* Confirm button */}
+            <button
+              disabled={!selectedDate || !selectedTime}
+              onClick={() => setShowScheduleConfirm(true)}
+              className={`flex items-center justify-center gap-2 px-10 py-4 rounded-2xl font-black text-sm transition-all w-full sm:w-auto
+                ${selectedDate && selectedTime
+                  ? "bg-gradient-to-r from-[#2563EB] to-[#3B82F6] text-white shadow-xl shadow-blue-600/30 hover:scale-[1.02] active:scale-95"
+                  : "bg-gray-100 text-gray-400 cursor-not-allowed"}`}>
+              <Send size={16} /> Xác nhận lịch hẹn
+            </button>
           </div>
-          <button onClick={() => { setCurrentStep(4); window.scrollTo({ top: 0, behavior: "smooth" }); }}
-            className="bg-gradient-to-r from-[#2563EB] to-[#3B82F6] text-white px-10 py-4 rounded-2xl font-black text-sm shadow-xl shadow-blue-600/30 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2 w-full sm:w-auto">
-            Xác nhận lịch hẹn <ArrowRight size={18} />
-          </button>
-        </div>
-      ),
+        );
+      })(),
     },
     {
       id: 4,
