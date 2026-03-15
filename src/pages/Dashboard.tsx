@@ -93,6 +93,7 @@ const Dashboard = () => {
   const [selectedTime, setSelectedTime] = useState("");
   const [selectedDate, setSelectedDate] = useState<number | null>(null);
   const [showScheduleConfirm, setShowScheduleConfirm] = useState(false);
+  const [isImageFullscreen, setIsImageFullscreen] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -218,8 +219,8 @@ const Dashboard = () => {
           <p className="text-sm font-bold text-gray-600 leading-relaxed">
             Hãy dành 5 phút để đọc và tìm hiểu bài test văn hoá của NhiLe Team nhé.
           </p>
-          <div className="rounded-2xl overflow-hidden border border-gray-100 shadow-sm">
-            <img src="https://lh3.googleusercontent.com/d/1dZvgi4ZLZoTD1-hGLeHStSO4v3J2CYzV" alt="Văn hoá NhiLe Team" className="w-full object-cover max-h-72" />
+          <div className="rounded-2xl overflow-hidden border border-gray-100 shadow-sm cursor-zoom-in" onClick={() => setIsImageFullscreen(true)}>
+            <img src="https://lh3.googleusercontent.com/d/1dZvgi4ZLZoTD1-hGLeHStSO4v3J2CYzV" alt="Văn hoá NhiLe Team" className="w-full object-cover max-h-72 hover:scale-105 transition-transform duration-300" />
           </div>
           <button onClick={() => openQuiz("culture")} className="bg-blue-600 text-white px-8 py-3.5 rounded-2xl font-black text-sm shadow-lg shadow-blue-600/20 hover:bg-blue-700 active:scale-95 transition-all flex items-center gap-2 w-full sm:w-auto justify-center">
             Làm bài test văn hoá <ArrowRight size={16} />
@@ -646,6 +647,24 @@ const Dashboard = () => {
               </div>
             )}
           </div>
+        </div>
+      )}
+
+      {/* Fullscreen image lightbox */}
+      {isImageFullscreen && (
+        <div
+          className="fixed inset-0 z-[200] bg-black/90 flex items-center justify-center p-4 animate-in fade-in duration-200"
+          onClick={() => setIsImageFullscreen(false)}
+        >
+          <button className="absolute top-4 right-4 text-white/70 hover:text-white transition-colors z-10">
+            <X size={32} />
+          </button>
+          <img
+            src="https://lh3.googleusercontent.com/d/1dZvgi4ZLZoTD1-hGLeHStSO4v3J2CYzV"
+            alt="Văn hoá NhiLe Team"
+            className="max-w-full max-h-full object-contain rounded-2xl animate-in zoom-in-95 duration-200"
+            onClick={(e) => { e.stopPropagation(); }}
+          />
         </div>
       )}
 
