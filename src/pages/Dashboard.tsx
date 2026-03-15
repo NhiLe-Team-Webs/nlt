@@ -626,10 +626,7 @@ const Dashboard = () => {
                               <div className="flex items-center gap-3 mb-1">
                                 <span className="text-xl">{TEAM_INFO[team].emoji}</span>
                                 <span className="font-black text-[#1D1D1F] text-sm">{TEAM_INFO[team].label}</span>
-                                <span className="ml-auto text-xs font-black text-indigo-600 bg-indigo-100 px-2 py-0.5 rounded-lg">
-                                  {finalRoleScoresRef.current[team]} điểm
-                                </span>
-                              </div>
+                                              </div>
                               <p className="text-xs text-gray-500 font-medium pl-9">{TEAM_INFO[team].desc}</p>
                             </div>
                           ))}
