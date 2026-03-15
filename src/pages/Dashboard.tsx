@@ -781,8 +781,8 @@ const Dashboard = () => {
       {/* Return Member Quiz Modal — always mounted to preserve state on close */}
       <ReturnMemberQuizModal
         isOpen={showReturnQuiz}
-        onPass={() => { localStorage.setItem("nlt_rt_result", "pass"); setReturnTestResult("pass"); setCurrentStep(2); window.scrollTo({ top: 0, behavior: "smooth" }); }}
-        onFail={() => { localStorage.setItem("nlt_rt_result", "fail"); setReturnTestResult("fail"); }}
+        onPass={() => { setReturnTestResult("pass"); setCurrentStep(2); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+        onFail={() => setReturnTestResult("fail")}
         onClose={() => setShowReturnQuiz(false)}
       />
 
