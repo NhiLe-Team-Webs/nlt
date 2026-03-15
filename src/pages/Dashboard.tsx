@@ -69,7 +69,7 @@ const Dashboard = () => {
       setShowQuizResult(false);
       setCurrentQuestionIndex(0);
       setQuizAnswers([]);
-      setCurrentStep(activeQuizType === "skill" ? 3 : 4);
+      setCurrentStep(activeQuizType === "skill" ? 2 : 3);
       window.scrollTo({ top: 0, behavior: "smooth" });
     }, 1500); // Reduced delay for snappier feel
   };
@@ -83,30 +83,13 @@ const Dashboard = () => {
   const steps = [
     {
       id: 1,
-      title: 'Phân loại thành viên',
-      desc: userType === 'active' ? "Chào mừng thành viên nhà NLT." : "Chào mừng bạn đến với NhiLe Team!",
-      icon: <ClipboardCheck className="w-6 h-6" />,
-      status: currentStep === 1 ? 'active' : 'completed',
-      customContent: (
-        <div className="mt-4 transition-all duration-300">
-           <button 
-              onClick={() => setCurrentStep(2)}
-              className="bg-blue-600 text-white px-8 py-3.5 rounded-2xl font-black text-sm shadow-lg shadow-blue-600/20 hover:bg-blue-700 active:scale-95 transition-all w-full sm:w-auto"
-            >
-              Tiếp tục bước 2
-            </button>
-        </div>
-      )
-    },
-    {
-      id: 2,
       title: 'Bài test năng lực',
       desc: userType === 'active' ? QUIZ_STEPS_DATA.active.skill.desc : QUIZ_STEPS_DATA.new.skill.desc,
       icon: <BrainCircuit className="w-6 h-6" />,
-      status: currentStep === 2 ? 'active' : currentStep > 2 ? 'completed' : 'locked',
+      status: currentStep === 1 ? 'active' : currentStep > 1 ? 'completed' : 'locked',
       customContent: (
         <div className="mt-6 space-y-3 transition-all duration-300">
-           <button 
+           <button
               onClick={() => { setActiveQuizType("skill"); setIsQuizModalOpen(true); }}
               className="bg-white text-blue-600 border border-blue-600/30 px-6 py-3.5 rounded-2xl font-black text-sm shadow-sm hover:bg-blue-50 active:scale-95 transition-all flex items-center justify-center gap-2 w-full sm:w-auto"
             >
@@ -116,14 +99,14 @@ const Dashboard = () => {
       )
     },
     {
-      id: 3,
+      id: 2,
       title: 'Bài test văn hóa',
       desc: 'Tìm hiểu giá trị cốt lõi tại NhiLe Team.',
       icon: <ClipboardCheck className="w-6 h-6" />,
-      status: currentStep === 3 ? 'active' : currentStep > 3 ? 'completed' : 'locked',
+      status: currentStep === 2 ? 'active' : currentStep > 2 ? 'completed' : 'locked',
       customContent: (
         <div className="mt-6 transition-all duration-300">
-           <button 
+           <button
               onClick={() => { setActiveQuizType("culture"); setIsQuizModalOpen(true); }}
               className="bg-white text-blue-600 border border-blue-600/30 px-6 py-3.5 rounded-2xl font-black text-sm shadow-sm hover:bg-blue-50 active:scale-95 transition-all flex items-center justify-center gap-2 w-full sm:w-auto"
             >
@@ -133,11 +116,11 @@ const Dashboard = () => {
       )
     },
     {
-      id: 4,
+      id: 3,
       title: 'Đặt lịch phỏng vấn',
       desc: 'Chọn thời gian phù hợp để gặp gỡ trao đổi trực tiếp nhé.',
       icon: <Calendar className="w-6 h-6" />,
-      status: currentStep === 4 ? 'active' : currentStep > 4 ? 'completed' : 'locked',
+      status: currentStep === 3 ? 'active' : currentStep > 3 ? 'completed' : 'locked',
       customContent: (
         <div className="mt-8 space-y-8 transition-all duration-300">
            {/* Inline Calendar UI */}
@@ -211,7 +194,7 @@ const Dashboard = () => {
 
             <div className="flex flex-col sm:flex-row gap-3 pt-2 justify-center lg:justify-start">
               <button 
-                 onClick={() => { setCurrentStep(5); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                 onClick={() => { setCurrentStep(4); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
                  className="bg-gradient-to-r from-[#2563EB] to-[#3B82F6] text-white px-10 py-4 rounded-2xl font-black text-sm shadow-xl shadow-blue-600/30 hover:shadow-2xl hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2 w-full sm:w-auto"
                >
                  Xác nhận lịch hẹn <ArrowRight size={18} />
@@ -221,11 +204,11 @@ const Dashboard = () => {
       )
     },
     {
-      id: 5,
+      id: 4,
       title: 'Pass phỏng vấn',
       desc: 'Theo dõi email cá nhân để nhận thông báo chính thức nhé.',
       icon: <Video className="w-6 h-6" />,
-      status: currentStep === 5 ? 'active' : currentStep > 5 ? 'completed' : 'locked',
+      status: currentStep === 4 ? 'active' : currentStep > 4 ? 'completed' : 'locked',
       customContent: (
         <div className="mt-6 text-left">
            <div className="bg-blue-50 p-5 rounded-2xl border border-blue-100 space-y-3">
@@ -235,7 +218,7 @@ const Dashboard = () => {
               </p>
            </div>
            <button 
-              onClick={() => { setCurrentStep(6); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+              onClick={() => { setCurrentStep(5); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
               className="bg-blue-600 text-white px-8 py-3.5 rounded-2xl font-black text-sm shadow-xl shadow-blue-600/20 hover:bg-blue-700 active:scale-95 transition-all w-full sm:w-auto mt-4"
             >
               Tiến tới bước cuối cùng
@@ -244,11 +227,11 @@ const Dashboard = () => {
       )
     },
     {
-      id: 6,
+      id: 5,
       title: 'Về nhà thôi!',
       desc: 'Hoàn thiện hồ sơ cuối để chính thức bắt đầu hành trình.',
       icon: <PartyPopper className="w-6 h-6" />,
-      status: currentStep === 6 ? 'active' : 'locked',
+      status: currentStep === 5 ? 'active' : 'locked',
       customContent: (
         <div className="mt-8 text-left">
            <div className="relative group overflow-hidden bg-gradient-to-br from-[#3B82F6] to-[#8B5CF6] p-8 rounded-[2.5rem] shadow-2xl shadow-purple-500/20">
@@ -333,12 +316,12 @@ const Dashboard = () => {
                   <div className="w-2 h-2 rounded-full bg-blue-600 animate-pulse"></div>
                   <span className="text-[11px] font-black text-blue-600 uppercase tracking-[0.15em]">Tiến trình thành viên</span>
                 </div>
-                <span className="text-xs font-black text-blue-600">{currentStep === 6 ? "100" : Math.round((currentStep / 6) * 100)}%</span>
+                <span className="text-xs font-black text-blue-600">{currentStep === 5 ? "100" : Math.round((currentStep / 5) * 100)}%</span>
               </div>
               <div className="h-4 w-full bg-blue-50 rounded-full overflow-hidden p-1 border border-blue-100/50">
                 <div 
                   className="h-full bg-gradient-to-r from-[#2563EB] via-[#3B82F6] to-[#60A5FA] bg-[length:200%_100%] animate-shimmer transition-all duration-1000 ease-out rounded-full shadow-[0_0_15px_rgba(37,99,235,0.4)]"
-                  style={{ width: `${(currentStep / 6) * 100}%` }}
+                  style={{ width: `${(currentStep / 5) * 100}%` }}
                 />
               </div>
             </div>
@@ -354,7 +337,7 @@ const Dashboard = () => {
                     ${step.status === 'completed' 
                       ? 'bg-[#10B981] text-white' 
                       : isActive 
-                        ? step.id === 6 
+                        ? step.id === 5
                           ? 'bg-gradient-to-br from-[#FB923C] to-[#F59E0B] text-white ring-8 ring-orange-500/10 animate-bounce-subtle' 
                           : 'bg-[#3B82F6] text-white ring-8 ring-blue-600/5 shadow-lg shadow-blue-500/20' 
                         : 'bg-white text-gray-200 border border-gray-100'}`}>
