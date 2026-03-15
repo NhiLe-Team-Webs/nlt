@@ -88,6 +88,8 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const userType = location.state?.userType || "new";
+  const isActiveMember = userType === "active";
+  const totalSteps = isActiveMember ? 3 : 5;
 
   const [currentStep, setCurrentStep] = useState(1);
   const [selectedTime, setSelectedTime] = useState("");
@@ -214,7 +216,7 @@ const Dashboard = () => {
 
   // ─── Steps ──────────────────────────────────────────────────────────────
 
-  const steps = [
+  const allSteps = [
     {
       id: 1,
       title: "Bài test văn hoá",
@@ -318,7 +320,7 @@ const Dashboard = () => {
             {/* Confirm button */}
             <button
               disabled={!selectedDate || !selectedTime}
-              onClick={() => { setCurrentStep(4); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+              onClick={() => { setCurrentStep(isActiveMember ? 3 : 4); window.scrollTo({ top: 0, behavior: "smooth" }); }}
               className={`flex items-center justify-center gap-2 px-10 py-4 rounded-2xl font-black text-sm transition-all w-full sm:w-auto
                 ${selectedDate && selectedTime
                   ? "bg-gradient-to-r from-[#2563EB] to-[#3B82F6] text-white shadow-xl shadow-blue-600/30 hover:scale-[1.02] active:scale-95"
@@ -337,10 +339,12 @@ const Dashboard = () => {
       status: currentStep === 4 ? "active" : currentStep > 4 ? "completed" : "locked",
       customContent: (
         <div className="mt-6">
-          <button onClick={() => { setCurrentStep(5); window.scrollTo({ top: 0, behavior: "smooth" }); }}
-            className="bg-gradient-to-r from-[#2563EB] to-[#3B82F6] text-white px-10 py-4 rounded-2xl font-black text-sm shadow-xl shadow-blue-600/30 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2 w-full sm:w-auto">
-            Tiếp tục <ArrowRight size={16} />
-          </button>
+          {!isActiveMember && (
+            <button onClick={() => { setCurrentStep(5); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+              className="bg-gradient-to-r from-[#2563EB] to-[#3B82F6] text-white px-10 py-4 rounded-2xl font-black text-sm shadow-xl shadow-blue-600/30 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2 w-full sm:w-auto">
+              Tiếp tục <ArrowRight size={16} />
+            </button>
+          )}
         </div>
       ),
     },
@@ -423,6 +427,15 @@ const Dashboard = () => {
     },
   ];
 
+  const ACTIVE_STEP_IDS = [1, 3, 4];
+  const steps = isActiveMember
+    ? allSteps.filter(s => ACTIVE_STEP_IDS.includes(s.id)).map((s, i) => ({
+        ...s,
+        id: i + 1,
+        status: currentStep === i + 1 ? "active" : currentStep > i + 1 ? "completed" : "locked",
+      }))
+    : allSteps;
+
   // ─── Render helpers ──────────────────────────────────────────────────────
 
   const timerPercent = (timer / TIMER_SECONDS) * 100;
@@ -486,11 +499,11 @@ const Dashboard = () => {
                   <div className="w-2 h-2 rounded-full bg-blue-600 animate-pulse"></div>
                   <span className="text-[11px] font-black text-blue-600 uppercase tracking-[0.15em]">Tiến trình thành viên</span>
                 </div>
-                <span className="text-xs font-black text-blue-600">{currentStep === 5 ? "100" : Math.round((currentStep / 5) * 100)}%</span>
+                <span className="text-xs font-black text-blue-600">{currentStep === totalSteps ? "100" : Math.round((currentStep / totalSteps) * 100)}%</span>
               </div>
               <div className="h-4 w-full bg-blue-50 rounded-full overflow-hidden p-1 border border-blue-100/50">
                 <div className="h-full bg-gradient-to-r from-[#2563EB] via-[#3B82F6] to-[#60A5FA] bg-[length:200%_100%] animate-shimmer transition-all duration-1000 ease-out rounded-full shadow-[0_0_15px_rgba(37,99,235,0.4)]"
-                  style={{ width: `${(currentStep / 5) * 100}%` }} />
+                  style={{ width: `${(currentStep / totalSteps) * 100}%` }} />
               </div>
             </div>
           </header>
