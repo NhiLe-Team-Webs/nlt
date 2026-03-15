@@ -469,13 +469,16 @@ const Dashboard = () => {
     customContent: (
       <div className="mt-6 space-y-4">
         {returnTestResult === "fail" ? (
-          <div className="bg-gray-50 border border-gray-200 rounded-2xl p-6 space-y-3">
+          <div className="bg-gray-50 border border-gray-200 rounded-2xl p-6 space-y-4">
             <p className="text-sm font-medium text-gray-600 leading-relaxed">
               Cảm ơn bạn đã dành thời gian làm bài test và quan tâm quay lại với NhiLe Team. Sau khi kiểm tra kết quả, chỉ số hiện tại chưa phù hợp với yêu cầu để tham gia vòng phỏng vấn, vì vậy team chưa thể sắp xếp buổi phỏng vấn cho bạn trong thời điểm này.
             </p>
-            <p className="text-sm font-medium text-gray-600 leading-relaxed">
-              Team ghi nhận tinh thần chủ động và cách bạn hoàn thành bài làm. Bạn có thể đăng ký làm lại bài test sau 03 tháng. Chúc bạn có thêm nhiều trải nghiệm tích cực.
-            </p>
+            <button
+              onClick={() => { setReturnTestResult("none"); setReturnTestOpened(false); }}
+              className="bg-gradient-to-r from-[#6366F1] to-[#8B5CF6] text-white px-6 py-3 rounded-2xl font-black text-sm shadow-lg shadow-indigo-500/20 hover:opacity-90 active:scale-95 transition-all flex items-center gap-2"
+            >
+              <RotateCcw size={15} /> Làm lại bài test
+            </button>
           </div>
         ) : returnTestResult === "pass" ? (
           <div className="bg-green-50 border border-green-200 rounded-2xl p-5 flex items-center gap-3">

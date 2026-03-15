@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { X, CheckCircle2, XCircle, ArrowRight } from "lucide-react";
+import { X, CheckCircle2, XCircle, ArrowRight, RotateCcw } from "lucide-react";
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
 
@@ -116,6 +116,16 @@ export default function ReturnMemberQuizModal({ isOpen, onPass, onFail, onClose 
     const total = mc + essay;
     setResult({ mc, essay, total, passed: total >= PASS_TOTAL });
     setPhase("result");
+  };
+
+  const handleRetry = () => {
+    clearQuizStorage();
+    setPhase("mc");
+    setMcIndex(0);
+    setMcAnswers([]);
+    setEssayAnswers(Array(6).fill(""));
+    setResult(null);
+    setTimer(TIMER_SECONDS);
   };
 
   const timerPercent = (timer / TIMER_SECONDS) * 100;
@@ -247,14 +257,16 @@ export default function ReturnMemberQuizModal({ isOpen, onPass, onFail, onClose 
                   </p>
                   <p className="text-xs text-gray-400">Trắc nghiệm: {result.mc}/100 · Tự luận: {result.essay}/30</p>
                 </div>
-                <p className="text-sm text-gray-500 font-medium leading-relaxed text-left bg-gray-50 rounded-2xl p-5">
-                  Cảm ơn bạn đã dành thời gian làm bài test và quan tâm quay lại với NhiLe Team. Sau khi kiểm tra kết quả, chỉ số hiện tại chưa phù hợp với yêu cầu để tham gia vòng phỏng vấn.<br /><br />
-                  Bạn có thể đăng ký làm lại bài test sau <strong>03 tháng</strong>. Chúc bạn có thêm nhiều trải nghiệm tích cực và hành trình phía trước diễn ra thuận lợi.
-                </p>
-                <button onClick={() => { clearQuizStorage(); onFail(); onClose(); }}
-                  className="flex items-center gap-2 mx-auto bg-gray-100 hover:bg-gray-200 text-gray-600 px-8 py-3.5 rounded-2xl font-black text-sm transition-all">
-                  Đóng
-                </button>
+                <div className="flex gap-3 justify-center">
+                  <button onClick={handleRetry}
+                    className="flex items-center gap-2 bg-[#6366F1] text-white px-8 py-3.5 rounded-2xl font-black text-sm shadow-lg shadow-indigo-500/20 hover:bg-indigo-700 active:scale-95 transition-all">
+                    <RotateCcw size={16} /> Làm lại
+                  </button>
+                  <button onClick={() => { clearQuizStorage(); onFail(); onClose(); }}
+                    className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-600 px-8 py-3.5 rounded-2xl font-black text-sm transition-all">
+                    Đóng
+                  </button>
+                </div>
               </>
             )}
           </div>
