@@ -422,7 +422,7 @@ const Dashboard = () => {
       </div>
 
       {/* Sidebar */}
-      <aside className={`fixed inset-0 z-[90] md:relative md:flex md:w-80 bg-white border-r border-gray-100 p-8 flex-col justify-between h-screen transition-transform duration-500 ${isMobileMenuOpen ? "translate-y-0" : "-translate-y-full md:translate-y-0"}`}>
+      <aside className={`fixed inset-0 z-[90] md:sticky md:top-0 md:flex md:w-80 bg-white border-r border-gray-100 p-8 flex-col justify-between h-screen transition-transform duration-500 ${isMobileMenuOpen ? "translate-y-0" : "-translate-y-full md:translate-y-0"}`}>
         <div className="space-y-10">
           <div className="hidden md:flex flex-col items-center justify-center w-full">
             <img src="/logo.webp" alt="NLT" className="w-20 h-20 object-contain hover:scale-110 transition-transform duration-500" />
