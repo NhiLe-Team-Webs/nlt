@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import ProfileInfoModal from "../components/profile-info-modal";
+import ReturnMemberQuizModal from "../components/return-member-quiz-modal";
 import {
   CheckCircle2,
   Calendar,
@@ -114,6 +115,7 @@ const Dashboard = () => {
   // Return test states
   const [returnTestOpened, setReturnTestOpened] = useState(false);
   const [returnTestResult, setReturnTestResult] = useState<"none" | "pass" | "fail">("none");
+  const [showReturnQuiz, setShowReturnQuiz] = useState(false);
 
   // Step 5 states
   const [showProfileModal, setShowProfileModal] = useState(false);
@@ -444,55 +446,35 @@ const Dashboard = () => {
     customContent: (
       <div className="mt-6 space-y-4">
         {returnTestResult === "fail" ? (
-          <div className="bg-gray-50 border border-gray-200 rounded-2xl p-6 space-y-4">
+          <div className="bg-gray-50 border border-gray-200 rounded-2xl p-6 space-y-3">
             <p className="text-sm font-medium text-gray-600 leading-relaxed">
               Cảm ơn bạn đã dành thời gian làm bài test và quan tâm quay lại với NhiLe Team. Sau khi kiểm tra kết quả, chỉ số hiện tại chưa phù hợp với yêu cầu để tham gia vòng phỏng vấn, vì vậy team chưa thể sắp xếp buổi phỏng vấn cho bạn trong thời điểm này.
             </p>
             <p className="text-sm font-medium text-gray-600 leading-relaxed">
-              Team ghi nhận tinh thần chủ động và cách bạn hoàn thành bài làm. Đây là những điểm tích cực trong quá trình bạn tham gia.
-            </p>
-            <p className="text-sm font-medium text-gray-600 leading-relaxed">
-              Bạn có thể đăng ký làm lại bài test sau 03 tháng, khi đã có thêm thời gian nhìn lại, học hỏi và bổ sung những kỹ năng cần thiết. Khi đến thời điểm phù hợp, team luôn sẵn sàng tiếp nhận lại hồ sơ của bạn theo đúng quy trình.
-            </p>
-            <p className="text-sm font-medium text-gray-600 leading-relaxed">
-              Chúc bạn có thêm nhiều trải nghiệm tích cực và hành trình phía trước diễn ra thuận lợi.
+              Team ghi nhận tinh thần chủ động và cách bạn hoàn thành bài làm. Bạn có thể đăng ký làm lại bài test sau 03 tháng. Chúc bạn có thêm nhiều trải nghiệm tích cực.
             </p>
           </div>
+        ) : returnTestResult === "pass" ? (
+          <div className="bg-green-50 border border-green-200 rounded-2xl p-5 flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-green-500 flex items-center justify-center shrink-0">
+              <ClipboardCheck size={16} className="text-white" />
+            </div>
+            <p className="font-black text-sm text-green-700">Bài test đã hoàn thành — bạn đã đạt! 🎉</p>
+          </div>
         ) : (
-          <>
-            {!returnTestOpened ? (
-              <button
-                onClick={() => { setReturnTestOpened(true); window.open("https://docs.google.com/document/d/1yXGNA55fEDOJ2azeOOh8j_t1vWZ0_IgWMruGoQPL99k/edit?usp=sharing", "_blank"); }}
-                className="w-full flex items-center gap-3 p-5 rounded-2xl border-2 border-blue-200 bg-blue-50 hover:bg-blue-100 transition-all text-left"
-              >
-                <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center shrink-0">
-                  <ClipboardCheck size={18} className="text-white" />
-                </div>
-                <div>
-                  <p className="font-black text-sm text-[#1D1D1F]">Mở bài test</p>
-                  <p className="text-xs text-gray-400 font-medium mt-0.5">Nhấn để mở bài test trong tab mới</p>
-                </div>
-              </button>
-            ) : (
-              <div className="space-y-3">
-                <p className="text-sm font-bold text-gray-500">Sau khi hoàn thành bài test, chọn kết quả:</p>
-                <div className="flex gap-3">
-                  <button
-                    onClick={() => { setReturnTestResult("pass"); setCurrentStep(2); window.scrollTo({ top: 0, behavior: "smooth" }); }}
-                    className="flex-1 py-3 rounded-2xl font-black text-sm bg-green-500 hover:bg-green-600 text-white transition-all"
-                  >
-                    Đạt ✓
-                  </button>
-                  <button
-                    onClick={() => setReturnTestResult("fail")}
-                    className="flex-1 py-3 rounded-2xl font-black text-sm bg-gray-200 hover:bg-gray-300 text-gray-700 transition-all"
-                  >
-                    Chưa đạt
-                  </button>
-                </div>
-              </div>
-            )}
-          </>
+          <button
+            disabled={returnTestOpened}
+            onClick={() => { setReturnTestOpened(true); setShowReturnQuiz(true); }}
+            className="w-full flex items-center gap-3 p-5 rounded-2xl border-2 border-blue-200 bg-blue-50 hover:bg-blue-100 transition-all text-left disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center shrink-0">
+              <ClipboardCheck size={18} className="text-white" />
+            </div>
+            <div>
+              <p className="font-black text-sm text-[#1D1D1F]">Bắt đầu bài test</p>
+              <p className="text-xs text-gray-400 font-medium mt-0.5">20 câu trắc nghiệm + 6 câu tự luận · chỉ làm 1 lần</p>
+            </div>
+          </button>
         )}
       </div>
     ),
@@ -754,6 +736,15 @@ const Dashboard = () => {
             onClick={(e) => { e.stopPropagation(); }}
           />
         </div>
+      )}
+
+      {/* Return Member Quiz Modal */}
+      {showReturnQuiz && (
+        <ReturnMemberQuizModal
+          onPass={() => { setReturnTestResult("pass"); setCurrentStep(2); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+          onFail={() => setReturnTestResult("fail")}
+          onClose={() => setShowReturnQuiz(false)}
+        />
       )}
 
       {/* Profile Info Modal */}
