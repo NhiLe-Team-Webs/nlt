@@ -92,7 +92,7 @@ const Dashboard = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [selectedTime, setSelectedTime] = useState("");
   const [selectedDate, setSelectedDate] = useState<number | null>(null);
-  const [showScheduleConfirm, setShowScheduleConfirm] = useState(false);
+
   const [isImageFullscreen, setIsImageFullscreen] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -264,32 +264,6 @@ const Dashboard = () => {
         const offset = firstDayOfWeek === 0 ? 6 : firstDayOfWeek - 1;
         const isAvailableDate = (d: number) => [2, 3, 5].includes(new Date(2026, 2, d).getDay()); // Tue=2,Wed=3,Fri=5
 
-        if (showScheduleConfirm && selectedDate && selectedTime) {
-          return (
-            <div className="mt-6 space-y-5 transition-all duration-300">
-              <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100 rounded-2xl p-6 flex gap-4 items-start">
-                <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center shrink-0 shadow-md shadow-blue-200">
-                  <CheckCircle2 size={20} className="text-white" />
-                </div>
-                <div className="space-y-1">
-                  <p className="font-black text-[#1D1D1F] text-base leading-snug">
-                    Lịch phỏng vấn của bạn đã được xác nhận.
-                  </p>
-                  <p className="text-sm font-medium text-gray-500 leading-relaxed">
-                    Bạn kiểm tra email để nhận được đầy đủ thông tin hơn nhé.
-                  </p>
-                </div>
-              </div>
-              <button
-                onClick={() => { setCurrentStep(4); window.scrollTo({ top: 0, behavior: "smooth" }); }}
-                className="bg-gradient-to-r from-[#2563EB] to-[#3B82F6] text-white px-10 py-4 rounded-2xl font-black text-sm shadow-xl shadow-blue-600/30 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2 w-full sm:w-auto"
-              >
-                Tiếp tục <ArrowRight size={18} />
-              </button>
-            </div>
-          );
-        }
-
         return (
           <div className="mt-6 space-y-6 transition-all duration-300">
             <div className="bg-white border border-gray-100 rounded-[2rem] p-6 shadow-sm">
@@ -343,7 +317,7 @@ const Dashboard = () => {
             {/* Confirm button */}
             <button
               disabled={!selectedDate || !selectedTime}
-              onClick={() => setShowScheduleConfirm(true)}
+              onClick={() => { setCurrentStep(4); window.scrollTo({ top: 0, behavior: "smooth" }); }}
               className={`flex items-center justify-center gap-2 px-10 py-4 rounded-2xl font-black text-sm transition-all w-full sm:w-auto
                 ${selectedDate && selectedTime
                   ? "bg-gradient-to-r from-[#2563EB] to-[#3B82F6] text-white shadow-xl shadow-blue-600/30 hover:scale-[1.02] active:scale-95"
