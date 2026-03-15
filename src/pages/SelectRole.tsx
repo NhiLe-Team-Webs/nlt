@@ -9,7 +9,7 @@ const SelectRole = () => {
 
   const roles = [
     { id: "new", label: "Lần đầu vào team", icon: <UserPlusIcon className="w-5 h-5" /> },
-    { id: "returning", label: "Cựu thành viên quay lại", icon: <UserGroupIcon className="w-5 h-5" /> },
+    { id: "returning", label: "Thành viên quay lại", icon: <UserGroupIcon className="w-5 h-5" /> },
     { id: "active", label: "Thành viên đang hoạt động", icon: <UserIcon className="w-5 h-5" /> },
   ];
 

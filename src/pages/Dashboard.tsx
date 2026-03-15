@@ -89,6 +89,7 @@ const Dashboard = () => {
   const location = useLocation();
   const userType = location.state?.userType || "new";
   const isActiveMember = userType === "active";
+  const isReturning = userType === "returning";
   const totalSteps = isActiveMember ? 3 : 5;
 
   const [currentStep, setCurrentStep] = useState(1);
@@ -109,6 +110,10 @@ const Dashboard = () => {
   const [quizPassed, setQuizPassed] = useState(false);
   const [roleScores, setRoleScores] = useState<Record<TeamKey, number>>({ ...EMPTY_SCORES });
   const finalRoleScoresRef = useRef<Record<TeamKey, number>>({ ...EMPTY_SCORES });
+
+  // Return test states
+  const [returnTestOpened, setReturnTestOpened] = useState(false);
+  const [returnTestResult, setReturnTestResult] = useState<"none" | "pass" | "fail">("none");
 
   // Step 5 states
   const [showProfileModal, setShowProfileModal] = useState(false);
@@ -187,7 +192,7 @@ const Dashboard = () => {
         if (passed) {
           setTimeout(() => {
             closeQuiz();
-            setCurrentStep(2);
+            setCurrentStep(currentStep + 1);
             window.scrollTo({ top: 0, behavior: "smooth" });
           }, 2000);
         }
@@ -320,7 +325,7 @@ const Dashboard = () => {
             {/* Confirm button */}
             <button
               disabled={!selectedDate || !selectedTime}
-              onClick={() => { setCurrentStep(isActiveMember ? 3 : 4); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+              onClick={() => { setCurrentStep(currentStep + 1); window.scrollTo({ top: 0, behavior: "smooth" }); }}
               className={`flex items-center justify-center gap-2 px-10 py-4 rounded-2xl font-black text-sm transition-all w-full sm:w-auto
                 ${selectedDate && selectedTime
                   ? "bg-gradient-to-r from-[#2563EB] to-[#3B82F6] text-white shadow-xl shadow-blue-600/30 hover:scale-[1.02] active:scale-95"
@@ -340,7 +345,7 @@ const Dashboard = () => {
       customContent: (
         <div className="mt-6">
           {!isActiveMember && (
-            <button onClick={() => { setCurrentStep(5); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+            <button onClick={() => { setCurrentStep(currentStep + 1); window.scrollTo({ top: 0, behavior: "smooth" }); }}
               className="bg-gradient-to-r from-[#2563EB] to-[#3B82F6] text-white px-10 py-4 rounded-2xl font-black text-sm shadow-xl shadow-blue-600/30 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2 w-full sm:w-auto">
               Tiếp tục <ArrowRight size={16} />
             </button>
@@ -428,12 +433,78 @@ const Dashboard = () => {
   ];
 
   const ACTIVE_STEP_IDS = [1, 3, 4];
+  const RETURNING_STEP_IDS = [1, 3, 4, 5];
+
+  const returnTestStep = {
+    id: 0,
+    title: "Bài test quay trở lại",
+    desc: "Hoàn thành bài test để tiếp tục hành trình cùng NhiLe Team.",
+    icon: <ClipboardCheck className="w-6 h-6" />,
+    status: "active",
+    customContent: (
+      <div className="mt-6 space-y-4">
+        {returnTestResult === "fail" ? (
+          <div className="bg-gray-50 border border-gray-200 rounded-2xl p-6 space-y-4">
+            <p className="text-sm font-medium text-gray-600 leading-relaxed">
+              Cảm ơn bạn đã dành thời gian làm bài test và quan tâm quay lại với NhiLe Team. Sau khi kiểm tra kết quả, chỉ số hiện tại chưa phù hợp với yêu cầu để tham gia vòng phỏng vấn, vì vậy team chưa thể sắp xếp buổi phỏng vấn cho bạn trong thời điểm này.
+            </p>
+            <p className="text-sm font-medium text-gray-600 leading-relaxed">
+              Team ghi nhận tinh thần chủ động và cách bạn hoàn thành bài làm. Đây là những điểm tích cực trong quá trình bạn tham gia.
+            </p>
+            <p className="text-sm font-medium text-gray-600 leading-relaxed">
+              Bạn có thể đăng ký làm lại bài test sau 03 tháng, khi đã có thêm thời gian nhìn lại, học hỏi và bổ sung những kỹ năng cần thiết. Khi đến thời điểm phù hợp, team luôn sẵn sàng tiếp nhận lại hồ sơ của bạn theo đúng quy trình.
+            </p>
+            <p className="text-sm font-medium text-gray-600 leading-relaxed">
+              Chúc bạn có thêm nhiều trải nghiệm tích cực và hành trình phía trước diễn ra thuận lợi.
+            </p>
+          </div>
+        ) : (
+          <>
+            {!returnTestOpened ? (
+              <button
+                onClick={() => { setReturnTestOpened(true); window.open("https://docs.google.com/document/d/1yXGNA55fEDOJ2azeOOh8j_t1vWZ0_IgWMruGoQPL99k/edit?usp=sharing", "_blank"); }}
+                className="w-full flex items-center gap-3 p-5 rounded-2xl border-2 border-blue-200 bg-blue-50 hover:bg-blue-100 transition-all text-left"
+              >
+                <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center shrink-0">
+                  <ClipboardCheck size={18} className="text-white" />
+                </div>
+                <div>
+                  <p className="font-black text-sm text-[#1D1D1F]">Mở bài test</p>
+                  <p className="text-xs text-gray-400 font-medium mt-0.5">Nhấn để mở bài test trong tab mới</p>
+                </div>
+              </button>
+            ) : (
+              <div className="space-y-3">
+                <p className="text-sm font-bold text-gray-500">Sau khi hoàn thành bài test, chọn kết quả:</p>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => { setReturnTestResult("pass"); setCurrentStep(2); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+                    className="flex-1 py-3 rounded-2xl font-black text-sm bg-green-500 hover:bg-green-600 text-white transition-all"
+                  >
+                    Đạt ✓
+                  </button>
+                  <button
+                    onClick={() => setReturnTestResult("fail")}
+                    className="flex-1 py-3 rounded-2xl font-black text-sm bg-gray-200 hover:bg-gray-300 text-gray-700 transition-all"
+                  >
+                    Chưa đạt
+                  </button>
+                </div>
+              </div>
+            )}
+          </>
+        )}
+      </div>
+    ),
+  };
+
+  const remap = (arr: typeof allSteps) =>
+    arr.map((s, i) => ({ ...s, id: i + 1, status: currentStep === i + 1 ? "active" : currentStep > i + 1 ? "completed" : "locked" }));
+
   const steps = isActiveMember
-    ? allSteps.filter(s => ACTIVE_STEP_IDS.includes(s.id)).map((s, i) => ({
-        ...s,
-        id: i + 1,
-        status: currentStep === i + 1 ? "active" : currentStep > i + 1 ? "completed" : "locked",
-      }))
+    ? remap(allSteps.filter(s => ACTIVE_STEP_IDS.includes(s.id)))
+    : isReturning
+    ? remap([returnTestStep as typeof allSteps[0], ...allSteps.filter(s => RETURNING_STEP_IDS.includes(s.id))])
     : allSteps;
 
   // ─── Render helpers ──────────────────────────────────────────────────────
@@ -652,7 +723,7 @@ const Dashboard = () => {
                           ))}
                         </div>
                         <button
-                          onClick={() => { closeQuiz(); setCurrentStep(3); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+                          onClick={() => { closeQuiz(); setCurrentStep(currentStep + 1); window.scrollTo({ top: 0, behavior: "smooth" }); }}
                           className="flex items-center gap-2 mx-auto bg-[#6366F1] text-white px-8 py-3.5 rounded-2xl font-black text-sm shadow-lg shadow-indigo-500/20 hover:bg-indigo-700 active:scale-95 transition-all"
                         >
                           Tiếp tục <ArrowRight size={16} />
