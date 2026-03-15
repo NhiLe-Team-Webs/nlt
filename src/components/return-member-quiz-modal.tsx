@@ -114,8 +114,11 @@ export default function ReturnMemberQuizModal({ isOpen, onPass, onFail, onClose 
     const mc = mcAnswers.reduce((sum, a) => sum + MC_SCORES[a], 0);
     const essay = calcEssayScore(essayAnswers);
     const total = mc + essay;
-    setResult({ mc, essay, total, passed: total >= PASS_TOTAL });
+    const passed = total >= PASS_TOTAL;
+    setResult({ mc, essay, total, passed });
     setPhase("result");
+    // Ghi nhận ngay khi có kết quả, không chờ user bấm nút
+    if (!passed) onFail();
   };
 
   const timerPercent = (timer / TIMER_SECONDS) * 100;
@@ -251,7 +254,7 @@ export default function ReturnMemberQuizModal({ isOpen, onPass, onFail, onClose 
                   Cảm ơn bạn đã dành thời gian làm bài test và quan tâm quay lại với NhiLe Team. Sau khi kiểm tra kết quả, chỉ số hiện tại chưa phù hợp với yêu cầu để tham gia vòng phỏng vấn.<br /><br />
                   Bạn có thể đăng ký làm lại bài test sau <strong>03 tháng</strong>. Chúc bạn có thêm nhiều trải nghiệm tích cực và hành trình phía trước diễn ra thuận lợi.
                 </p>
-                <button onClick={() => { clearQuizStorage(); onFail(); onClose(); }}
+                <button onClick={onClose}
                   className="flex items-center gap-2 mx-auto bg-gray-100 hover:bg-gray-200 text-gray-600 px-8 py-3.5 rounded-2xl font-black text-sm transition-all">
                   Đóng
                 </button>
