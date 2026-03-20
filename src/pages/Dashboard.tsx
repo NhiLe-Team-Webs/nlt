@@ -413,8 +413,8 @@ const Dashboard = () => {
     },
     {
       id: 4,
-      title: "Kết quả phỏng vấn",
-      desc: "Kiểm tra email cá nhân thường xuyên để nhận kết quả nhé.",
+      title: "Đợi kết quả phỏng vấn",
+      desc: "Kiểm tra email thường xuyên.",
       icon: <Video className="w-6 h-6" />,
       status: currentStep === 4 ? "active" : currentStep > 4 ? "completed" : "locked",
       customContent: (
@@ -707,7 +707,7 @@ const Dashboard = () => {
                 >
                   Bắt đầu thực hiện <ArrowRight size={16} />
                 </button>
-              ) : activeStep.title === "Kết quả phỏng vấn" ? (
+              ) : activeStep.title === "Đợi kết quả phỏng vấn" ? (
                 <button
                   onClick={() => { setStepModalContext("interview-result"); setShowStepModal(true); }}
                   className="btn-pop w-full flex items-center justify-center gap-2 py-4 px-4 bg-purple-600 rounded-2xl text-white font-black text-sm hover:bg-purple-700 shadow-lg shadow-purple-500/20"
