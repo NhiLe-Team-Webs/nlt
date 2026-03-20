@@ -143,7 +143,7 @@ const Dashboard = () => {
   const [isDocModalOpen, setIsDocModalOpen] = useState(false);
   const [docModalView, setDocModalView] = useState<"menu" | "video" | "text">("menu");
   const [showStepModal, setShowStepModal] = useState(false);
-  const [stepModalContext, setStepModalContext] = useState<"quiz" | "calendar" | "interview-result" | "active-culture">("quiz");
+  const [stepModalContext, setStepModalContext] = useState<"quiz" | "calendar" | "interview-result" | "active-culture" | "active-calendar">("quiz");
   const [isCalendarModalOpen, setIsCalendarModalOpen] = useState(false);
   const [roleAnswers, setRoleAnswers] = useState<number[]>([]);
 
@@ -971,6 +971,19 @@ const Dashboard = () => {
                   Đi tiếp thôi nào!
                 </button>
               </>
+            ) : stepModalContext === "active-calendar" ? (
+              <>
+                <div className="text-5xl">🎉</div>
+                <div className="space-y-2">
+                  <h3 className="text-2xl font-black text-gray-900">Tuyệt vời quá!</h3>
+                  <p className="text-gray-500 text-sm font-medium leading-relaxed">
+                    Bạn đã đặt lịch thành công! Thật háo hức được gặp bạn. Hãy kiểm tra email thường xuyên để nhận thông tin chi tiết về buổi phỏng vấn nhé. Tụi mình chờ bạn!
+                  </p>
+                </div>
+                <button onClick={handleStepModalContinue} className="w-full py-4 rounded-2xl bg-purple-600 text-white font-black text-sm shadow-lg hover:bg-purple-700 active:scale-95 transition-all">
+                  Hoàn tất
+                </button>
+              </>
             ) : (
               <>
                 <div className="text-5xl">🎉</div>
@@ -1216,7 +1229,7 @@ const Dashboard = () => {
                   onClick={() => {
                     if (!selectedDate || !selectedTime) return;
                     setIsCalendarModalOpen(false);
-                    setStepModalContext("calendar");
+                    setStepModalContext(isActiveMember ? "active-calendar" : "calendar");
                     setShowStepModal(true);
                   }}
                   className={`btn-pop mt-6 w-full flex items-center justify-center gap-2 py-4 rounded-2xl font-black text-sm transition-all
