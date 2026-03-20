@@ -346,7 +346,8 @@ const Dashboard = () => {
         const firstDayOfWeek = new Date(2026, 2, 1).getDay(); // 0 = Sun
         // Reorder so Monday=0 ... Sunday=6
         const offset = firstDayOfWeek === 0 ? 6 : firstDayOfWeek - 1;
-        const isAvailableDate = (d: number) => [2, 3, 5].includes(new Date(2026, 2, d).getDay()); // Tue=2,Wed=3,Fri=5
+        const today = new Date(); today.setHours(0, 0, 0, 0);
+        const isAvailableDate = (d: number) => { const dt = new Date(2026, 2, d); return [2, 3, 5].includes(dt.getDay()) && dt >= today; }; // Tue=2,Wed=3,Fri=5
 
         return (
           <div className="mt-6 space-y-6 transition-all duration-300">
@@ -519,16 +520,45 @@ const Dashboard = () => {
     status: "active",
     customContent: (
       <div className="mt-6 space-y-4">
-        {returnTestResult === "fail" ? (
-          <div className="bg-gray-50 border border-gray-200 rounded-2xl p-6 space-y-3">
-            <p className="text-sm font-medium text-gray-600 leading-relaxed">
-              Cảm ơn bạn đã dành thời gian làm bài test và quan tâm quay lại với NhiLe Team. Sau khi kiểm tra kết quả, chỉ số hiện tại chưa phù hợp với yêu cầu để tham gia vòng phỏng vấn, vì vậy team chưa thể sắp xếp buổi phỏng vấn cho bạn trong thời điểm này.
-            </p>
-            <p className="text-sm font-medium text-gray-600 leading-relaxed">
-              Team ghi nhận tinh thần chủ động và cách bạn hoàn thành bài làm. Bạn có thể đăng ký làm lại bài test sau 03 tháng. Chúc bạn có thêm nhiều trải nghiệm tích cực.
-            </p>
-          </div>
-        ) : returnTestResult === "pass" ? (
+        {returnTestResult === "fail" ? (() => {
+          const failTime = parseInt(localStorage.getItem("nlt_rtq_fail_time") || "0");
+          const unlockDate = failTime ? new Date(failTime + 3 * 30 * 24 * 60 * 60 * 1000) : null;
+          const isLocked = !!unlockDate && new Date() < unlockDate;
+          const unlockStr = unlockDate ? unlockDate.toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric" }) : "";
+          return (
+            <div className="bg-gray-50 border border-gray-200 rounded-2xl p-6 space-y-4">
+              <p className="text-sm font-medium text-gray-600 leading-relaxed">
+                Cảm ơn bạn đã dành thời gian làm bài test và quan tâm quay lại với NhiLe Team. Sau khi kiểm tra kết quả, chỉ số hiện tại chưa phù hợp với yêu cầu để tham gia vòng phỏng vấn, vì vậy team chưa thể sắp xếp buổi phỏng vấn cho bạn trong thời điểm này.
+              </p>
+              {isLocked ? (
+                <>
+                  <p className="text-sm font-medium text-gray-600 leading-relaxed">
+                    Team ghi nhận tinh thần chủ động và cách bạn hoàn thành bài làm. Bạn có thể đăng ký làm lại bài test sau <span className="font-black text-[#1D1D1F]">03 tháng</span> kể từ khi làm bài. Chúc bạn có thêm nhiều trải nghiệm tích cực.
+                  </p>
+                  <p className="text-sm font-black text-purple-600">Ngày mở khóa: {unlockStr}</p>
+                </>
+              ) : (
+                <>
+                  <p className="text-sm font-medium text-gray-600 leading-relaxed">
+                    Đừng nản nhé! Bạn có thể làm lại ngay bây giờ.
+                  </p>
+                  <button
+                    onClick={() => {
+                      ["nlt_rt_result","nlt_rtq_phase","nlt_rtq_mc_ans","nlt_rtq_essay_ans","nlt_rtq_result","nlt_rtq_fail_time"].forEach(k => localStorage.removeItem(k));
+                      setReturnTestResult("none");
+                      setReturnTestOpened(true);
+                      setShowReturnQuiz(true);
+                    }}
+                    className="btn-pop w-full flex items-center justify-center gap-2 py-3 px-4 bg-purple-600 rounded-2xl text-white font-black text-sm hover:bg-purple-700 shadow-lg shadow-purple-500/20"
+                  >
+                    <RotateCcw size={16} /> Làm lại ngay
+                  </button>
+                </>
+              )}
+            </div>
+          );
+        })()
+        : returnTestResult === "pass" ? (
           <div className="bg-green-50 border border-green-200 rounded-2xl p-5 flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl bg-green-500 flex items-center justify-center shrink-0">
               <ClipboardCheck size={16} className="text-white" />
@@ -695,13 +725,37 @@ const Dashboard = () => {
                   </button>
                 </div>
               ) : activeStep.title === "Thử thách trở lại" ? (
-                returnTestResult === "fail" ? (
-                  <div className="space-y-3 text-center">
-                    <p className="text-sm text-gray-500 leading-relaxed">
-                      Cảm ơn bạn đã dành thời gian làm bài test. Chỉ số hiện tại chưa phù hợp với yêu cầu, vì vậy team chưa thể sắp xếp buổi phỏng vấn lúc này. Bạn có thể đăng ký lại sau 03 tháng.
-                    </p>
-                  </div>
-                ) : (
+                returnTestResult === "fail" ? (() => {
+                  const failTime = parseInt(localStorage.getItem("nlt_rtq_fail_time") || "0");
+                  const unlockDate = failTime ? new Date(failTime + 3 * 30 * 24 * 60 * 60 * 1000) : null;
+                  const isLocked = !!unlockDate && new Date() < unlockDate;
+                  const unlockStr = unlockDate ? unlockDate.toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric" }) : "";
+                  return isLocked ? (
+                    <div className="space-y-2 text-center">
+                      <p className="text-sm text-gray-500 leading-relaxed">
+                        Bạn có thể đăng ký làm lại bài test sau <span className="font-black text-[#1D1D1F]">03 tháng</span> kể từ khi làm bài.
+                      </p>
+                      <p className="text-sm font-black text-purple-600">Ngày mở khóa: {unlockStr}</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      <p className="text-sm text-gray-500 leading-relaxed text-center">
+                        Đừng nản nhé! Bạn có thể làm lại ngay bây giờ.
+                      </p>
+                      <button
+                        onClick={() => {
+                          ["nlt_rt_result","nlt_rtq_phase","nlt_rtq_mc_ans","nlt_rtq_essay_ans","nlt_rtq_result","nlt_rtq_fail_time"].forEach(k => localStorage.removeItem(k));
+                          setReturnTestResult("none");
+                          setReturnTestOpened(true);
+                          setShowReturnQuiz(true);
+                        }}
+                        className="btn-pop w-full flex items-center justify-center gap-2 py-4 px-4 bg-purple-600 rounded-2xl text-white font-black text-sm hover:bg-purple-700 shadow-lg shadow-purple-500/20"
+                      >
+                        <RotateCcw size={16} /> Làm lại ngay
+                      </button>
+                    </div>
+                  );
+                })() : (
                   <button
                     onClick={() => { setReturnTestOpened(true); setShowReturnQuiz(true); }}
                     className="btn-pop w-full flex items-center justify-center gap-2 py-4 px-4 bg-purple-600 rounded-2xl text-white font-black text-sm hover:bg-purple-700 shadow-lg shadow-purple-500/20"
@@ -942,7 +996,7 @@ const Dashboard = () => {
                 {activeQuizType === "culture" ? (
                   quizPassed ? (
                     <>
-                      <div className="text-5xl">🤩</div>
+                      <div className="text-5xl icon-float">🤩</div>
                       <div className="space-y-1.5">
                         <h3 className="text-2xl font-black text-gray-900">Xuất sắc luôn!</h3>
                         <p className="text-gray-500 text-sm font-medium">Dữ vậy ta, làm lần đầu mà đúng luôn kìa, giỏi thiệt á chứ.</p>
@@ -953,7 +1007,7 @@ const Dashboard = () => {
                     </>
                   ) : (
                     <>
-                      <div className="text-5xl">😭</div>
+                      <div className="text-5xl icon-shake">😭</div>
                       <div className="space-y-2">
                         <h3 className="text-2xl font-black text-gray-900">Chưa đạt rồi!</h3>
                         <p className="text-gray-500 text-sm font-medium leading-relaxed">
@@ -972,7 +1026,7 @@ const Dashboard = () => {
                     const isMultiple = topTeams.length > 1;
                     return (
                       <>
-                        <div className="text-5xl">🥰</div>
+                        <div className="text-5xl icon-float">🥰</div>
                         <div className="space-y-1.5">
                           <h3 className="text-2xl font-black text-gray-900">Lựa chọn tuyệt vời!</h3>
                           <p className="text-gray-500 text-sm font-medium leading-relaxed">
@@ -1001,7 +1055,7 @@ const Dashboard = () => {
           <div className="relative w-full max-w-sm bg-white rounded-[2rem] p-8 shadow-2xl text-center space-y-4 modal-pop">
             {stepModalContext === "active-culture" ? (
               <>
-                <div className="text-5xl">⭐</div>
+                <div className="text-5xl icon-spin-pop">⭐</div>
                 <div className="space-y-2">
                   <h3 className="text-2xl font-black text-gray-900">Chúc mừng bạn!</h3>
                   <p className="text-gray-500 text-sm font-medium leading-relaxed">
@@ -1014,7 +1068,7 @@ const Dashboard = () => {
               </>
             ) : stepModalContext === "return-pass" ? (
               <>
-                <div className="text-5xl">🎉</div>
+                <div className="text-5xl icon-float">🎉</div>
                 <div className="space-y-2">
                   <h3 className="text-2xl font-black text-gray-900">Chào mừng trở lại!</h3>
                   <p className="text-gray-500 text-sm font-medium leading-relaxed">
@@ -1027,7 +1081,7 @@ const Dashboard = () => {
               </>
             ) : stepModalContext === "active-calendar" ? (
               <>
-                <div className="text-5xl">🎉</div>
+                <div className="text-5xl icon-float">🎉</div>
                 <div className="space-y-2">
                   <h3 className="text-2xl font-black text-gray-900">Tuyệt vời quá!</h3>
                   <p className="text-gray-500 text-sm font-medium leading-relaxed">
@@ -1040,7 +1094,7 @@ const Dashboard = () => {
               </>
             ) : (
               <>
-                <div className="text-5xl">🎉</div>
+                <div className="text-5xl icon-float">🎉</div>
                 <div className="space-y-2">
                   <h3 className="text-2xl font-black text-gray-900">{stepModalContext === "interview-result" ? "Hoàn thành!" : "Chúc mừng!"}</h3>
                   {stepModalContext === "calendar" ? (
@@ -1218,7 +1272,8 @@ const Dashboard = () => {
       {isCalendarModalOpen && (() => {
         const firstDayOfWeek = new Date(2026, 2, 1).getDay();
         const offset = firstDayOfWeek === 0 ? 6 : firstDayOfWeek - 1;
-        const isAvailableDate = (d: number) => [2, 3, 5].includes(new Date(2026, 2, d).getDay());
+        const today = new Date(); today.setHours(0, 0, 0, 0);
+        const isAvailableDate = (d: number) => { const dt = new Date(2026, 2, d); return [2, 3, 5].includes(dt.getDay()) && dt >= today; };
         return (
           <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
             <div className="absolute inset-0 bg-black/40 backdrop-blur-sm overlay-in" onClick={() => setIsCalendarModalOpen(false)} />

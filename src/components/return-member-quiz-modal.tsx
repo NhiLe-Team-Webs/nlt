@@ -60,9 +60,19 @@ const LS = {
   MC_ANS: "nlt_rtq_mc_ans",
   ESSAY_ANS: "nlt_rtq_essay_ans",
   RESULT: "nlt_rtq_result",
+  FAIL_TIME: "nlt_rtq_fail_time",
 } as const;
 
-const clearQuizStorage = () => Object.values(LS).forEach(k => localStorage.removeItem(k));
+const THREE_MONTHS_MS = 3 * 30 * 24 * 60 * 60 * 1000;
+
+const clearQuizStorage = () => [LS.PHASE, LS.MC_IDX, LS.MC_ANS, LS.ESSAY_ANS, LS.RESULT].forEach(k => localStorage.removeItem(k));
+
+function getRetryLockInfo(): { isLocked: boolean; unlockDate: Date | null } {
+  const failTime = parseInt(localStorage.getItem(LS.FAIL_TIME) || "0");
+  if (!failTime) return { isLocked: false, unlockDate: null };
+  const unlockDate = new Date(failTime + THREE_MONTHS_MS);
+  return { isLocked: new Date() < unlockDate, unlockDate };
+}
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
@@ -114,7 +124,9 @@ export default function ReturnMemberQuizModal({ isOpen, onPass, onFail, onClose 
     const mc = mcAnswers.reduce((sum, a) => sum + MC_SCORES[a], 0);
     const essay = calcEssayScore(essayAnswers);
     const total = mc + essay;
-    setResult({ mc, essay, total, passed: total >= PASS_TOTAL });
+    const passed = total >= PASS_TOTAL;
+    if (!passed) localStorage.setItem(LS.FAIL_TIME, Date.now().toString());
+    setResult({ mc, essay, total, passed });
     setPhase("result");
   };
 
@@ -217,7 +229,7 @@ export default function ReturnMemberQuizModal({ isOpen, onPass, onFail, onClose 
           <div className="p-10 sm:p-12 text-center space-y-6 overflow-y-auto">
             {result.passed ? (
               <>
-                <div className="w-20 h-20 bg-green-500 rounded-full flex items-center justify-center mx-auto shadow-lg shadow-green-200">
+                <div className="w-20 h-20 bg-green-500 rounded-full flex items-center justify-center mx-auto shadow-lg shadow-green-200 icon-spin-pop">
                   <CheckCircle2 className="text-white w-10 h-10" />
                 </div>
                 <div className="space-y-2">
@@ -235,35 +247,55 @@ export default function ReturnMemberQuizModal({ isOpen, onPass, onFail, onClose 
                   Tiếp tục <ArrowRight size={16} />
                 </button>
               </>
-            ) : (
-              <>
-                <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto">
-                  <XCircle className="text-red-500 w-10 h-10" />
-                </div>
-                <div className="space-y-2">
-                  <h3 className="text-2xl font-black text-[#1D1D1F]">Chưa đạt!</h3>
-                  <p className="text-gray-500 font-bold">
-                    Tổng điểm: <span className="text-red-500 font-black">{result.total}/130</span> — Cần ít nhất <span className="font-black text-[#1D1D1F]">{PASS_TOTAL}/130</span> để qua.
-                  </p>
-                  <p className="text-xs text-gray-400">Trắc nghiệm: {result.mc}/100 · Tự luận: {result.essay}/30</p>
-                </div>
-                <p className="text-sm text-gray-500 font-medium leading-relaxed">
-                  Đừng nản nhé! Bạn có thể làm lại ngay bây giờ. Xem lại các câu hỏi và cố gắng lần này nhé!
-                </p>
-                <button onClick={() => {
-                  clearQuizStorage();
-                  setPhase("mc");
-                  setMcIndex(0);
-                  setMcAnswers([]);
-                  setEssayAnswers(Array(6).fill(""));
-                  setResult(null);
-                  setTimer(TIMER_SECONDS);
-                }}
-                  className="w-full flex items-center justify-center gap-2 bg-[#6366F1] hover:bg-indigo-700 text-white py-4 rounded-2xl font-black text-sm shadow-lg shadow-indigo-500/20 active:scale-95 transition-all">
-                  Làm lại ngay <ArrowRight size={16} />
-                </button>
-              </>
-            )}
+            ) : (() => {
+              const { isLocked, unlockDate } = getRetryLockInfo();
+              const unlockStr = unlockDate ? unlockDate.toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric" }) : "";
+              return (
+                <>
+                  <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto icon-shake">
+                    <XCircle className="text-red-500 w-10 h-10" />
+                  </div>
+                  <div className="space-y-2">
+                    <h3 className="text-2xl font-black text-[#1D1D1F]">Chưa đạt!</h3>
+                    <p className="text-gray-500 font-bold">
+                      Tổng điểm: <span className="text-red-500 font-black">{result.total}/130</span> — Cần ít nhất <span className="font-black text-[#1D1D1F]">{PASS_TOTAL}/130</span> để qua.
+                    </p>
+                    <p className="text-xs text-gray-400">Trắc nghiệm: {result.mc}/100 · Tự luận: {result.essay}/30</p>
+                  </div>
+                  {isLocked ? (
+                    <>
+                      <p className="text-sm text-gray-500 font-medium leading-relaxed">
+                        Team ghi nhận tinh thần chủ động của bạn. Bạn có thể đăng ký làm lại bài test sau <span className="font-black text-[#1D1D1F]">03 tháng</span> kể từ khi làm bài.
+                      </p>
+                      <p className="text-sm font-black text-purple-600">Ngày mở khóa: {unlockStr}</p>
+                      <button onClick={() => { onFail(); onClose(); }}
+                        className="w-full flex items-center justify-center gap-2 border border-gray-200 text-gray-600 py-4 rounded-2xl font-black text-sm hover:bg-gray-50 active:scale-95 transition-all">
+                        Đóng
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <p className="text-sm text-gray-500 font-medium leading-relaxed">
+                        Đừng nản nhé! Bạn có thể làm lại ngay bây giờ. Xem lại các câu hỏi và cố gắng lần này nhé!
+                      </p>
+                      <button onClick={() => {
+                        clearQuizStorage();
+                        localStorage.removeItem(LS.FAIL_TIME);
+                        setPhase("mc");
+                        setMcIndex(0);
+                        setMcAnswers([]);
+                        setEssayAnswers(Array(6).fill(""));
+                        setResult(null);
+                        setTimer(TIMER_SECONDS);
+                      }}
+                        className="w-full flex items-center justify-center gap-2 bg-[#6366F1] hover:bg-indigo-700 text-white py-4 rounded-2xl font-black text-sm shadow-lg shadow-indigo-500/20 active:scale-95 transition-all">
+                        Làm lại ngay <ArrowRight size={16} />
+                      </button>
+                    </>
+                  )}
+                </>
+              );
+            })()}
           </div>
         )}
 
