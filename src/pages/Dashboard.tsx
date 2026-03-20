@@ -1013,14 +1013,14 @@ const Dashboard = () => {
               <>
                 <div className="text-5xl">🎉</div>
                 <div className="space-y-2">
-                  <h3 className="text-2xl font-black text-gray-900">Chúc mừng!</h3>
+                  <h3 className="text-2xl font-black text-gray-900">{stepModalContext === "interview-result" ? "Hoàn thành!" : "Chúc mừng!"}</h3>
                   {stepModalContext === "calendar" ? (
                     <p className="text-gray-500 text-sm font-medium leading-relaxed">
                       Sắp xong rồi nè! Thật tuyệt vời khi thấy sự tâm huyết của bạn. Chỉ còn một xíu nữa thôi, mình luôn ở đây cổ vũ bạn! Bạn kiểm tra email để nhận được các thông tin về buổi gặp mặt với chúng mình sắp tới nhé.
                     </p>
                   ) : stepModalContext === "interview-result" ? (
                     <p className="text-gray-500 text-sm font-medium leading-relaxed">
-                      Tuyệt vời! Bạn đang làm rất tốt, cứ giữ vững tinh thần này nhé. Sắp tới đích rồi đó!
+                      Bạn đang làm rất tốt, cứ giữ vững tinh thần này nhé!
                     </p>
                   ) : (
                     <p className="text-gray-500 text-sm font-medium leading-relaxed">
@@ -1029,7 +1029,7 @@ const Dashboard = () => {
                   )}
                 </div>
                 <button onClick={handleStepModalContinue} className="w-full py-4 rounded-2xl bg-purple-600 text-white font-black text-sm shadow-lg hover:bg-purple-700 active:scale-95 transition-all">
-                  {stepModalContext === "interview-result" ? "Tắt thông báo" : "Đi tiếp thôi nào!"}
+                  {stepModalContext === "interview-result" ? "Hoàn tất" : "Đi tiếp thôi nào!"}
                 </button>
               </>
             )}
