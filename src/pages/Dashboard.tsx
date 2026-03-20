@@ -143,7 +143,7 @@ const Dashboard = () => {
   const [isDocModalOpen, setIsDocModalOpen] = useState(false);
   const [docModalView, setDocModalView] = useState<"menu" | "video" | "text">("menu");
   const [showStepModal, setShowStepModal] = useState(false);
-  const [stepModalContext, setStepModalContext] = useState<"quiz" | "calendar" | "interview-result">("quiz");
+  const [stepModalContext, setStepModalContext] = useState<"quiz" | "calendar" | "interview-result" | "active-culture">("quiz");
   const [isCalendarModalOpen, setIsCalendarModalOpen] = useState(false);
   const [roleAnswers, setRoleAnswers] = useState<number[]>([]);
 
@@ -190,7 +190,11 @@ const Dashboard = () => {
 
   const handleQuizContinue = () => {
     closeQuiz();
-    setStepModalContext("quiz");
+    if (isActiveMember && activeQuizType === "culture") {
+      setStepModalContext("active-culture");
+    } else {
+      setStepModalContext("quiz");
+    }
     setShowStepModal(true);
   };
 
@@ -954,26 +958,43 @@ const Dashboard = () => {
         <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/40 backdrop-blur-sm overlay-in" />
           <div className="relative w-full max-w-sm bg-white rounded-[2rem] p-8 shadow-2xl text-center space-y-4 modal-pop">
-            <div className="text-5xl">🎉</div>
-            <div className="space-y-2">
-              <h3 className="text-2xl font-black text-gray-900">Chúc mừng!</h3>
-              {stepModalContext === "calendar" ? (
-                <p className="text-gray-500 text-sm font-medium leading-relaxed">
-                  Sắp xong rồi nè! Thật tuyệt vời khi thấy sự tâm huyết của bạn. Chỉ còn một xíu nữa thôi, mình luôn ở đây cổ vũ bạn! Bạn kiểm tra email để nhận được các thông tin về buổi gặp mặt với chúng mình sắp tới nhé.
-                </p>
-              ) : stepModalContext === "interview-result" ? (
-                <p className="text-gray-500 text-sm font-medium leading-relaxed">
-                  Tuyệt vời! Bạn đang làm rất tốt, cứ giữ vững tinh thần này nhé. Sắp tới đích rồi đó!
-                </p>
-              ) : (
-                <p className="text-gray-500 text-sm font-medium leading-relaxed">
-                  Wow thật tuyệt vời, bạn đi được {currentStep} bước rồi nè! Thật là hạnh phúc khi thấy bạn dũng cảm đi được bước đầu tiên. Không còn nhiều nữa đâu, chỉ {totalSteps - currentStep} bước nữa là tới đích rồi. Mình luôn đồng hành cùng bạn!
-                </p>
-              )}
-            </div>
-            <button onClick={handleStepModalContinue} className="w-full py-4 rounded-2xl bg-purple-600 text-white font-black text-sm shadow-lg hover:bg-purple-700 active:scale-95 transition-all">
-              {stepModalContext === "interview-result" ? "Tắt thông báo" : "Đi tiếp thôi nào!"}
-            </button>
+            {stepModalContext === "active-culture" ? (
+              <>
+                <div className="text-5xl">⭐</div>
+                <div className="space-y-2">
+                  <h3 className="text-2xl font-black text-gray-900">Chúc mừng bạn!</h3>
+                  <p className="text-gray-500 text-sm font-medium leading-relaxed">
+                    Bạn đã vượt qua bài test văn hóa một cách xuất sắc! Hãy tiếp tục chọn một khung giờ phù hợp để chúng mình có thể trò chuyện trực tiếp nha.
+                  </p>
+                </div>
+                <button onClick={handleStepModalContinue} className="w-full py-4 rounded-2xl bg-purple-600 text-white font-black text-sm shadow-lg hover:bg-purple-700 active:scale-95 transition-all">
+                  Đi tiếp thôi nào!
+                </button>
+              </>
+            ) : (
+              <>
+                <div className="text-5xl">🎉</div>
+                <div className="space-y-2">
+                  <h3 className="text-2xl font-black text-gray-900">Chúc mừng!</h3>
+                  {stepModalContext === "calendar" ? (
+                    <p className="text-gray-500 text-sm font-medium leading-relaxed">
+                      Sắp xong rồi nè! Thật tuyệt vời khi thấy sự tâm huyết của bạn. Chỉ còn một xíu nữa thôi, mình luôn ở đây cổ vũ bạn! Bạn kiểm tra email để nhận được các thông tin về buổi gặp mặt với chúng mình sắp tới nhé.
+                    </p>
+                  ) : stepModalContext === "interview-result" ? (
+                    <p className="text-gray-500 text-sm font-medium leading-relaxed">
+                      Tuyệt vời! Bạn đang làm rất tốt, cứ giữ vững tinh thần này nhé. Sắp tới đích rồi đó!
+                    </p>
+                  ) : (
+                    <p className="text-gray-500 text-sm font-medium leading-relaxed">
+                      Wow thật tuyệt vời, bạn đi được {currentStep} bước rồi nè! Thật là hạnh phúc khi thấy bạn dũng cảm đi được bước đầu tiên. Không còn nhiều nữa đâu, chỉ {totalSteps - currentStep} bước nữa là tới đích rồi. Mình luôn đồng hành cùng bạn!
+                    </p>
+                  )}
+                </div>
+                <button onClick={handleStepModalContinue} className="w-full py-4 rounded-2xl bg-purple-600 text-white font-black text-sm shadow-lg hover:bg-purple-700 active:scale-95 transition-all">
+                  {stepModalContext === "interview-result" ? "Tắt thông báo" : "Đi tiếp thôi nào!"}
+                </button>
+              </>
+            )}
           </div>
         </div>
       )}
