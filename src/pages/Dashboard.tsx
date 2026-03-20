@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import ProfileInfoModal from "../components/profile-info-modal";
+import ReturnMemberQuizModal from "../components/return-member-quiz-modal";
 import {
   CheckCircle2,
   Calendar,
@@ -16,6 +18,9 @@ import {
   RotateCcw,
   XCircle,
   Send,
+  BookOpen,
+  ChevronLeft,
+  FileText,
 } from "lucide-react";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -86,12 +91,19 @@ const PASS_SCORE = 8;
 const Dashboard = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const userType = location.state?.userType || "new";
+  const userType = location.state?.userType || localStorage.getItem("nlt_userType") || "new";
+  const isActiveMember = userType === "active";
+  const isReturning = userType === "returning";
+  const totalSteps = isActiveMember ? 3 : isReturning ? 6 : 5;
 
-  const [currentStep, setCurrentStep] = useState(1);
+  const [currentStep, setCurrentStep] = useState(() =>
+    (location.state?.userType || "new") === "returning"
+      ? parseInt(localStorage.getItem("nlt_rt_step") || "1")
+      : 1
+  );
   const [selectedTime, setSelectedTime] = useState("");
   const [selectedDate, setSelectedDate] = useState<number | null>(null);
-  const [showScheduleConfirm, setShowScheduleConfirm] = useState(false);
+
   const [isImageFullscreen, setIsImageFullscreen] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -107,9 +119,27 @@ const Dashboard = () => {
   const [roleScores, setRoleScores] = useState<Record<TeamKey, number>>({ ...EMPTY_SCORES });
   const finalRoleScoresRef = useRef<Record<TeamKey, number>>({ ...EMPTY_SCORES });
 
+  // Return test states
+  const [returnTestOpened, setReturnTestOpened] = useState(() => localStorage.getItem("nlt_rt_opened") === "true");
+  const [returnTestResult, setReturnTestResult] = useState<"none" | "pass" | "fail">(() => (localStorage.getItem("nlt_rt_result") as "none" | "pass" | "fail") || "none");
+  const [showReturnQuiz, setShowReturnQuiz] = useState(false);
+
+  // Step 5 states
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  const [profileDone, setProfileDone] = useState(false);
+  const [signDone, setSignDone] = useState(false);
+  const [showChotDon, setShowChotDon] = useState(false);
+  const [screenshotFile, setScreenshotFile] = useState<File | null>(null);
+
   // Per-question timer
   const [timer, setTimer] = useState(TIMER_SECONDS);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // New UI states
+  const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
+  const [isDocModalOpen, setIsDocModalOpen] = useState(false);
+  const [docModalView, setDocModalView] = useState<"menu" | "video" | "text">("menu");
+  const [showStepModal, setShowStepModal] = useState(false);
 
   const cultureQuestions = CULTURE_QUESTIONS;
   const roleQuestions = ROLE_QUESTIONS;
@@ -129,17 +159,37 @@ const Dashboard = () => {
   }, [currentQuestionIndex, isQuizModalOpen, showQuizResult]);
 
   useEffect(() => { setIsLoaded(true); }, []);
+  useEffect(() => { if (isReturning) localStorage.setItem("nlt_rt_opened", returnTestOpened.toString()); }, [returnTestOpened, isReturning]);
+  useEffect(() => { if (isReturning) localStorage.setItem("nlt_rt_result", returnTestResult); }, [returnTestResult, isReturning]);
+  useEffect(() => { if (isReturning) localStorage.setItem("nlt_rt_step", currentStep.toString()); }, [currentStep, isReturning]);
 
   const openQuiz = (type: "culture" | "role") => {
-    setActiveQuizType(type);
-    setCurrentQuestionIndex(0);
-    setQuizAnswers([]);
-    setQuizScore(0);
-    setShowQuizResult(false);
-    setQuizPassed(false);
-    setRoleScores({ ...EMPTY_SCORES });
-    finalRoleScoresRef.current = { ...EMPTY_SCORES };
+    const resuming = activeQuizType === type && quizAnswers.length > 0 && !showQuizResult;
+    if (!resuming) {
+      setActiveQuizType(type);
+      setCurrentQuestionIndex(0);
+      setQuizAnswers([]);
+      setQuizScore(0);
+      setShowQuizResult(false);
+      setQuizPassed(false);
+      setRoleScores({ ...EMPTY_SCORES });
+      finalRoleScoresRef.current = { ...EMPTY_SCORES };
+    } else {
+      setActiveQuizType(type);
+    }
+    setSelectedAnswer(null);
     setIsQuizModalOpen(true);
+  };
+
+  const handleQuizContinue = () => {
+    closeQuiz();
+    setShowStepModal(true);
+  };
+
+  const handleStepModalContinue = () => {
+    setShowStepModal(false);
+    setCurrentStep(currentStep + 1);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const closeQuiz = () => {
@@ -174,13 +224,6 @@ const Dashboard = () => {
         setQuizScore(score);
         setQuizPassed(passed);
         setShowQuizResult(true);
-        if (passed) {
-          setTimeout(() => {
-            closeQuiz();
-            setCurrentStep(2);
-            window.scrollTo({ top: 0, behavior: "smooth" });
-          }, 2000);
-        }
       }
     }
   };
@@ -206,7 +249,7 @@ const Dashboard = () => {
 
   // ─── Steps ──────────────────────────────────────────────────────────────
 
-  const steps = [
+  const allSteps = [
     {
       id: 1,
       title: "Bài test văn hoá",
@@ -214,15 +257,26 @@ const Dashboard = () => {
       icon: <ClipboardCheck className="w-6 h-6" />,
       status: currentStep === 1 ? "active" : currentStep > 1 ? "completed" : "locked",
       customContent: (
-        <div className="mt-6 space-y-5 transition-all duration-300">
+        <div className="mt-6 space-y-4 transition-all duration-300">
           <p className="text-sm font-bold text-gray-600 leading-relaxed">
             Hãy dành 5 phút để đọc và tìm hiểu bài test văn hoá của NhiLe Team nhé.
           </p>
           <div className="rounded-2xl overflow-hidden border border-gray-100 shadow-sm cursor-zoom-in" onClick={() => setIsImageFullscreen(true)}>
             <img src="https://lh3.googleusercontent.com/d/1dZvgi4ZLZoTD1-hGLeHStSO4v3J2CYzV" alt="Văn hoá NhiLe Team" className="w-full object-cover max-h-72 hover:scale-105 transition-transform duration-300" />
           </div>
-          <button onClick={() => openQuiz("culture")} className="bg-blue-600 text-white px-8 py-3.5 rounded-2xl font-black text-sm shadow-lg shadow-blue-600/20 hover:bg-blue-700 active:scale-95 transition-all flex items-center gap-2 w-full sm:w-auto justify-center">
-            Làm bài test văn hoá <ArrowRight size={16} />
+          {activeQuizType === "culture" && quizAnswers.length > 0 && !showQuizResult && (
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between text-xs font-black text-gray-400 uppercase tracking-wider">
+                <span>Đang làm dở</span>
+                <span>{quizAnswers.length}/{cultureQuestions.length} câu — {Math.round((quizAnswers.length / cultureQuestions.length) * 100)}%</span>
+              </div>
+              <div className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
+                <div className="h-full bg-[#6366F1] rounded-full transition-all duration-500" style={{ width: `${(quizAnswers.length / cultureQuestions.length) * 100}%` }} />
+              </div>
+            </div>
+          )}
+          <button onClick={() => openQuiz("culture")} className="bg-gradient-to-r from-[#6366F1] to-[#8B5CF6] text-white px-8 py-3.5 rounded-2xl font-black text-sm shadow-lg shadow-indigo-500/20 hover:opacity-90 active:scale-95 transition-all flex items-center gap-2 w-full sm:w-auto justify-center">
+            {activeQuizType === "culture" && quizAnswers.length > 0 && !showQuizResult ? "Tiếp tục bài test" : "Làm bài test văn hoá"} <ArrowRight size={16} />
           </button>
         </div>
       ),
@@ -256,32 +310,6 @@ const Dashboard = () => {
         // Reorder so Monday=0 ... Sunday=6
         const offset = firstDayOfWeek === 0 ? 6 : firstDayOfWeek - 1;
         const isAvailableDate = (d: number) => [2, 3, 5].includes(new Date(2026, 2, d).getDay()); // Tue=2,Wed=3,Fri=5
-
-        if (showScheduleConfirm && selectedDate && selectedTime) {
-          return (
-            <div className="mt-6 space-y-5 transition-all duration-300">
-              <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100 rounded-2xl p-6 flex gap-4 items-start">
-                <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center shrink-0 shadow-md shadow-blue-200">
-                  <CheckCircle2 size={20} className="text-white" />
-                </div>
-                <div className="space-y-1">
-                  <p className="font-black text-[#1D1D1F] text-base leading-snug">
-                    Lịch phỏng vấn của bạn đã được xác nhận.
-                  </p>
-                  <p className="text-sm font-medium text-gray-500 leading-relaxed">
-                    Bạn kiểm tra email để nhận được đầy đủ thông tin hơn nhé.
-                  </p>
-                </div>
-              </div>
-              <button
-                onClick={() => { setCurrentStep(4); window.scrollTo({ top: 0, behavior: "smooth" }); }}
-                className="bg-gradient-to-r from-[#2563EB] to-[#3B82F6] text-white px-10 py-4 rounded-2xl font-black text-sm shadow-xl shadow-blue-600/30 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2 w-full sm:w-auto"
-              >
-                Tiếp tục <ArrowRight size={18} />
-              </button>
-            </div>
-          );
-        }
 
         return (
           <div className="mt-6 space-y-6 transition-all duration-300">
@@ -336,7 +364,7 @@ const Dashboard = () => {
             {/* Confirm button */}
             <button
               disabled={!selectedDate || !selectedTime}
-              onClick={() => setShowScheduleConfirm(true)}
+              onClick={() => { setCurrentStep(currentStep + 1); window.scrollTo({ top: 0, behavior: "smooth" }); }}
               className={`flex items-center justify-center gap-2 px-10 py-4 rounded-2xl font-black text-sm transition-all w-full sm:w-auto
                 ${selectedDate && selectedTime
                   ? "bg-gradient-to-r from-[#2563EB] to-[#3B82F6] text-white shadow-xl shadow-blue-600/30 hover:scale-[1.02] active:scale-95"
@@ -349,22 +377,18 @@ const Dashboard = () => {
     },
     {
       id: 4,
-      title: "Pass phỏng vấn",
-      desc: "Theo dõi email cá nhân để nhận thông báo chính thức nhé.",
+      title: "Kết quả phỏng vấn",
+      desc: "Kiểm tra email cá nhân thường xuyên để nhận kết quả nhé.",
       icon: <Video className="w-6 h-6" />,
       status: currentStep === 4 ? "active" : currentStep > 4 ? "completed" : "locked",
       customContent: (
         <div className="mt-6">
-          <div className="bg-blue-50 p-5 rounded-2xl border border-blue-100">
-            <p className="text-[#1D1D1F] text-sm font-bold leading-relaxed">
-              • <span className="text-blue-600">Nếu Pass:</span> Nhận email vào nhóm và ký bảo mật.<br />
-              • <span className="text-gray-400 font-medium">Nếu Fail:</span> Nhận email cảm ơn.
-            </p>
-          </div>
-          <button onClick={() => { setCurrentStep(5); window.scrollTo({ top: 0, behavior: "smooth" }); }}
-            className="mt-4 bg-blue-600 text-white px-8 py-3.5 rounded-2xl font-black text-sm shadow-xl shadow-blue-600/20 hover:bg-blue-700 active:scale-95 transition-all w-full sm:w-auto">
-            Tiến tới bước cuối cùng
-          </button>
+          {!isActiveMember && (
+            <button onClick={() => { setCurrentStep(currentStep + 1); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+              className="bg-gradient-to-r from-[#2563EB] to-[#3B82F6] text-white px-10 py-4 rounded-2xl font-black text-sm shadow-xl shadow-blue-600/30 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2 w-full sm:w-auto">
+              Tiếp tục <ArrowRight size={16} />
+            </button>
+          )}
         </div>
       ),
     },
@@ -373,24 +397,151 @@ const Dashboard = () => {
       title: "Về nhà thôi!",
       desc: "Hoàn thiện hồ sơ cuối để chính thức bắt đầu hành trình.",
       icon: <PartyPopper className="w-6 h-6" />,
-      status: currentStep === 5 ? "active" : "locked",
+      status: currentStep === 5 ? "active" : currentStep > 5 ? "completed" : "locked",
       customContent: (
-        <div className="mt-8">
-          <div className="relative overflow-hidden bg-gradient-to-br from-[#3B82F6] to-[#8B5CF6] p-8 rounded-[2.5rem] shadow-2xl shadow-purple-500/20">
-            <div className="absolute top-0 right-0 p-4 opacity-20"><PartyPopper size={120} /></div>
-            <div className="relative z-10 space-y-6">
-              <h4 className="text-2xl sm:text-3xl font-black text-white leading-tight">Chốt đơn! Thảo Nhi đã là một mẩu của NhiLe Team! 🥳</h4>
-              <p className="text-white/80 text-sm sm:text-base font-medium leading-relaxed">Sẵn sàng nhé. Check email nhận 'bí kíp võ công' tham gia cùng anh em mình nha. 🚀</p>
-              <button onClick={() => window.open("https://t.me/+your_group_link", "_blank")}
-                className="w-full bg-white text-[#1D4ED8] py-6 px-8 rounded-[2rem] font-black text-xl shadow-lg hover:scale-[1.03] active:scale-95 transition-all flex items-center justify-center gap-4 group/btn">
-                BẮT ĐẦU HÀNH TRÌNH NGAY <Zap className="fill-current group-hover/btn:animate-bounce" size={24} />
-              </button>
+        <div className="mt-6 space-y-4">
+          {/* Box 1: Điền thông tin cá nhân */}
+          <button
+            onClick={() => setShowProfileModal(true)}
+            className={`w-full flex items-center gap-4 p-5 rounded-2xl border-2 transition-all text-left ${profileDone ? "border-green-400 bg-green-50" : "border-gray-200 bg-white hover:border-blue-300 hover:bg-blue-50/50"}`}
+          >
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 text-lg ${profileDone ? "bg-green-500" : "bg-blue-100"}`}>
+              {profileDone ? <CheckCircle2 size={20} className="text-white" /> : "📝"}
             </div>
-          </div>
+            <div className="flex-1">
+              <p className={`font-black text-sm ${profileDone ? "text-green-700" : "text-[#1D1D1F]"}`}>Điền thông tin cá nhân</p>
+              <p className="text-xs text-gray-400 font-medium mt-0.5">{profileDone ? "Đã hoàn thành" : "Nhấn để điền thông tin"}</p>
+            </div>
+          </button>
+
+          {/* Box 2: Ký bảo mật */}
+          <button
+            onClick={() => { window.open("https://sg1.documents.adobe.com/public/esignWidget?wid=CBFCIBAA3AAABLblqZhBTVety-rac_6tDkmYwnVdmNmPWQbUwl3bv6r3XwaTnqMzGtFVh1dKVNBmCztFyBBo*", "_blank"); setSignDone(true); }}
+            className={`w-full flex items-center gap-4 p-5 rounded-2xl border-2 transition-all text-left ${signDone ? "border-green-400 bg-green-50" : "border-gray-200 bg-white hover:border-blue-300 hover:bg-blue-50/50"}`}
+          >
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 text-lg ${signDone ? "bg-green-500" : "bg-indigo-100"}`}>
+              {signDone ? <CheckCircle2 size={20} className="text-white" /> : "✍️"}
+            </div>
+            <div className="flex-1">
+              <p className={`font-black text-sm ${signDone ? "text-green-700" : "text-[#1D1D1F]"}`}>Ký bảo mật</p>
+              <p className="text-xs text-gray-400 font-medium mt-0.5">{signDone ? "Đã mở trang ký" : "Nhấn để ký cam kết bảo mật"}</p>
+            </div>
+          </button>
+
+          {/* Screenshot upload */}
+          {profileDone && signDone && (
+            <label className={`w-full flex items-center gap-4 p-5 rounded-2xl border-2 border-dashed cursor-pointer transition-all ${screenshotFile ? "border-green-400 bg-green-50" : "border-gray-300 bg-white hover:border-blue-300 hover:bg-blue-50/50"}`}>
+              <input type="file" accept="image/*" className="hidden" onChange={(e) => { const f = (e.target as HTMLInputElement).files; setScreenshotFile(f?.[0] ?? null); }} />
+              <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 text-lg ${screenshotFile ? "bg-green-500" : "bg-gray-100"}`}>
+                {screenshotFile ? <CheckCircle2 size={20} className="text-white" /> : "📸"}
+              </div>
+              <div className="flex-1">
+                <p className={`font-black text-sm ${screenshotFile ? "text-green-700" : "text-[#1D1D1F]"}`}>Gửi ảnh xác nhận</p>
+                <p className="text-xs text-gray-400 font-medium mt-0.5">{screenshotFile ? screenshotFile.name : "Chụp màn hình xác nhận ký & tải lên"}</p>
+              </div>
+            </label>
+          )}
+
+          {/* Hoàn thành button */}
+          {profileDone && signDone && screenshotFile && !showChotDon && (
+            <button
+              onClick={() => setShowChotDon(true)}
+              className="w-full bg-gradient-to-r from-[#2563EB] to-[#3B82F6] text-white px-10 py-4 rounded-2xl font-black text-sm shadow-xl shadow-blue-600/30 hover:scale-[1.02] active:scale-95 transition-all"
+            >
+              Hoàn thành 🎉
+            </button>
+          )}
+
+          {/* Chốt đơn card */}
+          {showChotDon && (
+            <div className="relative overflow-hidden bg-gradient-to-br from-[#3B82F6] to-[#8B5CF6] p-8 rounded-[2.5rem] shadow-2xl shadow-purple-500/20 mt-2">
+              <div className="absolute top-0 right-0 p-4 opacity-20"><PartyPopper size={120} /></div>
+              <div className="relative z-10 space-y-6">
+                <h4 className="text-2xl sm:text-3xl font-black text-white leading-tight">Chốt đơn! Thảo Nhi đã là một mẩu của NhiLe Team! 🥳</h4>
+                <p className="text-white/80 text-sm sm:text-base font-medium leading-relaxed">Sẵn sàng nhé. Check email nhận 'bí kíp võ công' tham gia cùng anh em mình nha. 🚀</p>
+                <button onClick={() => window.open("https://t.me/+your_group_link", "_blank")}
+                  className="w-full bg-white text-[#1D4ED8] py-6 px-8 rounded-[2rem] font-black text-xl shadow-lg hover:scale-[1.03] active:scale-95 transition-all flex items-center justify-center gap-4 group/btn">
+                  BẮT ĐẦU HÀNH TRÌNH NGAY <Zap className="fill-current group-hover/btn:animate-bounce" size={24} />
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       ),
     },
   ];
+
+  const ACTIVE_STEP_IDS = [1, 3, 4];
+  const RETURNING_STEP_IDS = [1, 2, 3, 4, 5];
+
+  const returnTestStep = {
+    id: 0,
+    title: "Bài test quay trở lại",
+    desc: "Hoàn thành bài test để tiếp tục hành trình cùng NhiLe Team.",
+    icon: <ClipboardCheck className="w-6 h-6" />,
+    status: "active",
+    customContent: (
+      <div className="mt-6 space-y-4">
+        {returnTestResult === "fail" ? (
+          <div className="bg-gray-50 border border-gray-200 rounded-2xl p-6 space-y-3">
+            <p className="text-sm font-medium text-gray-600 leading-relaxed">
+              Cảm ơn bạn đã dành thời gian làm bài test và quan tâm quay lại với NhiLe Team. Sau khi kiểm tra kết quả, chỉ số hiện tại chưa phù hợp với yêu cầu để tham gia vòng phỏng vấn, vì vậy team chưa thể sắp xếp buổi phỏng vấn cho bạn trong thời điểm này.
+            </p>
+            <p className="text-sm font-medium text-gray-600 leading-relaxed">
+              Team ghi nhận tinh thần chủ động và cách bạn hoàn thành bài làm. Bạn có thể đăng ký làm lại bài test sau 03 tháng. Chúc bạn có thêm nhiều trải nghiệm tích cực.
+            </p>
+          </div>
+        ) : returnTestResult === "pass" ? (
+          <div className="bg-green-50 border border-green-200 rounded-2xl p-5 flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-green-500 flex items-center justify-center shrink-0">
+              <ClipboardCheck size={16} className="text-white" />
+            </div>
+            <p className="font-black text-sm text-green-700">Bài test đã hoàn thành — bạn đã đạt! 🎉</p>
+          </div>
+        ) : (
+          <>
+            {returnTestOpened && (() => {
+              const phase = localStorage.getItem("nlt_rtq_phase");
+              const mcAns: number[] = (() => { try { return JSON.parse(localStorage.getItem("nlt_rtq_mc_ans") || "[]"); } catch { return []; } })();
+              const hasResult = !!localStorage.getItem("nlt_rtq_result");
+              if (hasResult) return null;
+              let label = "";
+              let pct = 0;
+              if (phase === "essay") { label = "Phần tự luận"; pct = 100; }
+              else if (mcAns.length > 0) { label = `${mcAns.length}/20 câu — ${Math.round((mcAns.length / 20) * 100)}%`; pct = (mcAns.length / 20) * 100; }
+              if (!label) return null;
+              return (
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between text-xs font-black text-gray-400 uppercase tracking-wider">
+                    <span>Đang làm dở</span>
+                    <span>{label}</span>
+                  </div>
+                  <div className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
+                    <div className="h-full bg-[#6366F1] rounded-full transition-all duration-500" style={{ width: `${pct}%` }} />
+                  </div>
+                </div>
+              );
+            })()}
+            <button
+              onClick={() => { setReturnTestOpened(true); setShowReturnQuiz(true); }}
+              className="bg-gradient-to-r from-[#6366F1] to-[#8B5CF6] text-white px-8 py-3.5 rounded-2xl font-black text-sm shadow-lg shadow-indigo-500/20 hover:opacity-90 active:scale-95 transition-all flex items-center gap-2 w-full sm:w-auto justify-center"
+            >
+              {returnTestOpened ? "Tiếp tục bài test" : "Bắt đầu bài test"} <ArrowRight size={16} />
+            </button>
+          </>
+        )}
+      </div>
+    ),
+  };
+
+  const remap = (arr: typeof allSteps) =>
+    arr.map((s, i) => ({ ...s, id: i + 1, status: currentStep === i + 1 ? "active" : currentStep > i + 1 ? "completed" : "locked" }));
+
+  const steps = isActiveMember
+    ? remap(allSteps.filter(s => ACTIVE_STEP_IDS.includes(s.id)))
+    : isReturning
+    ? remap([returnTestStep as typeof allSteps[0], ...allSteps.filter(s => RETURNING_STEP_IDS.includes(s.id))])
+    : allSteps;
 
   // ─── Render helpers ──────────────────────────────────────────────────────
 
@@ -403,91 +554,192 @@ const Dashboard = () => {
   // ─── JSX ─────────────────────────────────────────────────────────────────
 
   return (
-    <div className={`min-h-[100dvh] bg-[#F9F9F9] flex flex-col md:flex-row font-sans transition-opacity duration-1000 ${isLoaded ? "opacity-100" : "opacity-0"}`}>
+    <div className={`min-h-[100dvh] flex font-sans transition-opacity duration-1000 ${isLoaded ? "opacity-100" : "opacity-0"}`}>
 
       {/* Mobile Header */}
-      <div className="md:hidden bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between sticky top-0 z-[100] shadow-sm">
+      <div className="md:hidden bg-white border-b border-gray-100 px-5 py-4 flex items-center justify-between sticky top-0 z-[100] shadow-sm">
         <div className="flex items-center gap-2">
-          <img src="/logo.webp" alt="NLT" className="w-8 h-8 object-contain" />
-          <span className="font-black text-sm tracking-tight text-blue-600">NhiLe Team</span>
+          <div className="w-8 h-8 rounded-full bg-purple-600 flex items-center justify-center text-white font-black text-sm shrink-0">N</div>
+          <span className="font-black text-sm text-gray-900"><span className="text-purple-600">NHILE</span>TEAM</span>
         </div>
         <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="p-2 text-gray-500 hover:bg-gray-50 rounded-xl">
-          {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+          {isMobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
         </button>
       </div>
 
       {/* Sidebar */}
-      <aside className={`fixed inset-0 z-[90] md:relative md:flex md:w-80 bg-white border-r border-gray-100 p-8 flex-col justify-between h-screen transition-transform duration-500 ${isMobileMenuOpen ? "translate-y-0" : "-translate-y-full md:translate-y-0"}`}>
-        <div className="space-y-10">
-          <div className="hidden md:flex flex-col items-center justify-center w-full">
-            <img src="/logo.webp" alt="NLT" className="w-20 h-20 object-contain hover:scale-110 transition-transform duration-500" />
-          </div>
-          <div className="space-y-6 pt-16 md:pt-0">
-            <div className="flex items-center gap-4 p-5 bg-[#F9F9F9] rounded-[2rem] border border-gray-50">
-              <div className="w-12 h-12 rounded-full bg-white shadow-sm flex items-center justify-center text-gray-400 border border-gray-100 shrink-0"><User size={24} /></div>
-              <h3 className="font-black text-sm text-[#1D1D1F] truncate uppercase">Thảo Nhi Lê</h3>
-            </div>
-            <nav>
-              <div className="flex items-center gap-3 px-6 py-4 text-blue-600 bg-blue-50 rounded-2xl font-black text-sm border border-blue-100 cursor-default">
-                <CheckCircle2 size={18} /> Onboarding
-              </div>
-            </nav>
-          </div>
+      <aside className={`fixed inset-0 z-[90] md:relative md:flex md:w-64 lg:w-72 bg-white border-r border-gray-100 p-6 flex-col h-screen md:sticky md:top-0 transition-transform duration-500 ${isMobileMenuOpen ? "flex translate-y-0" : "-translate-y-full md:translate-y-0"}`}>
+        {/* Logo */}
+        <div className="flex items-center gap-3 mb-10 pt-4 md:pt-0">
+          <div className="w-10 h-10 rounded-full bg-purple-600 flex items-center justify-center text-white font-black text-lg shrink-0">N</div>
+          <span className="font-black text-gray-900 text-sm"><span className="text-purple-600">NHILE</span>TEAM</span>
         </div>
-        <button onClick={() => navigate("/")} className="flex items-center gap-2 text-gray-400 hover:text-red-500 transition-all text-sm font-black mt-10 pb-8 md:pb-0">
-          <LogOut size={18} /> Đăng xuất
-        </button>
+
+        {/* Step list */}
+        <nav className="flex-1 space-y-1">
+          {steps.map((step) => {
+            const isCompleted = step.status === "completed";
+            const isActive = step.status === "active";
+            return (
+              <div key={step.id} className="flex items-center gap-3 px-1 py-2.5">
+                <div className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 text-xs font-black transition-all duration-300 ${isCompleted ? "bg-green-500 text-white" : isActive ? "bg-purple-600 text-white" : "border-2 border-gray-200 text-gray-400"}`}>
+                  {isCompleted ? <CheckCircle2 size={13} /> : step.id}
+                </div>
+                <span className={`text-[10px] font-black uppercase tracking-wide leading-tight transition-colors ${isActive ? "text-purple-600" : isCompleted ? "text-gray-600" : "text-gray-300"}`}>
+                  {step.title}
+                </span>
+              </div>
+            );
+          })}
+        </nav>
+
+        {/* User + logout */}
+        <div className="space-y-1 mt-6 border-t border-gray-100 pt-4">
+          <div className="flex items-center gap-2 px-1 py-1.5">
+            <User size={15} className="shrink-0 text-gray-400" />
+            <span className="font-bold text-xs text-gray-500 uppercase tracking-wide truncate">Thảo Nhi Lê</span>
+          </div>
+          <button onClick={() => navigate("/")} className="flex items-center gap-2 px-1 py-1.5 text-xs text-gray-400 hover:text-red-500 transition-colors font-black">
+            <LogOut size={15} className="shrink-0" /> Đăng xuất
+          </button>
+        </div>
       </aside>
 
-      {/* Main */}
-      <main className="flex-1 p-5 sm:p-8 md:p-12 lg:p-16 overflow-y-auto overflow-x-hidden">
-        <div className="max-w-4xl mx-auto space-y-10">
-          <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-8">
-            <div className="space-y-2 text-center sm:text-left">
-              <h2 className="text-3xl font-black text-[#1D1D1F] tracking-tight">Chào mừng Thảo Nhi!</h2>
-              <p className="text-gray-500 text-sm sm:text-base font-bold max-w-xl leading-relaxed mx-auto sm:mx-0">
-                Chúng mình đã chuẩn bị sẵn mọi thứ — hoàn tất vài bước nhỏ để bắt đầu hành trình cùng <span className="text-blue-600">NhiLe Team</span> nha!
-              </p>
-            </div>
-            <div className="flex-1 max-w-md w-full bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-blue-600 animate-pulse"></div>
-                  <span className="text-[11px] font-black text-blue-600 uppercase tracking-[0.15em]">Tiến trình thành viên</span>
-                </div>
-                <span className="text-xs font-black text-blue-600">{currentStep === 5 ? "100" : Math.round((currentStep / 5) * 100)}%</span>
-              </div>
-              <div className="h-4 w-full bg-blue-50 rounded-full overflow-hidden p-1 border border-blue-100/50">
-                <div className="h-full bg-gradient-to-r from-[#2563EB] via-[#3B82F6] to-[#60A5FA] bg-[length:200%_100%] animate-shimmer transition-all duration-1000 ease-out rounded-full shadow-[0_0_15px_rgba(37,99,235,0.4)]"
-                  style={{ width: `${(currentStep / 5) * 100}%` }} />
-              </div>
-            </div>
-          </header>
+      {/* Main content */}
+      <main className="flex-1 bg-gradient-to-br from-purple-100 via-purple-50 to-pink-100 flex flex-col items-center justify-center p-6 md:p-10 min-h-screen">
+        {/* Header */}
+        <div className="text-center mb-8 max-w-md">
+          <h1 className="text-3xl md:text-4xl font-black text-gray-900 tracking-tight">Chào mừng Thảo Nhi!</h1>
+          <p className="text-gray-500 mt-2 text-sm md:text-base leading-relaxed">
+            Cùng hoàn tất một vài bước nhỏ đây thú vị để gia nhập đội ngũ NhiLe Team nhé.
+          </p>
+        </div>
 
-          <div className="relative space-y-4">
-            <div className="absolute left-[31px] sm:left-[35px] top-10 bottom-10 w-0.5 bg-gray-100 z-0" />
-            {steps.map((step) => {
-              const isActive = step.status === "active";
-              return (
-                <div key={step.id} className={`relative z-10 flex gap-5 sm:gap-8 p-6 sm:p-8 rounded-[2.5rem] transition-all duration-500 ${isActive ? "bg-white shadow-[0_20px_50px_rgba(0,0,0,0.04)] border border-gray-50" : "bg-transparent"}`}>
-                  <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 shadow-sm transition-all duration-500
-                    ${step.status === "completed" ? "bg-[#10B981] text-white"
-                      : isActive ? step.id === 5 ? "bg-gradient-to-br from-[#FB923C] to-[#F59E0B] text-white ring-8 ring-orange-500/10 animate-bounce-subtle" : "bg-[#3B82F6] text-white ring-8 ring-blue-600/5 shadow-lg shadow-blue-500/20"
-                      : "bg-white text-gray-200 border border-gray-100"}`}>
-                    {step.status === "completed" ? <CheckCircle2 className="w-6 h-6" /> : step.icon}
-                  </div>
-                  <div className={`flex-1 space-y-1.5 pt-1 text-left transition-opacity duration-500 ${step.status === "locked" ? "opacity-30" : "opacity-100"}`}>
-                    <span className={`text-[9px] font-black uppercase tracking-[0.2em] ${step.status === "completed" ? "text-[#10B981]" : isActive ? "text-blue-600" : "text-gray-400"}`}>Bước {step.id}</span>
-                    <h3 className={`text-lg font-black tracking-tight ${step.status === "locked" ? "text-gray-300" : "text-[#1D1D1F]"}`}>{step.title}</h3>
-                    <p className={`text-xs sm:text-sm font-bold leading-relaxed ${step.status === "completed" ? "text-gray-400" : "text-gray-500"}`}>{step.desc}</p>
-                    {isActive && step.customContent}
-                  </div>
+        {/* Current step card */}
+        {(() => {
+          const activeStep = steps.find(s => s.status === "active");
+          if (!activeStep) return (
+            <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-10 max-w-lg w-full text-center shadow-lg">
+              <div className="text-4xl mb-4">🎉</div>
+              <h2 className="text-2xl font-black text-gray-900">Bạn đã hoàn thành tất cả các bước!</h2>
+            </div>
+          );
+          return (
+            <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 max-w-lg w-full shadow-lg border border-white/60">
+              {/* Icon */}
+              <div className="w-16 h-16 bg-purple-50 rounded-2xl flex items-center justify-center mx-auto mb-5 text-purple-500">
+                {activeStep.icon}
+              </div>
+              {/* Label */}
+              <p className="text-center text-[10px] font-black text-purple-600 uppercase tracking-[0.2em] mb-1.5">BƯỚC {activeStep.id}</p>
+              {/* Title */}
+              <h2 className="text-center text-2xl font-black text-gray-900 mb-1.5">{activeStep.title}</h2>
+              {/* Desc */}
+              <p className="text-center text-gray-500 text-sm mb-6 leading-relaxed">{activeStep.desc}</p>
+
+              {/* Step 1 CTA */}
+              {activeStep.id === 1 && (
+                <div className="space-y-3">
+                  <button
+                    onClick={() => { setIsDocModalOpen(true); setDocModalView("menu"); }}
+                    className="w-full flex items-center justify-center gap-2 py-3 px-4 border border-purple-200 rounded-2xl text-purple-600 font-bold text-sm hover:bg-purple-50 transition-colors"
+                  >
+                    <BookOpen size={15} /> Đọc tài liệu Văn hoá trước khi Test
+                  </button>
+                  <button
+                    onClick={() => openQuiz("culture")}
+                    className="w-full flex items-center justify-center gap-2 py-4 px-4 bg-purple-600 rounded-2xl text-white font-black text-sm hover:bg-purple-700 active:scale-95 transition-all shadow-lg shadow-purple-500/20"
+                  >
+                    Bắt đầu thực hiện <ArrowRight size={16} />
+                  </button>
                 </div>
-              );
-            })}
+              )}
+
+              {/* Step 2 CTA */}
+              {activeStep.id === 2 && (
+                <button
+                  onClick={() => openQuiz("role")}
+                  className="w-full flex items-center justify-center gap-2 py-4 px-4 bg-purple-600 rounded-2xl text-white font-black text-sm hover:bg-purple-700 active:scale-95 transition-all shadow-lg shadow-purple-500/20"
+                >
+                  Bắt đầu thực hiện <ArrowRight size={16} />
+                </button>
+              )}
+
+              {/* Steps 3–5: custom content */}
+              {activeStep.id >= 3 && (
+                <div className="border-t border-gray-100 pt-6">
+                  {activeStep.customContent}
+                </div>
+              )}
+            </div>
+          );
+        })()}
+      </main>
+
+      {/* ─── Document Modal ──────────────────────────────────────────────────── */}
+      {isDocModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm animate-in fade-in duration-200" onClick={() => setIsDocModalOpen(false)} />
+          <div className="relative w-full max-w-md bg-white rounded-[1.5rem] shadow-2xl animate-in zoom-in-95 duration-300">
+            {/* Header */}
+            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+              <div className="flex items-center gap-2">
+                {docModalView !== "menu" ? (
+                  <button onClick={() => setDocModalView("menu")} className="flex items-center gap-1 text-gray-500 hover:text-gray-700 text-xs font-bold">
+                    <ChevronLeft size={14} /> Quay lại
+                  </button>
+                ) : (
+                  <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">TÀI LIỆU</span>
+                )}
+              </div>
+              <button onClick={() => { setIsDocModalOpen(false); setDocModalView("menu"); }} className="text-gray-400 hover:text-gray-600">
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Body */}
+            {docModalView === "menu" && (
+              <div className="p-6 space-y-4">
+                <h3 className="text-center text-lg font-black text-gray-900">Bạn muốn xem tài liệu nào?</h3>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    onClick={() => setDocModalView("video")}
+                    className="flex flex-col items-center gap-2.5 p-5 border border-gray-100 bg-gray-50 rounded-2xl hover:border-purple-200 hover:bg-purple-50 transition-colors"
+                  >
+                    <Video size={26} className="text-purple-600" />
+                    <span className="text-sm font-bold text-purple-600">Xem Video</span>
+                  </button>
+                  <button
+                    onClick={() => setDocModalView("text")}
+                    className="flex flex-col items-center gap-2.5 p-5 border border-gray-100 bg-gray-50 rounded-2xl hover:border-purple-200 hover:bg-purple-50 transition-colors"
+                  >
+                    <FileText size={26} className="text-purple-600" />
+                    <span className="text-sm font-bold text-purple-600">Đọc Văn Bản</span>
+                  </button>
+                </div>
+              </div>
+            )}
+            {docModalView === "video" && (
+              <div className="p-4">
+                <div className="bg-gray-900 rounded-2xl aspect-video flex items-center justify-center text-gray-400 text-sm font-medium">
+                  [Video Của Team Sẽ Hiện Ở Đây]
+                </div>
+              </div>
+            )}
+            {docModalView === "text" && (
+              <div className="p-6 max-h-72 overflow-y-auto">
+                <h3 className="font-black text-gray-900 mb-3 text-base">Giá trị cốt lõi NhiLe Team</h3>
+                <ol className="space-y-2.5 text-sm text-gray-600">
+                  <li>1. Luôn đúng giờ và chủ động báo cáo tiến độ.</li>
+                  <li>2. Góp ý thẳng thắn, mang tính xây dựng vì mục tiêu chung.</li>
+                  <li>3. Bảo mật tuyệt đối các thông tin dự án chưa public.</li>
+                  <li className="text-gray-400 italic text-xs mt-2">(Nội dung văn bản chi tiết sẽ được thêm vào đây...)</li>
+                </ol>
+              </div>
+            )}
           </div>
         </div>
-      </main>
+      )}
 
       {/* ─── Quiz Modal ─────────────────────────────────────────────────────── */}
       {isQuizModalOpen && (
@@ -497,88 +749,87 @@ const Dashboard = () => {
 
             {!showQuizResult ? (
               <>
-                {/* Question header */}
-                <div className="bg-gradient-to-br from-[#6366F1] to-[#8B5CF6] p-7 sm:p-8 space-y-3 shrink-0">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-black text-white/70 uppercase tracking-widest">
-                      {activeQuizType === "culture" ? "Test Văn Hoá" : "Test Phù Hợp Team"}
-                    </span>
-                    <button onClick={closeQuiz} className="text-white/60 hover:text-white transition-colors"><X size={18} /></button>
-                  </div>
-                  <h3 className="text-base sm:text-lg font-black text-white leading-snug">
-                    {currentQuestion.q}
-                  </h3>
+                {/* Header */}
+                <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 shrink-0">
+                  <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                    {activeQuizType === "culture" ? "TEST VĂN HOÁ" : "GỢI Ý TEAM"}
+                  </span>
+                  <button onClick={closeQuiz} className="text-gray-400 hover:text-gray-600 transition-colors"><X size={18} /></button>
                 </div>
 
-                {/* Timer */}
-                <div className="px-7 sm:px-8 pt-4 shrink-0">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Thời gian</span>
-                    <span className={`text-xs font-black tabular-nums ${timer <= 10 ? "text-red-500" : "text-orange-500"}`}>
-                      {String(Math.floor(timer / 60)).padStart(2, "0")}:{String(timer % 60).padStart(2, "0")}
+                {/* Progress info */}
+                <div className="px-6 pt-4 shrink-0 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-black text-gray-700">CÂU {currentQuestionIndex + 1} / {totalQuestions}</span>
+                    <span className={`text-sm font-black flex items-center gap-1.5 ${timer <= 10 ? "text-red-500" : "text-orange-500"}`}>
+                      ⏱ 0:{String(timer % 60).padStart(2, "0")}s
                     </span>
                   </div>
-                  <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
-                    <div className={`h-full rounded-full transition-all duration-1000 ${timer <= 10 ? "bg-red-500" : "bg-gradient-to-r from-orange-400 to-yellow-400"}`} style={{ width: `${timerPercent}%` }} />
+                  <div className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
+                    <div className={`h-full rounded-full transition-all duration-1000 ${timer <= 10 ? "bg-red-500" : "bg-orange-400"}`} style={{ width: `${timerPercent}%` }} />
                   </div>
+                </div>
+
+                {/* Question */}
+                <div className="px-6 py-4 shrink-0">
+                  <h3 className="text-base md:text-lg font-black text-gray-900 leading-snug">{currentQuestion.q}</h3>
                 </div>
 
                 {/* Options */}
-                <div className="px-7 sm:px-8 py-4 space-y-2 overflow-y-auto flex-1">
+                <div className="px-6 space-y-2 overflow-y-auto flex-1">
                   {currentQuestion.options?.map((opt, idx) => (
-                    <button key={idx} onClick={() => handleAnswer(idx)}
-                      className="w-full flex items-center gap-3 p-3.5 border-2 border-gray-100 rounded-2xl font-bold text-sm text-[#1D1D1F] hover:border-[#6366F1] hover:bg-indigo-50 hover:text-[#6366F1] transition-all active:scale-[0.98] text-left">
-                      <span className="w-7 h-7 rounded-lg bg-gray-100 flex items-center justify-center text-xs font-black text-gray-500 shrink-0">
-                        {OPTION_LABELS[idx]}
-                      </span>
-                      {opt.text}
+                    <button key={idx} onClick={() => setSelectedAnswer(idx)}
+                      className={`w-full flex items-center gap-3 p-3.5 border-2 rounded-2xl text-sm text-left transition-all active:scale-[0.98] ${selectedAnswer === idx ? "border-purple-500 bg-purple-50 text-purple-900" : "border-gray-100 text-gray-700 hover:border-purple-200 hover:bg-purple-50/40"}`}>
+                      <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${selectedAnswer === idx ? "border-purple-600" : "border-gray-300"}`}>
+                        {selectedAnswer === idx && <div className="w-2.5 h-2.5 rounded-full bg-purple-600" />}
+                      </div>
+                      <span className="font-medium">{opt.text}</span>
                     </button>
                   ))}
                 </div>
 
-                {/* Progress */}
-                <div className="px-7 sm:px-8 pb-6 shrink-0 space-y-1.5">
-                  <div className="flex items-center justify-between text-[10px] font-black text-gray-400 uppercase tracking-wider">
-                    <span>Tiến trình</span>
-                    <span>{currentQuestionIndex + 1}/{totalQuestions} câu — {progressPercent}%</span>
-                  </div>
+                {/* Bottom: progress + confirm */}
+                <div className="px-6 pb-6 pt-4 shrink-0 space-y-3">
                   <div className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
-                    <div className="h-full bg-[#6366F1] transition-all duration-500 rounded-full" style={{ width: `${progressPercent}%` }} />
+                    <div className="h-full bg-green-500 rounded-full transition-all duration-500" style={{ width: `${progressPercent}%` }} />
                   </div>
+                  <button
+                    onClick={() => { if (selectedAnswer !== null) { handleAnswer(selectedAnswer); setSelectedAnswer(null); } }}
+                    disabled={selectedAnswer === null}
+                    className={`w-full py-4 rounded-2xl font-black text-sm transition-all ${selectedAnswer !== null ? "bg-purple-600 text-white shadow-lg hover:bg-purple-700 active:scale-95" : "bg-gray-100 text-gray-400 cursor-not-allowed"}`}
+                  >
+                    Xác nhận câu trả lời
+                  </button>
                 </div>
               </>
             ) : (
               /* Result screen */
-              <div className="p-10 sm:p-12 text-center space-y-6 overflow-y-auto">
+              <div className="p-8 md:p-10 text-center space-y-5 overflow-y-auto">
                 {activeQuizType === "culture" ? (
                   quizPassed ? (
                     <>
-                      <div className="w-20 h-20 bg-green-500 rounded-full flex items-center justify-center mx-auto shadow-lg shadow-green-200">
-                        <CheckCircle2 className="text-white w-10 h-10" />
+                      <div className="text-5xl">🤩</div>
+                      <div className="space-y-1.5">
+                        <h3 className="text-2xl font-black text-gray-900">Xuất sắc luôn!</h3>
+                        <p className="text-gray-500 text-sm font-medium">Dữ vậy ta, làm lần đầu mà đúng luôn kìa, giỏi thiệt á chứ.</p>
                       </div>
-                      <div className="space-y-2">
-                        <h3 className="text-2xl font-black text-[#1D1D1F]">Tuyệt vời! 🎉</h3>
-                        <p className="text-gray-500 font-bold">
-                          Bạn đúng <span className="text-green-600 font-black">{quizScore}/{cultureQuestions.length}</span> câu — Đủ điều kiện sang bước tiếp theo!
-                        </p>
-                      </div>
-                      <div className="flex justify-center gap-2">
-                        {["-0.3s", "-0.15s", "0s"].map((d) => <div key={d} className="w-2 h-2 bg-green-500 rounded-full animate-bounce" style={{ animationDelay: d }} />)}
-                      </div>
+                      <button onClick={handleQuizContinue} className="w-full py-4 rounded-2xl bg-green-500 text-white font-black text-sm shadow-lg hover:bg-green-600 active:scale-95 transition-all">
+                        Tiếp tục hành trình
+                      </button>
                     </>
                   ) : (
                     <>
-                      <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto">
-                        <XCircle className="text-red-500 w-10 h-10" />
+                      <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto">
+                        <XCircle className="text-red-500 w-8 h-8" />
                       </div>
-                      <div className="space-y-2">
-                        <h3 className="text-2xl font-black text-[#1D1D1F]">Chưa đạt!</h3>
-                        <p className="text-gray-500 font-bold">
-                          Bạn đúng <span className="text-red-500 font-black">{quizScore}/{cultureQuestions.length}</span> câu — Cần đúng ít nhất <span className="font-black text-[#1D1D1F]">{PASS_SCORE}/{cultureQuestions.length}</span> để qua.
+                      <div className="space-y-1.5">
+                        <h3 className="text-2xl font-black text-gray-900">Chưa đạt!</h3>
+                        <p className="text-gray-500 text-sm font-medium">
+                          Bạn đúng <span className="text-red-500 font-black">{quizScore}/{cultureQuestions.length}</span> câu — Cần ít nhất <span className="font-black text-gray-800">{PASS_SCORE}</span> câu đúng.
                         </p>
-                        <p className="text-gray-400 text-sm">Hãy đọc lại tài liệu và thử lại nhé!</p>
+                        <p className="text-gray-400 text-xs">Hãy đọc lại tài liệu và thử lại nhé!</p>
                       </div>
-                      <button onClick={handleRetry} className="flex items-center gap-2 mx-auto bg-[#6366F1] text-white px-8 py-3.5 rounded-2xl font-black text-sm shadow-lg shadow-indigo-500/20 hover:bg-indigo-700 active:scale-95 transition-all">
+                      <button onClick={handleRetry} className="flex items-center gap-2 mx-auto bg-purple-600 text-white px-8 py-3.5 rounded-2xl font-black text-sm shadow-lg hover:bg-purple-700 active:scale-95 transition-all">
                         <RotateCcw size={16} /> Làm lại
                       </button>
                     </>
@@ -590,28 +841,17 @@ const Dashboard = () => {
                     const isMultiple = topTeams.length > 1;
                     return (
                       <>
-                        <div className="space-y-3">
-                          <div className="text-4xl">{isMultiple ? "🌟" : TEAM_INFO[topTeams[0]]?.emoji}</div>
-                          <h3 className="text-xl font-black text-[#1D1D1F]">
-                            {isMultiple ? "Bạn phù hợp với nhiều team!" : `Bạn phù hợp với ${TEAM_INFO[topTeams[0]]?.label}!`}
-                          </h3>
+                        <div className="text-5xl">🥰</div>
+                        <div className="space-y-1.5">
+                          <h3 className="text-2xl font-black text-gray-900">Lựa chọn tuyệt vời!</h3>
+                          <p className="text-gray-500 text-sm font-medium leading-relaxed">
+                            {isMultiple
+                              ? "Chúc mừng bạn đã hoàn thành! Bạn phù hợp với nhiều team. Team nào cũng hay hết, tụi mình đang nóng lòng chờ bạn gia nhập đó!"
+                              : `Chúc mừng bạn đã hoàn thành! Team phù hợp sau khi những lựa chọn là ${TEAM_INFO[topTeams[0]]?.label}. Team nào cũng hay hết, tụi mình đang nóng lòng chờ bạn gia nhập đó!`}
+                          </p>
                         </div>
-                        <div className="space-y-3">
-                          {topTeams.map((team) => (
-                            <div key={team} className="bg-indigo-50 border border-indigo-100 rounded-2xl p-4 text-left">
-                              <div className="flex items-center gap-3 mb-1">
-                                <span className="text-xl">{TEAM_INFO[team].emoji}</span>
-                                <span className="font-black text-[#1D1D1F] text-sm">{TEAM_INFO[team].label}</span>
-                                              </div>
-                              <p className="text-xs text-gray-500 font-medium pl-9">{TEAM_INFO[team].desc}</p>
-                            </div>
-                          ))}
-                        </div>
-                        <button
-                          onClick={() => { closeQuiz(); setCurrentStep(3); window.scrollTo({ top: 0, behavior: "smooth" }); }}
-                          className="flex items-center gap-2 mx-auto bg-[#6366F1] text-white px-8 py-3.5 rounded-2xl font-black text-sm shadow-lg shadow-indigo-500/20 hover:bg-indigo-700 active:scale-95 transition-all"
-                        >
-                          Tiếp tục <ArrowRight size={16} />
+                        <button onClick={handleQuizContinue} className="w-full py-4 rounded-2xl bg-green-500 text-white font-black text-sm shadow-lg hover:bg-green-600 active:scale-95 transition-all">
+                          Tiếp tục hành trình
                         </button>
                       </>
                     );
@@ -623,29 +863,54 @@ const Dashboard = () => {
         </div>
       )}
 
+      {/* ─── Step Complete Modal ─────────────────────────────────────────────── */}
+      {showStepModal && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm animate-in fade-in duration-200" />
+          <div className="relative w-full max-w-sm bg-white rounded-[2rem] p-8 shadow-2xl text-center space-y-4 animate-in zoom-in-95 duration-300">
+            <div className="text-5xl">🎉</div>
+            <div className="space-y-2">
+              <h3 className="text-2xl font-black text-gray-900">Chúc mừng!</h3>
+              <p className="text-gray-500 text-sm font-medium leading-relaxed">
+                Wow thật tuyệt vời, bạn đi được {currentStep} bước rồi nè! Thật là hạnh phúc khi thấy bạn dũng cảm đi được bước đầu tiên. Không còn nhiều nữa đâu, chỉ {totalSteps - currentStep} bước nữa là tới đích rồi. Mình luôn đồng hành cùng bạn!
+              </p>
+            </div>
+            <button onClick={handleStepModalContinue} className="w-full py-4 rounded-2xl bg-purple-600 text-white font-black text-sm shadow-lg hover:bg-purple-700 active:scale-95 transition-all">
+              Đi tiếp thôi nào!
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Fullscreen image lightbox */}
       {isImageFullscreen && (
-        <div
-          className="fixed inset-0 z-[200] bg-black/90 flex items-center justify-center p-4 animate-in fade-in duration-200"
-          onClick={() => setIsImageFullscreen(false)}
-        >
-          <button className="absolute top-4 right-4 text-white/70 hover:text-white transition-colors z-10">
-            <X size={32} />
-          </button>
-          <img
-            src="https://lh3.googleusercontent.com/d/1dZvgi4ZLZoTD1-hGLeHStSO4v3J2CYzV"
-            alt="Văn hoá NhiLe Team"
+        <div className="fixed inset-0 z-[200] bg-black/90 flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={() => setIsImageFullscreen(false)}>
+          <button className="absolute top-4 right-4 text-white/70 hover:text-white transition-colors z-10"><X size={32} /></button>
+          <img src="https://lh3.googleusercontent.com/d/1dZvgi4ZLZoTD1-hGLeHStSO4v3J2CYzV" alt="Văn hoá NhiLe Team"
             className="max-w-full max-h-full object-contain rounded-2xl animate-in zoom-in-95 duration-200"
-            onClick={(e) => { e.stopPropagation(); }}
-          />
+            onClick={(e) => e.stopPropagation()} />
         </div>
+      )}
+
+      {/* Return Member Quiz Modal */}
+      <ReturnMemberQuizModal
+        isOpen={showReturnQuiz}
+        onPass={() => { setReturnTestResult("pass"); setCurrentStep(2); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+        onFail={() => setReturnTestResult("fail")}
+        onClose={() => setShowReturnQuiz(false)}
+      />
+
+      {/* Profile Info Modal */}
+      {showProfileModal && (
+        <ProfileInfoModal
+          onClose={() => setShowProfileModal(false)}
+          onSubmit={() => setProfileDone(true)}
+        />
       )}
 
       <style>{`
         .overflow-y-auto::-webkit-scrollbar { display: none; }
         .overflow-y-auto { -ms-overflow-style: none; scrollbar-width: none; }
-        @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
-        .animate-shimmer { animation: shimmer 3s linear infinite; }
         @keyframes bounce-subtle { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
         .animate-bounce-subtle { animation: bounce-subtle 2s ease-in-out infinite; }
       `}</style>
