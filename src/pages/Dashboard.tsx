@@ -140,7 +140,7 @@ const Dashboard = () => {
   const [isDocModalOpen, setIsDocModalOpen] = useState(false);
   const [docModalView, setDocModalView] = useState<"menu" | "video" | "text">("menu");
   const [showStepModal, setShowStepModal] = useState(false);
-  const [stepModalContext, setStepModalContext] = useState<"quiz" | "calendar">("quiz");
+  const [stepModalContext, setStepModalContext] = useState<"quiz" | "calendar" | "interview-result">("quiz");
   const [isCalendarModalOpen, setIsCalendarModalOpen] = useState(false);
   const [roleAnswers, setRoleAnswers] = useState<number[]>([]);
 
@@ -689,6 +689,13 @@ const Dashboard = () => {
                 >
                   Bắt đầu thực hiện <ArrowRight size={16} />
                 </button>
+              ) : activeStep.title === "Kết quả phỏng vấn" ? (
+                <button
+                  onClick={() => { setStepModalContext("interview-result"); setShowStepModal(true); }}
+                  className="btn-pop w-full flex items-center justify-center gap-2 py-4 px-4 bg-purple-600 rounded-2xl text-white font-black text-sm hover:bg-purple-700 shadow-lg shadow-purple-500/20"
+                >
+                  Bắt đầu thực hiện <ArrowRight size={16} />
+                </button>
               ) : (
                 <div className="border-t border-gray-100 pt-6">
                   {activeStep.customContent}
@@ -940,6 +947,10 @@ const Dashboard = () => {
                 <p className="text-gray-500 text-sm font-medium leading-relaxed">
                   Sắp xong rồi nè! Thật tuyệt vời khi thấy sự tâm huyết của bạn. Chỉ còn một xíu nữa thôi, mình luôn ở đây cổ vũ bạn! Bạn kiểm tra email để nhận được các thông tin về buổi gặp mặt với chúng mình sắp tới nhé.
                 </p>
+              ) : stepModalContext === "interview-result" ? (
+                <p className="text-gray-500 text-sm font-medium leading-relaxed">
+                  Tuyệt vời! Bạn đang làm rất tốt, cứ giữ vững tinh thần này nhé. Sắp tới đích rồi đó!
+                </p>
               ) : (
                 <p className="text-gray-500 text-sm font-medium leading-relaxed">
                   Wow thật tuyệt vời, bạn đi được {currentStep} bước rồi nè! Thật là hạnh phúc khi thấy bạn dũng cảm đi được bước đầu tiên. Không còn nhiều nữa đâu, chỉ {totalSteps - currentStep} bước nữa là tới đích rồi. Mình luôn đồng hành cùng bạn!
@@ -947,7 +958,7 @@ const Dashboard = () => {
               )}
             </div>
             <button onClick={handleStepModalContinue} className="w-full py-4 rounded-2xl bg-purple-600 text-white font-black text-sm shadow-lg hover:bg-purple-700 active:scale-95 transition-all">
-              Đi tiếp thôi nào!
+              {stepModalContext === "interview-result" ? "Tắt thông báo" : "Đi tiếp thôi nào!"}
             </button>
           </div>
         </div>
@@ -1072,13 +1083,13 @@ const Dashboard = () => {
 
         /* Modal pop-up animation */
         @keyframes modal-pop {
-          0%   { opacity: 0; transform: scale(0.75) translateY(20px); }
-          60%  { opacity: 1; transform: scale(1.04) translateY(-4px); }
-          80%  { transform: scale(0.98) translateY(2px); }
+          0%   { opacity: 0; transform: scale(0.88) translateY(10px); }
+          60%  { opacity: 1; transform: scale(1.015) translateY(-2px); }
+          80%  { transform: scale(0.995) translateY(1px); }
           100% { transform: scale(1) translateY(0); }
         }
         .modal-pop {
-          animation: modal-pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+          animation: modal-pop 0.28s cubic-bezier(0.34, 1.3, 0.64, 1) forwards;
         }
 
         /* Overlay fade-in */
