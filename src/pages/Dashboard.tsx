@@ -420,7 +420,7 @@ const Dashboard = () => {
     {
       id: 5,
       title: "Về nhà thôi!",
-      desc: "Hoàn thiện hồ sơ cuối để chính thức bắt đầu hành trình.",
+      desc: "Hoàn thiện hồ sơ cuối cùng. Hãy kiểm tra email thường xuyên.",
       icon: <PartyPopper className="w-6 h-6" />,
       status: currentStep === 5 ? "active" : currentStep > 5 ? "completed" : "locked",
       customContent: (
@@ -644,9 +644,13 @@ const Dashboard = () => {
         {(() => {
           const activeStep = steps.find(s => s.status === "active");
           if (!activeStep) return (
-            <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-10 max-w-lg w-full text-center shadow-lg">
-              <div className="text-4xl mb-4">🎉</div>
-              <h2 className="text-2xl font-black text-gray-900">Bạn đã hoàn thành tất cả các bước!</h2>
+            <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 max-w-lg w-full shadow-lg border border-white/60 text-center">
+              <div className="w-16 h-16 bg-purple-50 rounded-2xl flex items-center justify-center mx-auto mb-5 text-purple-500">
+                <PartyPopper className="w-6 h-6" />
+              </div>
+              <p className="text-center text-[10px] font-black text-purple-600 uppercase tracking-[0.2em] mb-1.5">BƯỚC {totalSteps}</p>
+              <h2 className="text-center text-2xl font-black text-gray-900 mb-1.5">Về nhà thôi!</h2>
+              <p className="text-center text-gray-500 text-sm leading-relaxed">Hoàn thiện hồ sơ cuối cùng. Hãy kiểm tra email thường xuyên.</p>
             </div>
           );
           return (
@@ -700,26 +704,12 @@ const Dashboard = () => {
                   Bắt đầu thực hiện <ArrowRight size={16} />
                 </button>
               ) : activeStep.title === "Về nhà thôi!" ? (
-                showChotDon ? (
-                  <div className="relative overflow-hidden bg-gradient-to-br from-[#3B82F6] to-[#8B5CF6] p-8 rounded-[2.5rem] shadow-2xl shadow-purple-500/20">
-                    <div className="absolute top-0 right-0 p-4 opacity-20"><PartyPopper size={120} /></div>
-                    <div className="relative z-10 space-y-6">
-                      <h4 className="text-2xl sm:text-3xl font-black text-white leading-tight">Chốt đơn! Thảo Nhi đã là một mẩu của NhiLe Team! 🥳</h4>
-                      <p className="text-white/80 text-sm sm:text-base font-medium leading-relaxed">Sẵn sàng nhé. Check email nhận 'bí kíp võ công' tham gia cùng anh em mình nha. 🚀</p>
-                      <button onClick={() => window.open("https://t.me/+your_group_link", "_blank")}
-                        className="w-full bg-white text-[#1D4ED8] py-6 px-8 rounded-[2rem] font-black text-xl shadow-lg hover:scale-[1.03] active:scale-95 transition-all flex items-center justify-center gap-4 group/btn">
-                        BẮT ĐẦU HÀNH TRÌNH NGAY <Zap className="fill-current group-hover/btn:animate-bounce" size={24} />
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <button
-                    onClick={() => { setIsStep5ModalOpen(true); setStep5View("menu"); }}
-                    className="btn-pop w-full flex items-center justify-center gap-2 py-4 px-4 bg-purple-600 rounded-2xl text-white font-black text-sm hover:bg-purple-700 shadow-lg shadow-purple-500/20"
-                  >
-                    Bắt đầu thực hiện <ArrowRight size={16} />
-                  </button>
-                )
+                <button
+                  onClick={() => { setIsStep5ModalOpen(true); setStep5View("menu"); }}
+                  className="btn-pop w-full flex items-center justify-center gap-2 py-4 px-4 bg-purple-600 rounded-2xl text-white font-black text-sm hover:bg-purple-700 shadow-lg shadow-purple-500/20"
+                >
+                  Bắt đầu thực hiện <ArrowRight size={16} />
+                </button>
               ) : (
                 <div className="border-t border-gray-100 pt-6">
                   {activeStep.customContent}
@@ -1054,7 +1044,7 @@ const Dashboard = () => {
                 {/* Submit */}
                 <button
                   disabled={!profileDone || !signDone || !screenshotFile}
-                  onClick={() => { setIsStep5ModalOpen(false); setShowChotDon(true); }}
+                  onClick={() => { setIsStep5ModalOpen(false); setCurrentStep(prev => prev + 1); window.scrollTo({ top: 0, behavior: "smooth" }); }}
                   className={`btn-pop w-full py-4 rounded-2xl font-black text-sm transition-all ${profileDone && signDone && screenshotFile ? "bg-purple-600 text-white shadow-lg hover:bg-purple-700" : "bg-gray-100 text-gray-400 cursor-not-allowed"}`}>
                   Hoàn tất Gửi Hồ Sơ
                 </button>
