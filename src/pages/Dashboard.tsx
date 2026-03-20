@@ -130,6 +130,9 @@ const Dashboard = () => {
   const [signDone, setSignDone] = useState(false);
   const [showChotDon, setShowChotDon] = useState(false);
   const [screenshotFile, setScreenshotFile] = useState<File | null>(null);
+  const [isStep5ModalOpen, setIsStep5ModalOpen] = useState(false);
+  const [step5View, setStep5View] = useState<"menu" | "profile">("menu");
+  const [step5ProfileForm, setStep5ProfileForm] = useState({ name: "", cungSun: "", username: "", cungMoon: "", gmail: "", cungMoc: "", ngaySinh: "", soChudao: "" });
 
   // Per-question timer
   const [timer, setTimer] = useState(TIMER_SECONDS);
@@ -696,6 +699,27 @@ const Dashboard = () => {
                 >
                   Bắt đầu thực hiện <ArrowRight size={16} />
                 </button>
+              ) : activeStep.title === "Về nhà thôi!" ? (
+                showChotDon ? (
+                  <div className="relative overflow-hidden bg-gradient-to-br from-[#3B82F6] to-[#8B5CF6] p-8 rounded-[2.5rem] shadow-2xl shadow-purple-500/20">
+                    <div className="absolute top-0 right-0 p-4 opacity-20"><PartyPopper size={120} /></div>
+                    <div className="relative z-10 space-y-6">
+                      <h4 className="text-2xl sm:text-3xl font-black text-white leading-tight">Chốt đơn! Thảo Nhi đã là một mẩu của NhiLe Team! 🥳</h4>
+                      <p className="text-white/80 text-sm sm:text-base font-medium leading-relaxed">Sẵn sàng nhé. Check email nhận 'bí kíp võ công' tham gia cùng anh em mình nha. 🚀</p>
+                      <button onClick={() => window.open("https://t.me/+your_group_link", "_blank")}
+                        className="w-full bg-white text-[#1D4ED8] py-6 px-8 rounded-[2rem] font-black text-xl shadow-lg hover:scale-[1.03] active:scale-95 transition-all flex items-center justify-center gap-4 group/btn">
+                        BẮT ĐẦU HÀNH TRÌNH NGAY <Zap className="fill-current group-hover/btn:animate-bounce" size={24} />
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => { setIsStep5ModalOpen(true); setStep5View("menu"); }}
+                    className="btn-pop w-full flex items-center justify-center gap-2 py-4 px-4 bg-purple-600 rounded-2xl text-white font-black text-sm hover:bg-purple-700 shadow-lg shadow-purple-500/20"
+                  >
+                    Bắt đầu thực hiện <ArrowRight size={16} />
+                  </button>
+                )
               ) : (
                 <div className="border-t border-gray-100 pt-6">
                   {activeStep.customContent}
@@ -960,6 +984,122 @@ const Dashboard = () => {
             <button onClick={handleStepModalContinue} className="w-full py-4 rounded-2xl bg-purple-600 text-white font-black text-sm shadow-lg hover:bg-purple-700 active:scale-95 transition-all">
               {stepModalContext === "interview-result" ? "Tắt thông báo" : "Đi tiếp thôi nào!"}
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* ─── Step 5 Modal ────────────────────────────────────────────────────── */}
+      {isStep5ModalOpen && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm overlay-in" onClick={() => setIsStep5ModalOpen(false)} />
+          <div className="relative w-full max-w-lg bg-white rounded-[2rem] shadow-2xl modal-pop overflow-hidden max-h-[90vh] flex flex-col">
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 shrink-0">
+              <div className="flex items-center gap-2">
+                {step5View === "profile" ? (
+                  <button onClick={() => setStep5View("menu")} className="flex items-center gap-1 text-gray-500 hover:text-gray-700 text-xs font-bold">
+                    <ChevronLeft size={14} /> Quay lại
+                  </button>
+                ) : (
+                  <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">GIAO DIỆN TƯƠNG TÁC</span>
+                )}
+              </div>
+              <button onClick={() => setIsStep5ModalOpen(false)} className="text-gray-400 hover:text-gray-600 transition-colors">
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Menu view */}
+            {step5View === "menu" && (
+              <div className="p-6 space-y-4 overflow-y-auto flex-1">
+                <h3 className="text-center text-lg font-black text-gray-900">Hoàn thiện hồ sơ cá nhân</h3>
+
+                {/* Row 1: Điền thông tin */}
+                <button onClick={() => setStep5View("profile")}
+                  className={`w-full flex items-center gap-4 p-4 rounded-2xl border-2 text-left transition-all ${profileDone ? "border-green-300 bg-green-50" : "border-gray-100 hover:border-purple-200 hover:bg-purple-50/30"}`}>
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${profileDone ? "bg-green-500" : "bg-purple-50"}`}>
+                    {profileDone ? <CheckCircle2 size={18} className="text-white" /> : <User size={18} className="text-purple-500" />}
+                  </div>
+                  <span className={`font-black text-sm flex-1 ${profileDone ? "text-green-700" : "text-gray-800"}`}>Điền thông tin cá nhân</span>
+                  {!profileDone && <ArrowRight size={16} className="text-gray-400" />}
+                </button>
+
+                {/* Row 2: Ký bảo mật */}
+                <button
+                  onClick={() => { window.open("https://sg1.documents.adobe.com/public/esignWidget?wid=CBFCIBAA3AAABLblqZhBTVety-rac_6tDkmYwnVdmNmPWQbUwl3bv6r3XwaTnqMzGtFVh1dKVNBmCztFyBBo*", "_blank"); setSignDone(true); }}
+                  className={`w-full flex items-center gap-4 p-4 rounded-2xl border-2 text-left transition-all ${signDone ? "border-green-300 bg-green-50" : "border-gray-100 hover:border-purple-200 hover:bg-purple-50/30"}`}>
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 text-lg ${signDone ? "bg-green-500" : "bg-purple-50"}`}>
+                    {signDone ? <CheckCircle2 size={18} className="text-white" /> : "✍️"}
+                  </div>
+                  <span className={`font-black text-sm flex-1 ${signDone ? "text-green-700" : "text-gray-800"}`}>Ký bảo mật (NDA)</span>
+                  <div className={`w-5 h-5 border-2 rounded flex items-center justify-center shrink-0 transition-all ${signDone ? "bg-green-500 border-green-500" : "border-gray-300"}`}>
+                    {signDone && <CheckCircle2 size={11} className="text-white" />}
+                  </div>
+                </button>
+
+                {/* Row 3: Upload photo */}
+                <div className={`rounded-2xl border-2 overflow-hidden transition-all ${screenshotFile ? "border-green-300 bg-green-50" : "border-gray-100"}`}>
+                  <div className="flex items-center gap-4 p-4">
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 text-lg ${screenshotFile ? "bg-green-500" : "bg-green-50"}`}>
+                      {screenshotFile ? <CheckCircle2 size={18} className="text-white" /> : "☁️"}
+                    </div>
+                    <span className={`font-black text-sm flex-1 ${screenshotFile ? "text-green-700" : "text-gray-800"}`}>Gửi ảnh xác nhận ký NDA</span>
+                  </div>
+                  <label className="block mx-4 mb-4 p-4 border-2 border-dashed border-gray-200 rounded-xl cursor-pointer hover:border-purple-300 hover:bg-purple-50/30 transition-all text-center">
+                    <input type="file" accept="image/*" className="hidden" onChange={(e) => { const f = (e.target as HTMLInputElement).files; setScreenshotFile(f?.[0] ?? null); }} />
+                    <p className="text-sm text-gray-400 font-medium">{screenshotFile ? screenshotFile.name : "Nhấn để tải ảnh lên"}</p>
+                  </label>
+                </div>
+
+                {/* Submit */}
+                <button
+                  disabled={!profileDone || !signDone || !screenshotFile}
+                  onClick={() => { setIsStep5ModalOpen(false); setShowChotDon(true); }}
+                  className={`btn-pop w-full py-4 rounded-2xl font-black text-sm transition-all ${profileDone && signDone && screenshotFile ? "bg-purple-600 text-white shadow-lg hover:bg-purple-700" : "bg-gray-100 text-gray-400 cursor-not-allowed"}`}>
+                  Hoàn tất Gửi Hồ Sơ
+                </button>
+              </div>
+            )}
+
+            {/* Profile form sub-view */}
+            {step5View === "profile" && (
+              <div className="p-6 space-y-4 overflow-y-auto flex-1">
+                <div className="grid grid-cols-2 gap-3">
+                  {[
+                    { label: "Họ và tên", key: "name" },
+                    { label: "Cung Sun", key: "cungSun" },
+                    { label: "Username", key: "username" },
+                    { label: "Cung Moon", key: "cungMoon" },
+                    { label: "Gmail NhiLe Team", key: "gmail" },
+                    { label: "Cung Mộc", key: "cungMoc" },
+                    { label: "Số chủ đạo", key: "soChudao" },
+                  ].map(({ label, key }) => (
+                    <div key={key} className="space-y-1.5">
+                      <label className="text-xs font-black text-gray-600">{label}</label>
+                      <input
+                        value={step5ProfileForm[key as keyof typeof step5ProfileForm]}
+                        onChange={e => setStep5ProfileForm(prev => ({ ...prev, [key]: e.target.value }))}
+                        className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-purple-400 transition-colors"
+                      />
+                    </div>
+                  ))}
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-black text-gray-600">Ngày sinh</label>
+                    <input
+                      type="date"
+                      value={step5ProfileForm.ngaySinh}
+                      onChange={e => setStep5ProfileForm(prev => ({ ...prev, ngaySinh: e.target.value }))}
+                      className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-purple-400 transition-colors"
+                    />
+                  </div>
+                </div>
+                <button
+                  onClick={() => { setProfileDone(true); setStep5View("menu"); }}
+                  className="btn-pop w-full py-4 rounded-2xl bg-purple-600 text-white font-black text-sm shadow-lg hover:bg-purple-700 active:scale-95 transition-all">
+                  Lưu thông tin
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}
