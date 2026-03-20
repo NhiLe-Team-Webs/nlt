@@ -132,7 +132,7 @@ const Dashboard = () => {
   const [screenshotFile, setScreenshotFile] = useState<File | null>(null);
   const [isStep5ModalOpen, setIsStep5ModalOpen] = useState(false);
   const [step5View, setStep5View] = useState<"menu" | "profile">("menu");
-  const [step5ProfileForm, setStep5ProfileForm] = useState({ name: "", cungSun: "", username: "", cungMoon: "", gmail: "", cungMoc: "", ngaySinh: "", soChudao: "" });
+  const [step5ProfileForm, setStep5ProfileForm] = useState({ name: "", cungSun: "", username: "", cungMoon: "", gmail: "", cungMoc: "", ngaySinh: "", soChudao: "", sdt: "", soLinhHon: "", linkFb: "", soTruongThanh: "", linkLinkedIn: "", diaChi: "", thietBi: "" });
 
   // Per-question timer
   const [timer, setTimer] = useState(TIMER_SECONDS);
@@ -1053,41 +1053,73 @@ const Dashboard = () => {
 
             {/* Profile form sub-view */}
             {step5View === "profile" && (
-              <div className="p-6 space-y-4 overflow-y-auto flex-1">
-                <div className="grid grid-cols-2 gap-3">
-                  {[
-                    { label: "Họ và tên", key: "name" },
-                    { label: "Cung Sun", key: "cungSun" },
-                    { label: "Username", key: "username" },
-                    { label: "Cung Moon", key: "cungMoon" },
-                    { label: "Gmail NhiLe Team", key: "gmail" },
-                    { label: "Cung Mộc", key: "cungMoc" },
-                    { label: "Số chủ đạo", key: "soChudao" },
-                  ].map(({ label, key }) => (
-                    <div key={key} className="space-y-1.5">
-                      <label className="text-xs font-black text-gray-600">{label}</label>
-                      <input
-                        value={step5ProfileForm[key as keyof typeof step5ProfileForm]}
-                        onChange={e => setStep5ProfileForm(prev => ({ ...prev, [key]: e.target.value }))}
-                        className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-purple-400 transition-colors"
-                      />
-                    </div>
-                  ))}
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-black text-gray-600">Ngày sinh</label>
-                    <input
-                      type="date"
-                      value={step5ProfileForm.ngaySinh}
-                      onChange={e => setStep5ProfileForm(prev => ({ ...prev, ngaySinh: e.target.value }))}
-                      className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-purple-400 transition-colors"
-                    />
+              <div className="flex flex-col flex-1 overflow-hidden">
+                <div className="px-6 pt-4 pb-1 shrink-0">
+                  <h3 className="text-lg font-black text-gray-900">Điền thông tin cá nhân</h3>
+                  <p className="text-xs text-gray-400 font-medium mt-0.5">Thông tin của bạn sẽ được bảo mật</p>
+                </div>
+                <div className="overflow-y-auto flex-1 px-6 py-4">
+                  <div className="grid grid-cols-2 gap-x-4 gap-y-3">
+                    {[
+                      { label: "Họ và tên", key: "name" },
+                      { label: "Cung Sun", key: "cungSun" },
+                      { label: "Username", key: "username" },
+                      { label: "Cung Moon", key: "cungMoon" },
+                      { label: "Gmail NhiLe Team", key: "gmail" },
+                      { label: "Cung Mộc", key: "cungMoc" },
+                      { label: "Số chủ đạo", key: "soChudao" },
+                      { label: "SĐT", key: "sdt" },
+                      { label: "Số linh hồn", key: "soLinhHon" },
+                      { label: "Link FB", key: "linkFb" },
+                      { label: "Số trưởng thành", key: "soTruongThanh" },
+                    ].reduce<JSX.Element[]>((acc, { label, key }, i, arr) => {
+                      if (i % 2 === 1) return acc;
+                      const right = arr[i + 1];
+                      acc.push(
+                        <div key={key} className="space-y-1">
+                          <label className="text-xs font-bold text-gray-600">{label}</label>
+                          <input value={step5ProfileForm[key as keyof typeof step5ProfileForm]} onChange={e => setStep5ProfileForm(prev => ({ ...prev, [key]: e.target.value }))} className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-blue-400 transition-colors" />
+                        </div>
+                      );
+                      if (key === "soChudao") {
+                        acc.push(
+                          <div key="ngaySinh" className="space-y-1">
+                            <label className="text-xs font-bold text-gray-600">Ngày sinh</label>
+                            <input type="date" value={step5ProfileForm.ngaySinh} onChange={e => setStep5ProfileForm(prev => ({ ...prev, ngaySinh: e.target.value }))} className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-blue-400 transition-colors" />
+                          </div>
+                        );
+                        return acc;
+                      }
+                      if (right) {
+                        acc.push(
+                          <div key={right.key} className="space-y-1">
+                            <label className="text-xs font-bold text-gray-600">{right.label}</label>
+                            <input value={step5ProfileForm[right.key as keyof typeof step5ProfileForm]} onChange={e => setStep5ProfileForm(prev => ({ ...prev, [right.key]: e.target.value }))} className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-blue-400 transition-colors" />
+                          </div>
+                        );
+                      }
+                      return acc;
+                    }, [])}
+                    {[
+                      { label: "Link LinkedIn", key: "linkLinkedIn" },
+                      { label: "Địa chỉ", key: "diaChi" },
+                      { label: "Thiết bị dùng làm việc", key: "thietBi" },
+                    ].map(({ label, key }) => (
+                      <div key={key} className="col-span-2 space-y-1">
+                        <label className="text-xs font-bold text-gray-600">{label}</label>
+                        <input value={step5ProfileForm[key as keyof typeof step5ProfileForm]} onChange={e => setStep5ProfileForm(prev => ({ ...prev, [key]: e.target.value }))} className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-blue-400 transition-colors" />
+                      </div>
+                    ))}
                   </div>
                 </div>
-                <button
-                  onClick={() => { setProfileDone(true); setStep5View("menu"); }}
-                  className="btn-pop w-full py-4 rounded-2xl bg-purple-600 text-white font-black text-sm shadow-lg hover:bg-purple-700 active:scale-95 transition-all">
-                  Lưu thông tin
-                </button>
+                <div className="px-6 py-4 border-t border-gray-100 shrink-0 flex items-center justify-end gap-3">
+                  <button onClick={() => setStep5View("menu")} className="text-sm font-black text-gray-500 hover:text-gray-700 transition-colors px-4 py-2">
+                    Quay lại
+                  </button>
+                  <button onClick={() => { setProfileDone(true); setStep5View("menu"); }} className="btn-pop px-8 py-2.5 rounded-xl bg-blue-500 text-white font-black text-sm shadow hover:bg-blue-600 active:scale-95 transition-all">
+                    Next
+                  </button>
+                </div>
               </div>
             )}
           </div>
