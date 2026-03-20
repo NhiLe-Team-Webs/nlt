@@ -21,6 +21,7 @@ import {
   BookOpen,
   ChevronLeft,
   FileText,
+  Target,
 } from "lucide-react";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -143,7 +144,7 @@ const Dashboard = () => {
   const [isDocModalOpen, setIsDocModalOpen] = useState(false);
   const [docModalView, setDocModalView] = useState<"menu" | "video" | "text">("menu");
   const [showStepModal, setShowStepModal] = useState(false);
-  const [stepModalContext, setStepModalContext] = useState<"quiz" | "calendar" | "interview-result" | "active-culture" | "active-calendar">("quiz");
+  const [stepModalContext, setStepModalContext] = useState<"quiz" | "calendar" | "interview-result" | "active-culture" | "active-calendar" | "return-pass">("quiz");
   const [isCalendarModalOpen, setIsCalendarModalOpen] = useState(false);
   const [roleAnswers, setRoleAnswers] = useState<number[]>([]);
 
@@ -512,9 +513,9 @@ const Dashboard = () => {
 
   const returnTestStep = {
     id: 0,
-    title: "Bài test quay trở lại",
-    desc: "Hoàn thành bài test để tiếp tục hành trình cùng NhiLe Team.",
-    icon: <ClipboardCheck className="w-6 h-6" />,
+    title: "Thử thách trở lại",
+    desc: "Đánh giá mức độ phù hợp cơ bản.",
+    icon: <Target className="w-6 h-6" />,
     status: "active",
     customContent: (
       <div className="mt-6 space-y-4">
@@ -693,6 +694,21 @@ const Dashboard = () => {
                     Bắt đầu thực hiện <ArrowRight size={16} />
                   </button>
                 </div>
+              ) : activeStep.title === "Thử thách trở lại" ? (
+                returnTestResult === "fail" ? (
+                  <div className="space-y-3 text-center">
+                    <p className="text-sm text-gray-500 leading-relaxed">
+                      Cảm ơn bạn đã dành thời gian làm bài test. Chỉ số hiện tại chưa phù hợp với yêu cầu, vì vậy team chưa thể sắp xếp buổi phỏng vấn lúc này. Bạn có thể đăng ký lại sau 03 tháng.
+                    </p>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => { setReturnTestOpened(true); setShowReturnQuiz(true); }}
+                    className="btn-pop w-full flex items-center justify-center gap-2 py-4 px-4 bg-purple-600 rounded-2xl text-white font-black text-sm hover:bg-purple-700 shadow-lg shadow-purple-500/20"
+                  >
+                    {returnTestOpened ? "Tiếp tục bài test" : "Bắt đầu thực hiện"} <ArrowRight size={16} />
+                  </button>
+                )
               ) : activeStep.title === "Bài test tôi phù hợp làm gì" ? (
                 <button
                   onClick={() => openQuiz("role")}
@@ -996,6 +1012,19 @@ const Dashboard = () => {
                   Đi tiếp thôi nào!
                 </button>
               </>
+            ) : stepModalContext === "return-pass" ? (
+              <>
+                <div className="text-5xl">🎉</div>
+                <div className="space-y-2">
+                  <h3 className="text-2xl font-black text-gray-900">Chào mừng trở lại!</h3>
+                  <p className="text-gray-500 text-sm font-medium leading-relaxed">
+                    Chào mừng bạn quay trở lại một lần nữa! Thật tuyệt vời khi thấy sự kiên trì và dũng cảm của bạn. Bạn đã vượt qua thử thách cực kỳ xuất sắc. Không còn nhiều nữa đâu, mình luôn đồng hành cùng bạn!
+                  </p>
+                </div>
+                <button onClick={handleStepModalContinue} className="w-full py-4 rounded-2xl bg-purple-600 text-white font-black text-sm shadow-lg hover:bg-purple-700 active:scale-95 transition-all">
+                  Đi tiếp thôi nào!
+                </button>
+              </>
             ) : stepModalContext === "active-calendar" ? (
               <>
                 <div className="text-5xl">🎉</div>
@@ -1283,7 +1312,7 @@ const Dashboard = () => {
       {/* Return Member Quiz Modal */}
       <ReturnMemberQuizModal
         isOpen={showReturnQuiz}
-        onPass={() => { setReturnTestResult("pass"); setCurrentStep(2); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+        onPass={() => { setReturnTestResult("pass"); setStepModalContext("return-pass"); setShowStepModal(true); }}
         onFail={() => setReturnTestResult("fail")}
         onClose={() => setShowReturnQuiz(false)}
       />
