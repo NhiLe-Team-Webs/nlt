@@ -252,6 +252,13 @@ const Dashboard = () => {
     finalRoleScoresRef.current = { ...EMPTY_SCORES };
   };
 
+  const handleCultureBack = () => {
+    if (currentQuestionIndex === 0) return;
+    setCurrentQuestionIndex(prev => prev - 1);
+    setQuizAnswers(prev => prev.slice(0, -1));
+    setSelectedAnswer(null);
+  };
+
   const handleRoleBack = () => {
     if (currentQuestionIndex === 0) return;
     const prevIdx = currentQuestionIndex - 1;
@@ -867,22 +874,48 @@ const Dashboard = () => {
                     <h3 className="text-base md:text-lg font-black text-gray-900 leading-snug">{currentQuestion.q}</h3>
                   </div>
 
-                  {/* Options — click = auto advance */}
-                  <div className="px-6 space-y-2 overflow-y-auto flex-1">
-                    {currentQuestion.options?.map((opt, idx) => (
-                      <button key={idx}
-                        onClick={() => handleAnswer(idx)}
-                        className="w-full flex items-center gap-3 p-3.5 border-2 border-gray-100 rounded-2xl text-sm text-left text-gray-700 hover:border-purple-400 hover:bg-purple-50 active:scale-[0.98] transition-all">
-                        <div className="w-5 h-5 rounded-full border-2 border-gray-300 shrink-0" />
-                        <span className="font-medium">{opt.text}</span>
-                      </button>
-                    ))}
-                  </div>
+                  {/* Options */}
+                  {(() => {
+                    const isLast = currentQuestionIndex === cultureQuestions.length - 1;
+                    return (
+                      <div className="px-6 space-y-2 overflow-y-auto flex-1">
+                        {currentQuestion.options?.map((opt, idx) => (
+                          <button key={idx}
+                            onClick={() => isLast ? setSelectedAnswer(idx) : handleAnswer(idx)}
+                            className={`w-full flex items-center gap-3 p-3.5 border-2 rounded-2xl text-sm text-left transition-all active:scale-[0.98]
+                              ${isLast && selectedAnswer === idx
+                                ? "border-purple-500 bg-purple-50 text-purple-900"
+                                : "border-gray-100 text-gray-700 hover:border-purple-400 hover:bg-purple-50"}`}>
+                            <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${isLast && selectedAnswer === idx ? "border-purple-600" : "border-gray-300"}`}>
+                              {isLast && selectedAnswer === idx && <div className="w-2.5 h-2.5 rounded-full bg-purple-600" />}
+                            </div>
+                            <span className="font-medium">{opt.text}</span>
+                          </button>
+                        ))}
+                      </div>
+                    );
+                  })()}
 
-                  {/* Progress bar */}
-                  <div className="px-6 pb-5 pt-3 shrink-0">
+                  {/* Bottom: back button + progress + nộp bài */}
+                  <div className="px-6 pb-5 pt-3 shrink-0 space-y-3">
                     <div className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
                       <div className="h-full bg-green-500 rounded-full transition-all duration-500" style={{ width: `${progressPercent}%` }} />
+                    </div>
+                    <div className="flex items-center justify-between gap-3">
+                      {currentQuestionIndex > 0 ? (
+                        <button onClick={handleCultureBack}
+                          className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-purple-600 font-bold transition-colors shrink-0">
+                          <ChevronLeft size={16} /> Quay lại
+                        </button>
+                      ) : <div />}
+                      {currentQuestionIndex === cultureQuestions.length - 1 && (
+                        <button
+                          disabled={selectedAnswer === null}
+                          onClick={() => { if (selectedAnswer !== null) { handleAnswer(selectedAnswer); setSelectedAnswer(null); } }}
+                          className={`px-8 py-2.5 rounded-2xl font-black text-sm transition-all ${selectedAnswer !== null ? "bg-purple-600 text-white shadow-lg hover:bg-purple-700 active:scale-95" : "bg-gray-100 text-gray-400 cursor-not-allowed"}`}>
+                          Nộp bài
+                        </button>
+                      )}
                     </div>
                   </div>
                 </>
