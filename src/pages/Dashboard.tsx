@@ -21,6 +21,7 @@ import {
   BookOpen,
   ChevronLeft,
   FileText,
+  Target,
 } from "lucide-react";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -130,6 +131,9 @@ const Dashboard = () => {
   const [signDone, setSignDone] = useState(false);
   const [showChotDon, setShowChotDon] = useState(false);
   const [screenshotFile, setScreenshotFile] = useState<File | null>(null);
+  const [isStep5ModalOpen, setIsStep5ModalOpen] = useState(false);
+  const [step5View, setStep5View] = useState<"menu" | "profile">("menu");
+  const [step5ProfileForm, setStep5ProfileForm] = useState({ name: "", cungSun: "", username: "", cungMoon: "", gmail: "", cungMoc: "", ngaySinh: "", soChudao: "", sdt: "", soLinhHon: "", linkFb: "", soTruongThanh: "", linkLinkedIn: "", diaChi: "", thietBi: "" });
 
   // Per-question timer
   const [timer, setTimer] = useState(TIMER_SECONDS);
@@ -140,6 +144,9 @@ const Dashboard = () => {
   const [isDocModalOpen, setIsDocModalOpen] = useState(false);
   const [docModalView, setDocModalView] = useState<"menu" | "video" | "text">("menu");
   const [showStepModal, setShowStepModal] = useState(false);
+  const [stepModalContext, setStepModalContext] = useState<"quiz" | "calendar" | "interview-result" | "active-culture" | "active-calendar" | "return-pass">("quiz");
+  const [isCalendarModalOpen, setIsCalendarModalOpen] = useState(false);
+  const [roleAnswers, setRoleAnswers] = useState<number[]>([]);
 
   const cultureQuestions = CULTURE_QUESTIONS;
   const roleQuestions = ROLE_QUESTIONS;
@@ -178,11 +185,17 @@ const Dashboard = () => {
       setActiveQuizType(type);
     }
     setSelectedAnswer(null);
+    setRoleAnswers([]);
     setIsQuizModalOpen(true);
   };
 
   const handleQuizContinue = () => {
     closeQuiz();
+    if (isActiveMember && activeQuizType === "culture") {
+      setStepModalContext("active-culture");
+    } else {
+      setStepModalContext("quiz");
+    }
     setShowStepModal(true);
   };
 
@@ -207,6 +220,7 @@ const Dashboard = () => {
         newScores[team as TeamKey] = (newScores[team as TeamKey] || 0) + (pts as number);
       }
       setRoleScores(newScores);
+      setRoleAnswers(prev => [...prev, idx]);
       if (currentQuestionIndex < roleQuestions.length - 1) {
         setCurrentQuestionIndex(currentQuestionIndex + 1);
       } else {
@@ -235,6 +249,29 @@ const Dashboard = () => {
     setShowQuizResult(false);
     setQuizPassed(false);
     setRoleScores({ ...EMPTY_SCORES });
+    setRoleAnswers([]);
+    finalRoleScoresRef.current = { ...EMPTY_SCORES };
+  };
+
+  const handleCultureBack = () => {
+    if (currentQuestionIndex === 0) return;
+    setCurrentQuestionIndex(prev => prev - 1);
+    setQuizAnswers(prev => prev.slice(0, -1));
+    setSelectedAnswer(null);
+  };
+
+  const handleRoleBack = () => {
+    if (currentQuestionIndex === 0) return;
+    const prevIdx = currentQuestionIndex - 1;
+    const prevAnswer = roleAnswers[prevIdx];
+    const prevScoring = roleQuestions[prevIdx].options[prevAnswer].scores;
+    const newScores = { ...roleScores };
+    for (const [team, pts] of Object.entries(prevScoring)) {
+      newScores[team as TeamKey] = (newScores[team as TeamKey] || 0) - (pts as number);
+    }
+    setRoleScores(newScores);
+    setRoleAnswers(prev => prev.slice(0, -1));
+    setCurrentQuestionIndex(prevIdx);
   };
 
   // Compute winning team(s) for role quiz result
@@ -309,7 +346,8 @@ const Dashboard = () => {
         const firstDayOfWeek = new Date(2026, 2, 1).getDay(); // 0 = Sun
         // Reorder so Monday=0 ... Sunday=6
         const offset = firstDayOfWeek === 0 ? 6 : firstDayOfWeek - 1;
-        const isAvailableDate = (d: number) => [2, 3, 5].includes(new Date(2026, 2, d).getDay()); // Tue=2,Wed=3,Fri=5
+        const today = new Date(); today.setHours(0, 0, 0, 0);
+        const isAvailableDate = (d: number) => { const dt = new Date(2026, 2, d); return [2, 3, 5].includes(dt.getDay()) && dt >= today; }; // Tue=2,Wed=3,Fri=5
 
         return (
           <div className="mt-6 space-y-6 transition-all duration-300">
@@ -377,8 +415,8 @@ const Dashboard = () => {
     },
     {
       id: 4,
-      title: "Kết quả phỏng vấn",
-      desc: "Kiểm tra email cá nhân thường xuyên để nhận kết quả nhé.",
+      title: "Đợi kết quả phỏng vấn",
+      desc: "Kiểm tra email thường xuyên.",
       icon: <Video className="w-6 h-6" />,
       status: currentStep === 4 ? "active" : currentStep > 4 ? "completed" : "locked",
       customContent: (
@@ -395,7 +433,7 @@ const Dashboard = () => {
     {
       id: 5,
       title: "Về nhà thôi!",
-      desc: "Hoàn thiện hồ sơ cuối để chính thức bắt đầu hành trình.",
+      desc: "Hoàn thiện hồ sơ cuối cùng. Hãy kiểm tra email thường xuyên.",
       icon: <PartyPopper className="w-6 h-6" />,
       status: currentStep === 5 ? "active" : currentStep > 5 ? "completed" : "locked",
       customContent: (
@@ -476,22 +514,51 @@ const Dashboard = () => {
 
   const returnTestStep = {
     id: 0,
-    title: "Bài test quay trở lại",
-    desc: "Hoàn thành bài test để tiếp tục hành trình cùng NhiLe Team.",
-    icon: <ClipboardCheck className="w-6 h-6" />,
+    title: "Thử thách trở lại",
+    desc: "Đánh giá mức độ phù hợp cơ bản.",
+    icon: <Target className="w-6 h-6" />,
     status: "active",
     customContent: (
       <div className="mt-6 space-y-4">
-        {returnTestResult === "fail" ? (
-          <div className="bg-gray-50 border border-gray-200 rounded-2xl p-6 space-y-3">
-            <p className="text-sm font-medium text-gray-600 leading-relaxed">
-              Cảm ơn bạn đã dành thời gian làm bài test và quan tâm quay lại với NhiLe Team. Sau khi kiểm tra kết quả, chỉ số hiện tại chưa phù hợp với yêu cầu để tham gia vòng phỏng vấn, vì vậy team chưa thể sắp xếp buổi phỏng vấn cho bạn trong thời điểm này.
-            </p>
-            <p className="text-sm font-medium text-gray-600 leading-relaxed">
-              Team ghi nhận tinh thần chủ động và cách bạn hoàn thành bài làm. Bạn có thể đăng ký làm lại bài test sau 03 tháng. Chúc bạn có thêm nhiều trải nghiệm tích cực.
-            </p>
-          </div>
-        ) : returnTestResult === "pass" ? (
+        {returnTestResult === "fail" ? (() => {
+          const failTime = parseInt(localStorage.getItem("nlt_rtq_fail_time") || "0");
+          const unlockDate = failTime ? new Date(failTime + 3 * 30 * 24 * 60 * 60 * 1000) : null;
+          const isLocked = !!unlockDate && new Date() < unlockDate;
+          const unlockStr = unlockDate ? unlockDate.toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric" }) : "";
+          return (
+            <div className="bg-gray-50 border border-gray-200 rounded-2xl p-6 space-y-4">
+              <p className="text-sm font-medium text-gray-600 leading-relaxed">
+                Cảm ơn bạn đã dành thời gian làm bài test và quan tâm quay lại với NhiLe Team. Sau khi kiểm tra kết quả, chỉ số hiện tại chưa phù hợp với yêu cầu để tham gia vòng phỏng vấn, vì vậy team chưa thể sắp xếp buổi phỏng vấn cho bạn trong thời điểm này.
+              </p>
+              {isLocked ? (
+                <>
+                  <p className="text-sm font-medium text-gray-600 leading-relaxed">
+                    Team ghi nhận tinh thần chủ động và cách bạn hoàn thành bài làm. Bạn có thể đăng ký làm lại bài test sau <span className="font-black text-[#1D1D1F]">03 tháng</span> kể từ khi làm bài. Chúc bạn có thêm nhiều trải nghiệm tích cực.
+                  </p>
+                  <p className="text-sm font-black text-purple-600">Ngày mở khóa: {unlockStr}</p>
+                </>
+              ) : (
+                <>
+                  <p className="text-sm font-medium text-gray-600 leading-relaxed">
+                    Đừng nản nhé! Bạn có thể làm lại ngay bây giờ.
+                  </p>
+                  <button
+                    onClick={() => {
+                      ["nlt_rt_result","nlt_rtq_phase","nlt_rtq_mc_ans","nlt_rtq_essay_ans","nlt_rtq_result","nlt_rtq_fail_time"].forEach(k => localStorage.removeItem(k));
+                      setReturnTestResult("none");
+                      setReturnTestOpened(true);
+                      setShowReturnQuiz(true);
+                    }}
+                    className="btn-pop w-full flex items-center justify-center gap-2 py-3 px-4 bg-purple-600 rounded-2xl text-white font-black text-sm hover:bg-purple-700 shadow-lg shadow-purple-500/20"
+                  >
+                    <RotateCcw size={16} /> Làm lại ngay
+                  </button>
+                </>
+              )}
+            </div>
+          );
+        })()
+        : returnTestResult === "pass" ? (
           <div className="bg-green-50 border border-green-200 rounded-2xl p-5 flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl bg-green-500 flex items-center justify-center shrink-0">
               <ClipboardCheck size={16} className="text-white" />
@@ -619,9 +686,13 @@ const Dashboard = () => {
         {(() => {
           const activeStep = steps.find(s => s.status === "active");
           if (!activeStep) return (
-            <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-10 max-w-lg w-full text-center shadow-lg">
-              <div className="text-4xl mb-4">🎉</div>
-              <h2 className="text-2xl font-black text-gray-900">Bạn đã hoàn thành tất cả các bước!</h2>
+            <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 max-w-lg w-full shadow-lg border border-white/60 text-center">
+              <div className="w-16 h-16 bg-purple-50 rounded-2xl flex items-center justify-center mx-auto mb-5 text-purple-500">
+                <PartyPopper className="w-6 h-6" />
+              </div>
+              <p className="text-center text-[10px] font-black text-purple-600 uppercase tracking-[0.2em] mb-1.5">BƯỚC {totalSteps}</p>
+              <h2 className="text-center text-2xl font-black text-gray-900 mb-1.5">Về nhà thôi!</h2>
+              <p className="text-center text-gray-500 text-sm leading-relaxed">Hoàn thiện hồ sơ cuối cùng. Hãy kiểm tra email thường xuyên.</p>
             </div>
           );
           return (
@@ -637,36 +708,90 @@ const Dashboard = () => {
               {/* Desc */}
               <p className="text-center text-gray-500 text-sm mb-6 leading-relaxed">{activeStep.desc}</p>
 
-              {/* Step 1 CTA */}
-              {activeStep.id === 1 && (
+              {/* CTA dựa theo tên bước, không dựa theo ID (ID thay đổi theo flow) */}
+              {activeStep.title === "Bài test văn hoá" ? (
                 <div className="space-y-3">
                   <button
                     onClick={() => { setIsDocModalOpen(true); setDocModalView("menu"); }}
-                    className="w-full flex items-center justify-center gap-2 py-3 px-4 border border-purple-200 rounded-2xl text-purple-600 font-bold text-sm hover:bg-purple-50 transition-colors"
+                    className="btn-pop w-full flex items-center justify-center gap-2 py-3 px-4 border border-purple-200 rounded-2xl text-purple-600 font-bold text-sm hover:bg-purple-50 transition-colors"
                   >
                     <BookOpen size={15} /> Đọc tài liệu Văn hoá trước khi Test
                   </button>
                   <button
                     onClick={() => openQuiz("culture")}
-                    className="w-full flex items-center justify-center gap-2 py-4 px-4 bg-purple-600 rounded-2xl text-white font-black text-sm hover:bg-purple-700 active:scale-95 transition-all shadow-lg shadow-purple-500/20"
+                    className="btn-pop w-full flex items-center justify-center gap-2 py-4 px-4 bg-purple-600 rounded-2xl text-white font-black text-sm hover:bg-purple-700 shadow-lg shadow-purple-500/20"
                   >
                     Bắt đầu thực hiện <ArrowRight size={16} />
                   </button>
                 </div>
-              )}
-
-              {/* Step 2 CTA */}
-              {activeStep.id === 2 && (
+              ) : activeStep.title === "Thử thách trở lại" ? (
+                returnTestResult === "fail" ? (() => {
+                  const failTime = parseInt(localStorage.getItem("nlt_rtq_fail_time") || "0");
+                  const unlockDate = failTime ? new Date(failTime + 3 * 30 * 24 * 60 * 60 * 1000) : null;
+                  const isLocked = !!unlockDate && new Date() < unlockDate;
+                  const unlockStr = unlockDate ? unlockDate.toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric" }) : "";
+                  return isLocked ? (
+                    <div className="space-y-2 text-center">
+                      <p className="text-sm text-gray-500 leading-relaxed">
+                        Bạn có thể đăng ký làm lại bài test sau <span className="font-black text-[#1D1D1F]">03 tháng</span> kể từ khi làm bài.
+                      </p>
+                      <p className="text-sm font-black text-purple-600">Ngày mở khóa: {unlockStr}</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      <p className="text-sm text-gray-500 leading-relaxed text-center">
+                        Đừng nản nhé! Bạn có thể làm lại ngay bây giờ.
+                      </p>
+                      <button
+                        onClick={() => {
+                          ["nlt_rt_result","nlt_rtq_phase","nlt_rtq_mc_ans","nlt_rtq_essay_ans","nlt_rtq_result","nlt_rtq_fail_time"].forEach(k => localStorage.removeItem(k));
+                          setReturnTestResult("none");
+                          setReturnTestOpened(true);
+                          setShowReturnQuiz(true);
+                        }}
+                        className="btn-pop w-full flex items-center justify-center gap-2 py-4 px-4 bg-purple-600 rounded-2xl text-white font-black text-sm hover:bg-purple-700 shadow-lg shadow-purple-500/20"
+                      >
+                        <RotateCcw size={16} /> Làm lại ngay
+                      </button>
+                    </div>
+                  );
+                })() : (
+                  <button
+                    onClick={() => { setReturnTestOpened(true); setShowReturnQuiz(true); }}
+                    className="btn-pop w-full flex items-center justify-center gap-2 py-4 px-4 bg-purple-600 rounded-2xl text-white font-black text-sm hover:bg-purple-700 shadow-lg shadow-purple-500/20"
+                  >
+                    {returnTestOpened ? "Tiếp tục bài test" : "Bắt đầu thực hiện"} <ArrowRight size={16} />
+                  </button>
+                )
+              ) : activeStep.title === "Bài test tôi phù hợp làm gì" ? (
                 <button
                   onClick={() => openQuiz("role")}
-                  className="w-full flex items-center justify-center gap-2 py-4 px-4 bg-purple-600 rounded-2xl text-white font-black text-sm hover:bg-purple-700 active:scale-95 transition-all shadow-lg shadow-purple-500/20"
+                  className="btn-pop w-full flex items-center justify-center gap-2 py-4 px-4 bg-purple-600 rounded-2xl text-white font-black text-sm hover:bg-purple-700 shadow-lg shadow-purple-500/20"
                 >
                   Bắt đầu thực hiện <ArrowRight size={16} />
                 </button>
-              )}
-
-              {/* Steps 3–5: custom content */}
-              {activeStep.id >= 3 && (
+              ) : activeStep.title === "Đặt lịch phỏng vấn" ? (
+                <button
+                  onClick={() => setIsCalendarModalOpen(true)}
+                  className="btn-pop w-full flex items-center justify-center gap-2 py-4 px-4 bg-purple-600 rounded-2xl text-white font-black text-sm hover:bg-purple-700 shadow-lg shadow-purple-500/20"
+                >
+                  Bắt đầu thực hiện <ArrowRight size={16} />
+                </button>
+              ) : activeStep.title === "Đợi kết quả phỏng vấn" ? (
+                <button
+                  onClick={() => { setStepModalContext("interview-result"); setShowStepModal(true); }}
+                  className="btn-pop w-full flex items-center justify-center gap-2 py-4 px-4 bg-purple-600 rounded-2xl text-white font-black text-sm hover:bg-purple-700 shadow-lg shadow-purple-500/20"
+                >
+                  Bắt đầu thực hiện <ArrowRight size={16} />
+                </button>
+              ) : activeStep.title === "Về nhà thôi!" ? (
+                <button
+                  onClick={() => { setIsStep5ModalOpen(true); setStep5View("menu"); }}
+                  className="btn-pop w-full flex items-center justify-center gap-2 py-4 px-4 bg-purple-600 rounded-2xl text-white font-black text-sm hover:bg-purple-700 shadow-lg shadow-purple-500/20"
+                >
+                  Bắt đầu thực hiện <ArrowRight size={16} />
+                </button>
+              ) : (
                 <div className="border-t border-gray-100 pt-6">
                   {activeStep.customContent}
                 </div>
@@ -679,8 +804,8 @@ const Dashboard = () => {
       {/* ─── Document Modal ──────────────────────────────────────────────────── */}
       {isDocModalOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm animate-in fade-in duration-200" onClick={() => setIsDocModalOpen(false)} />
-          <div className="relative w-full max-w-md bg-white rounded-[1.5rem] shadow-2xl animate-in zoom-in-95 duration-300">
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm overlay-in" onClick={() => setIsDocModalOpen(false)} />
+          <div className="relative w-full max-w-md bg-white rounded-[1.5rem] shadow-2xl modal-pop">
             {/* Header */}
             <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
               <div className="flex items-center gap-2">
@@ -744,71 +869,134 @@ const Dashboard = () => {
       {/* ─── Quiz Modal ─────────────────────────────────────────────────────── */}
       {isQuizModalOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm animate-in fade-in duration-300" onClick={closeQuiz} />
-          <div className="relative w-full max-w-lg bg-white rounded-[2rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 max-h-[90vh] flex flex-col">
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm overlay-in" onClick={closeQuiz} />
+          <div className="relative w-full max-w-lg bg-white rounded-[2rem] shadow-2xl overflow-hidden modal-pop max-h-[90vh] flex flex-col">
 
             {!showQuizResult ? (
-              <>
-                {/* Header */}
-                <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 shrink-0">
-                  <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
-                    {activeQuizType === "culture" ? "TEST VĂN HOÁ" : "GỢI Ý TEAM"}
-                  </span>
-                  <button onClick={closeQuiz} className="text-gray-400 hover:text-gray-600 transition-colors"><X size={18} /></button>
-                </div>
+              activeQuizType === "role" ? (
+                /* ── Role quiz: auto-advance, back button, no timer ── */
+                <>
+                  {/* Header */}
+                  <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 shrink-0">
+                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">GỢI Ý TEAM</span>
+                    <button onClick={closeQuiz} className="text-gray-400 hover:text-gray-600 transition-colors"><X size={18} /></button>
+                  </div>
 
-                {/* Progress info */}
-                <div className="px-6 pt-4 shrink-0 space-y-2">
-                  <div className="flex items-center justify-between">
+                  {/* Progress */}
+                  <div className="px-6 pt-4 shrink-0 space-y-2">
                     <span className="text-sm font-black text-gray-700">CÂU {currentQuestionIndex + 1} / {totalQuestions}</span>
-                    <span className={`text-sm font-black flex items-center gap-1.5 ${timer <= 10 ? "text-red-500" : "text-orange-500"}`}>
-                      ⏱ 0:{String(timer % 60).padStart(2, "0")}s
-                    </span>
+                    <div className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
+                      <div className="h-full bg-green-500 rounded-full transition-all duration-500" style={{ width: `${progressPercent}%` }} />
+                    </div>
                   </div>
-                  <div className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
-                    <div className={`h-full rounded-full transition-all duration-1000 ${timer <= 10 ? "bg-red-500" : "bg-orange-400"}`} style={{ width: `${timerPercent}%` }} />
+
+                  {/* Question */}
+                  <div className="px-6 py-4 shrink-0">
+                    <h3 className="text-base md:text-lg font-black text-gray-900 leading-snug">{currentQuestion.q}</h3>
                   </div>
-                </div>
 
-                {/* Question */}
-                <div className="px-6 py-4 shrink-0">
-                  <h3 className="text-base md:text-lg font-black text-gray-900 leading-snug">{currentQuestion.q}</h3>
-                </div>
+                  {/* Options — click = auto advance */}
+                  <div className="px-6 space-y-2 overflow-y-auto flex-1">
+                    {currentQuestion.options?.map((opt, idx) => (
+                      <button key={idx}
+                        onClick={() => handleAnswer(idx)}
+                        className="w-full flex items-center gap-3 p-3.5 border-2 border-gray-100 rounded-2xl text-sm text-left text-gray-700 hover:border-purple-400 hover:bg-purple-50 active:scale-[0.98] transition-all">
+                        <div className="w-5 h-5 rounded-full border-2 border-gray-300 shrink-0" />
+                        <span className="font-medium">{opt.text}</span>
+                      </button>
+                    ))}
+                  </div>
 
-                {/* Options */}
-                <div className="px-6 space-y-2 overflow-y-auto flex-1">
-                  {currentQuestion.options?.map((opt, idx) => (
-                    <button key={idx} onClick={() => setSelectedAnswer(idx)}
-                      className={`w-full flex items-center gap-3 p-3.5 border-2 rounded-2xl text-sm text-left transition-all active:scale-[0.98] ${selectedAnswer === idx ? "border-purple-500 bg-purple-50 text-purple-900" : "border-gray-100 text-gray-700 hover:border-purple-200 hover:bg-purple-50/40"}`}>
-                      <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${selectedAnswer === idx ? "border-purple-600" : "border-gray-300"}`}>
-                        {selectedAnswer === idx && <div className="w-2.5 h-2.5 rounded-full bg-purple-600" />}
+                  {/* Back button from question 2+ */}
+                  <div className="px-6 pb-5 pt-3 shrink-0">
+                    {currentQuestionIndex > 0 && (
+                      <button onClick={handleRoleBack}
+                        className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-purple-600 font-bold transition-colors">
+                        <ChevronLeft size={16} /> Quay lại câu trước
+                      </button>
+                    )}
+                  </div>
+                </>
+              ) : (
+                /* ── Culture quiz: timer, select + confirm ── */
+                <>
+                  {/* Header */}
+                  <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 shrink-0">
+                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">TEST VĂN HOÁ</span>
+                    <button onClick={closeQuiz} className="text-gray-400 hover:text-gray-600 transition-colors"><X size={18} /></button>
+                  </div>
+
+                  {/* Timer */}
+                  <div className="px-6 pt-4 shrink-0 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-black text-gray-700">CÂU {currentQuestionIndex + 1} / {totalQuestions}</span>
+                      <span className={`text-sm font-black flex items-center gap-1.5 ${timer <= 10 ? "text-red-500" : "text-orange-500"}`}>
+                        ⏱ 0:{String(timer % 60).padStart(2, "0")}s
+                      </span>
+                    </div>
+                    <div className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
+                      <div className={`h-full rounded-full transition-all duration-1000 ${timer <= 10 ? "bg-red-500" : "bg-orange-400"}`} style={{ width: `${timerPercent}%` }} />
+                    </div>
+                  </div>
+
+                  {/* Question */}
+                  <div className="px-6 py-4 shrink-0">
+                    <h3 className="text-base md:text-lg font-black text-gray-900 leading-snug">{currentQuestion.q}</h3>
+                  </div>
+
+                  {/* Options */}
+                  {(() => {
+                    const isLast = currentQuestionIndex === cultureQuestions.length - 1;
+                    return (
+                      <div className="px-6 space-y-2 overflow-y-auto flex-1">
+                        {currentQuestion.options?.map((opt, idx) => (
+                          <button key={idx}
+                            onClick={() => isLast ? setSelectedAnswer(idx) : handleAnswer(idx)}
+                            className={`w-full flex items-center gap-3 p-3.5 border-2 rounded-2xl text-sm text-left transition-all active:scale-[0.98]
+                              ${isLast && selectedAnswer === idx
+                                ? "border-purple-500 bg-purple-50 text-purple-900"
+                                : "border-gray-100 text-gray-700 hover:border-purple-400 hover:bg-purple-50"}`}>
+                            <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${isLast && selectedAnswer === idx ? "border-purple-600" : "border-gray-300"}`}>
+                              {isLast && selectedAnswer === idx && <div className="w-2.5 h-2.5 rounded-full bg-purple-600" />}
+                            </div>
+                            <span className="font-medium">{opt.text}</span>
+                          </button>
+                        ))}
                       </div>
-                      <span className="font-medium">{opt.text}</span>
-                    </button>
-                  ))}
-                </div>
+                    );
+                  })()}
 
-                {/* Bottom: progress + confirm */}
-                <div className="px-6 pb-6 pt-4 shrink-0 space-y-3">
-                  <div className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
-                    <div className="h-full bg-green-500 rounded-full transition-all duration-500" style={{ width: `${progressPercent}%` }} />
+                  {/* Bottom: back button + progress + nộp bài */}
+                  <div className="px-6 pb-5 pt-3 shrink-0 space-y-3">
+                    <div className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
+                      <div className="h-full bg-green-500 rounded-full transition-all duration-500" style={{ width: `${progressPercent}%` }} />
+                    </div>
+                    <div className="flex items-center justify-between gap-3">
+                      {currentQuestionIndex > 0 ? (
+                        <button onClick={handleCultureBack}
+                          className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-purple-600 font-bold transition-colors shrink-0">
+                          <ChevronLeft size={16} /> Quay lại
+                        </button>
+                      ) : <div />}
+                      {currentQuestionIndex === cultureQuestions.length - 1 && (
+                        <button
+                          disabled={selectedAnswer === null}
+                          onClick={() => { if (selectedAnswer !== null) { handleAnswer(selectedAnswer); setSelectedAnswer(null); } }}
+                          className={`px-8 py-2.5 rounded-2xl font-black text-sm transition-all ${selectedAnswer !== null ? "bg-purple-600 text-white shadow-lg hover:bg-purple-700 active:scale-95" : "bg-gray-100 text-gray-400 cursor-not-allowed"}`}>
+                          Nộp bài
+                        </button>
+                      )}
+                    </div>
                   </div>
-                  <button
-                    onClick={() => { if (selectedAnswer !== null) { handleAnswer(selectedAnswer); setSelectedAnswer(null); } }}
-                    disabled={selectedAnswer === null}
-                    className={`w-full py-4 rounded-2xl font-black text-sm transition-all ${selectedAnswer !== null ? "bg-purple-600 text-white shadow-lg hover:bg-purple-700 active:scale-95" : "bg-gray-100 text-gray-400 cursor-not-allowed"}`}
-                  >
-                    Xác nhận câu trả lời
-                  </button>
-                </div>
-              </>
+                </>
+              )
             ) : (
               /* Result screen */
               <div className="p-8 md:p-10 text-center space-y-5 overflow-y-auto">
                 {activeQuizType === "culture" ? (
                   quizPassed ? (
                     <>
-                      <div className="text-5xl">🤩</div>
+                      <div className="text-5xl icon-float">🤩</div>
                       <div className="space-y-1.5">
                         <h3 className="text-2xl font-black text-gray-900">Xuất sắc luôn!</h3>
                         <p className="text-gray-500 text-sm font-medium">Dữ vậy ta, làm lần đầu mà đúng luôn kìa, giỏi thiệt á chứ.</p>
@@ -819,17 +1007,14 @@ const Dashboard = () => {
                     </>
                   ) : (
                     <>
-                      <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto">
-                        <XCircle className="text-red-500 w-8 h-8" />
-                      </div>
-                      <div className="space-y-1.5">
-                        <h3 className="text-2xl font-black text-gray-900">Chưa đạt!</h3>
-                        <p className="text-gray-500 text-sm font-medium">
-                          Bạn đúng <span className="text-red-500 font-black">{quizScore}/{cultureQuestions.length}</span> câu — Cần ít nhất <span className="font-black text-gray-800">{PASS_SCORE}</span> câu đúng.
+                      <div className="text-5xl icon-shake">😭</div>
+                      <div className="space-y-2">
+                        <h3 className="text-2xl font-black text-gray-900">Chưa đạt rồi!</h3>
+                        <p className="text-gray-500 text-sm font-medium leading-relaxed">
+                          Đời mà ai không té, té thì đứng lên thôi. Ngại gì mà không làm lại, mình đọc tài liệu lại rồi chiến lại thôi nè.
                         </p>
-                        <p className="text-gray-400 text-xs">Hãy đọc lại tài liệu và thử lại nhé!</p>
                       </div>
-                      <button onClick={handleRetry} className="flex items-center gap-2 mx-auto bg-purple-600 text-white px-8 py-3.5 rounded-2xl font-black text-sm shadow-lg hover:bg-purple-700 active:scale-95 transition-all">
+                      <button onClick={handleRetry} className="btn-pop w-full py-4 rounded-2xl bg-purple-600 text-white font-black text-sm shadow-lg hover:bg-purple-700 flex items-center justify-center gap-2">
                         <RotateCcw size={16} /> Làm lại
                       </button>
                     </>
@@ -841,7 +1026,7 @@ const Dashboard = () => {
                     const isMultiple = topTeams.length > 1;
                     return (
                       <>
-                        <div className="text-5xl">🥰</div>
+                        <div className="text-5xl icon-float">🥰</div>
                         <div className="space-y-1.5">
                           <h3 className="text-2xl font-black text-gray-900">Lựa chọn tuyệt vời!</h3>
                           <p className="text-gray-500 text-sm font-medium leading-relaxed">
@@ -866,21 +1051,308 @@ const Dashboard = () => {
       {/* ─── Step Complete Modal ─────────────────────────────────────────────── */}
       {showStepModal && (
         <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm animate-in fade-in duration-200" />
-          <div className="relative w-full max-w-sm bg-white rounded-[2rem] p-8 shadow-2xl text-center space-y-4 animate-in zoom-in-95 duration-300">
-            <div className="text-5xl">🎉</div>
-            <div className="space-y-2">
-              <h3 className="text-2xl font-black text-gray-900">Chúc mừng!</h3>
-              <p className="text-gray-500 text-sm font-medium leading-relaxed">
-                Wow thật tuyệt vời, bạn đi được {currentStep} bước rồi nè! Thật là hạnh phúc khi thấy bạn dũng cảm đi được bước đầu tiên. Không còn nhiều nữa đâu, chỉ {totalSteps - currentStep} bước nữa là tới đích rồi. Mình luôn đồng hành cùng bạn!
-              </p>
-            </div>
-            <button onClick={handleStepModalContinue} className="w-full py-4 rounded-2xl bg-purple-600 text-white font-black text-sm shadow-lg hover:bg-purple-700 active:scale-95 transition-all">
-              Đi tiếp thôi nào!
-            </button>
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm overlay-in" />
+          <div className="relative w-full max-w-sm bg-white rounded-[2rem] p-8 shadow-2xl text-center space-y-4 modal-pop">
+            {stepModalContext === "active-culture" ? (
+              <>
+                <div className="text-5xl icon-spin-pop">⭐</div>
+                <div className="space-y-2">
+                  <h3 className="text-2xl font-black text-gray-900">Chúc mừng bạn!</h3>
+                  <p className="text-gray-500 text-sm font-medium leading-relaxed">
+                    Bạn đã vượt qua bài test văn hóa một cách xuất sắc! Hãy tiếp tục chọn một khung giờ phù hợp để chúng mình có thể trò chuyện trực tiếp nha.
+                  </p>
+                </div>
+                <button onClick={handleStepModalContinue} className="w-full py-4 rounded-2xl bg-purple-600 text-white font-black text-sm shadow-lg hover:bg-purple-700 active:scale-95 transition-all">
+                  Đi tiếp thôi nào!
+                </button>
+              </>
+            ) : stepModalContext === "return-pass" ? (
+              <>
+                <div className="text-5xl icon-float">🎉</div>
+                <div className="space-y-2">
+                  <h3 className="text-2xl font-black text-gray-900">Chào mừng trở lại!</h3>
+                  <p className="text-gray-500 text-sm font-medium leading-relaxed">
+                    Chào mừng bạn quay trở lại một lần nữa! Thật tuyệt vời khi thấy sự kiên trì và dũng cảm của bạn. Bạn đã vượt qua thử thách cực kỳ xuất sắc. Không còn nhiều nữa đâu, mình luôn đồng hành cùng bạn!
+                  </p>
+                </div>
+                <button onClick={handleStepModalContinue} className="w-full py-4 rounded-2xl bg-purple-600 text-white font-black text-sm shadow-lg hover:bg-purple-700 active:scale-95 transition-all">
+                  Đi tiếp thôi nào!
+                </button>
+              </>
+            ) : stepModalContext === "active-calendar" ? (
+              <>
+                <div className="text-5xl icon-float">🎉</div>
+                <div className="space-y-2">
+                  <h3 className="text-2xl font-black text-gray-900">Tuyệt vời quá!</h3>
+                  <p className="text-gray-500 text-sm font-medium leading-relaxed">
+                    Bạn đã đặt lịch thành công! Thật háo hức được gặp bạn. Hãy kiểm tra email thường xuyên để nhận thông tin chi tiết về buổi phỏng vấn nhé. Tụi mình chờ bạn!
+                  </p>
+                </div>
+                <button onClick={handleStepModalContinue} className="w-full py-4 rounded-2xl bg-purple-600 text-white font-black text-sm shadow-lg hover:bg-purple-700 active:scale-95 transition-all">
+                  Hoàn tất
+                </button>
+              </>
+            ) : (
+              <>
+                <div className="text-5xl icon-float">🎉</div>
+                <div className="space-y-2">
+                  <h3 className="text-2xl font-black text-gray-900">{stepModalContext === "interview-result" ? "Hoàn thành!" : "Chúc mừng!"}</h3>
+                  {stepModalContext === "calendar" ? (
+                    <p className="text-gray-500 text-sm font-medium leading-relaxed">
+                      Sắp xong rồi nè! Thật tuyệt vời khi thấy sự tâm huyết của bạn. Chỉ còn một xíu nữa thôi, mình luôn ở đây cổ vũ bạn! Bạn kiểm tra email để nhận được các thông tin về buổi gặp mặt với chúng mình sắp tới nhé.
+                    </p>
+                  ) : stepModalContext === "interview-result" ? (
+                    <p className="text-gray-500 text-sm font-medium leading-relaxed">
+                      Bạn đang làm rất tốt, cứ giữ vững tinh thần này nhé!
+                    </p>
+                  ) : (
+                    <p className="text-gray-500 text-sm font-medium leading-relaxed">
+                      Wow thật tuyệt vời, bạn đi được {currentStep} bước rồi nè! Thật là hạnh phúc khi thấy bạn dũng cảm đi được bước đầu tiên. Không còn nhiều nữa đâu, chỉ {totalSteps - currentStep} bước nữa là tới đích rồi. Mình luôn đồng hành cùng bạn!
+                    </p>
+                  )}
+                </div>
+                <button onClick={handleStepModalContinue} className="w-full py-4 rounded-2xl bg-purple-600 text-white font-black text-sm shadow-lg hover:bg-purple-700 active:scale-95 transition-all">
+                  {stepModalContext === "interview-result" ? "Hoàn tất" : "Đi tiếp thôi nào!"}
+                </button>
+              </>
+            )}
           </div>
         </div>
       )}
+
+      {/* ─── Step 5 Modal ────────────────────────────────────────────────────── */}
+      {isStep5ModalOpen && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm overlay-in" onClick={() => setIsStep5ModalOpen(false)} />
+          <div className="relative w-full max-w-lg bg-white rounded-[2rem] shadow-2xl modal-pop overflow-hidden max-h-[90vh] flex flex-col">
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 shrink-0">
+              <div className="flex items-center gap-2">
+                {step5View === "profile" ? (
+                  <button onClick={() => setStep5View("menu")} className="flex items-center gap-1 text-gray-500 hover:text-gray-700 text-xs font-bold">
+                    <ChevronLeft size={14} /> Quay lại
+                  </button>
+                ) : (
+                  <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">GIAO DIỆN TƯƠNG TÁC</span>
+                )}
+              </div>
+              <button onClick={() => setIsStep5ModalOpen(false)} className="text-gray-400 hover:text-gray-600 transition-colors">
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Menu view */}
+            {step5View === "menu" && (
+              <div className="p-6 space-y-4 overflow-y-auto flex-1">
+                <h3 className="text-center text-lg font-black text-gray-900">Hoàn thiện hồ sơ cá nhân</h3>
+
+                {/* Row 1: Điền thông tin */}
+                <button onClick={() => setStep5View("profile")}
+                  className={`w-full flex items-center gap-4 p-4 rounded-2xl border-2 text-left transition-all ${profileDone ? "border-green-300 bg-green-50" : "border-gray-100 hover:border-purple-200 hover:bg-purple-50/30"}`}>
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${profileDone ? "bg-green-500" : "bg-purple-50"}`}>
+                    {profileDone ? <CheckCircle2 size={18} className="text-white" /> : <User size={18} className="text-purple-500" />}
+                  </div>
+                  <span className={`font-black text-sm flex-1 ${profileDone ? "text-green-700" : "text-gray-800"}`}>Điền thông tin cá nhân</span>
+                  {!profileDone && <ArrowRight size={16} className="text-gray-400" />}
+                </button>
+
+                {/* Row 2: Ký bảo mật */}
+                <button
+                  onClick={() => { window.open("https://sg1.documents.adobe.com/public/esignWidget?wid=CBFCIBAA3AAABLblqZhBTVety-rac_6tDkmYwnVdmNmPWQbUwl3bv6r3XwaTnqMzGtFVh1dKVNBmCztFyBBo*", "_blank"); setSignDone(true); }}
+                  className={`w-full flex items-center gap-4 p-4 rounded-2xl border-2 text-left transition-all ${signDone ? "border-green-300 bg-green-50" : "border-gray-100 hover:border-purple-200 hover:bg-purple-50/30"}`}>
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 text-lg ${signDone ? "bg-green-500" : "bg-purple-50"}`}>
+                    {signDone ? <CheckCircle2 size={18} className="text-white" /> : "✍️"}
+                  </div>
+                  <span className={`font-black text-sm flex-1 ${signDone ? "text-green-700" : "text-gray-800"}`}>Ký bảo mật (NDA)</span>
+                  <div className={`w-5 h-5 border-2 rounded flex items-center justify-center shrink-0 transition-all ${signDone ? "bg-green-500 border-green-500" : "border-gray-300"}`}>
+                    {signDone && <CheckCircle2 size={11} className="text-white" />}
+                  </div>
+                </button>
+
+                {/* Row 3: Upload photo */}
+                <div className={`rounded-2xl border-2 overflow-hidden transition-all ${screenshotFile ? "border-green-300 bg-green-50" : "border-gray-100"}`}>
+                  <div className="flex items-center gap-4 p-4">
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 text-lg ${screenshotFile ? "bg-green-500" : "bg-green-50"}`}>
+                      {screenshotFile ? <CheckCircle2 size={18} className="text-white" /> : "☁️"}
+                    </div>
+                    <span className={`font-black text-sm flex-1 ${screenshotFile ? "text-green-700" : "text-gray-800"}`}>Gửi ảnh xác nhận ký NDA</span>
+                  </div>
+                  <label className="block mx-4 mb-4 p-4 border-2 border-dashed border-gray-200 rounded-xl cursor-pointer hover:border-purple-300 hover:bg-purple-50/30 transition-all text-center">
+                    <input type="file" accept="image/*" className="hidden" onChange={(e) => { const f = (e.target as HTMLInputElement).files; setScreenshotFile(f?.[0] ?? null); }} />
+                    <p className="text-sm text-gray-400 font-medium">{screenshotFile ? screenshotFile.name : "Nhấn để tải ảnh lên"}</p>
+                  </label>
+                </div>
+
+                {/* Submit */}
+                <button
+                  disabled={!profileDone || !signDone || !screenshotFile}
+                  onClick={() => { setIsStep5ModalOpen(false); setCurrentStep(prev => prev + 1); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+                  className={`btn-pop w-full py-4 rounded-2xl font-black text-sm transition-all ${profileDone && signDone && screenshotFile ? "bg-purple-600 text-white shadow-lg hover:bg-purple-700" : "bg-gray-100 text-gray-400 cursor-not-allowed"}`}>
+                  Hoàn tất Gửi Hồ Sơ
+                </button>
+              </div>
+            )}
+
+            {/* Profile form sub-view */}
+            {step5View === "profile" && (
+              <div className="flex flex-col flex-1 overflow-hidden">
+                <div className="px-6 pt-4 pb-1 shrink-0">
+                  <h3 className="text-lg font-black text-gray-900">Điền thông tin cá nhân</h3>
+                  <p className="text-xs text-gray-400 font-medium mt-0.5">Thông tin của bạn sẽ được bảo mật</p>
+                </div>
+                <div className="overflow-y-auto flex-1 px-6 py-4">
+                  <div className="grid grid-cols-2 gap-x-4 gap-y-3">
+                    {[
+                      { label: "Họ và tên", key: "name" },
+                      { label: "Cung Sun", key: "cungSun" },
+                      { label: "Username", key: "username" },
+                      { label: "Cung Moon", key: "cungMoon" },
+                      { label: "Gmail NhiLe Team", key: "gmail" },
+                      { label: "Cung Mộc", key: "cungMoc" },
+                      { label: "Số chủ đạo", key: "soChudao" },
+                      { label: "SĐT", key: "sdt" },
+                      { label: "Số linh hồn", key: "soLinhHon" },
+                      { label: "Link FB", key: "linkFb" },
+                      { label: "Số trưởng thành", key: "soTruongThanh" },
+                    ].reduce<JSX.Element[]>((acc, { label, key }, i, arr) => {
+                      if (i % 2 === 1) return acc;
+                      const right = arr[i + 1];
+                      acc.push(
+                        <div key={key} className="space-y-1">
+                          <label className="text-xs font-bold text-gray-600">{label}</label>
+                          <input value={step5ProfileForm[key as keyof typeof step5ProfileForm]} onChange={e => setStep5ProfileForm(prev => ({ ...prev, [key]: e.target.value }))} className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-blue-400 transition-colors" />
+                        </div>
+                      );
+                      if (key === "soChudao") {
+                        acc.push(
+                          <div key="ngaySinh" className="space-y-1">
+                            <label className="text-xs font-bold text-gray-600">Ngày sinh</label>
+                            <input type="date" value={step5ProfileForm.ngaySinh} onChange={e => setStep5ProfileForm(prev => ({ ...prev, ngaySinh: e.target.value }))} className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-blue-400 transition-colors" />
+                          </div>
+                        );
+                        return acc;
+                      }
+                      if (right) {
+                        acc.push(
+                          <div key={right.key} className="space-y-1">
+                            <label className="text-xs font-bold text-gray-600">{right.label}</label>
+                            <input value={step5ProfileForm[right.key as keyof typeof step5ProfileForm]} onChange={e => setStep5ProfileForm(prev => ({ ...prev, [right.key]: e.target.value }))} className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-blue-400 transition-colors" />
+                          </div>
+                        );
+                      }
+                      return acc;
+                    }, [])}
+                    {[
+                      { label: "Link LinkedIn", key: "linkLinkedIn" },
+                      { label: "Địa chỉ", key: "diaChi" },
+                      { label: "Thiết bị dùng làm việc", key: "thietBi" },
+                    ].map(({ label, key }) => (
+                      <div key={key} className="col-span-2 space-y-1">
+                        <label className="text-xs font-bold text-gray-600">{label}</label>
+                        <input value={step5ProfileForm[key as keyof typeof step5ProfileForm]} onChange={e => setStep5ProfileForm(prev => ({ ...prev, [key]: e.target.value }))} className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-blue-400 transition-colors" />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div className="px-6 py-4 border-t border-gray-100 shrink-0 flex items-center justify-end gap-3">
+                  <button onClick={() => setStep5View("menu")} className="text-sm font-black text-gray-500 hover:text-gray-700 transition-colors px-4 py-2">
+                    Quay lại
+                  </button>
+                  <button onClick={() => { setProfileDone(true); setStep5View("menu"); }} className="btn-pop px-8 py-2.5 rounded-xl bg-blue-500 text-white font-black text-sm shadow hover:bg-blue-600 active:scale-95 transition-all">
+                    Next
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ─── Calendar Modal ──────────────────────────────────────────────────── */}
+      {isCalendarModalOpen && (() => {
+        const firstDayOfWeek = new Date(2026, 2, 1).getDay();
+        const offset = firstDayOfWeek === 0 ? 6 : firstDayOfWeek - 1;
+        const today = new Date(); today.setHours(0, 0, 0, 0);
+        const isAvailableDate = (d: number) => { const dt = new Date(2026, 2, d); return [2, 3, 5].includes(dt.getDay()) && dt >= today; };
+        return (
+          <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+            <div className="absolute inset-0 bg-black/40 backdrop-blur-sm overlay-in" onClick={() => setIsCalendarModalOpen(false)} />
+            <div className="relative w-full max-w-lg bg-white rounded-[2rem] shadow-2xl modal-pop overflow-hidden">
+              {/* Header */}
+              <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+                <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">GIAO DIỆN TƯƠNG TÁC</span>
+                <button onClick={() => setIsCalendarModalOpen(false)} className="text-gray-400 hover:text-gray-600 transition-colors">
+                  <X size={18} />
+                </button>
+              </div>
+
+              {/* Body */}
+              <div className="p-6">
+                <div className="flex flex-col sm:flex-row gap-6">
+                  {/* Calendar */}
+                  <div className="flex-1 space-y-3">
+                    <h4 className="font-black text-xs text-gray-900 uppercase tracking-wider">Tháng 3, 2026</h4>
+                    <div className="grid grid-cols-7 gap-1 text-center">
+                      {["T2","T3","T4","T5","T6","T7","CN"].map((d) => (
+                        <span key={d} className="text-[10px] font-black text-gray-300 uppercase py-1">{d}</span>
+                      ))}
+                      {Array.from({ length: offset }).map((_, i) => <div key={`e${i}`} />)}
+                      {Array.from({ length: 31 }, (_, i) => i + 1).map((date) => {
+                        const available = isAvailableDate(date);
+                        const isSelected = date === selectedDate;
+                        return (
+                          <button key={date} disabled={!available}
+                            onClick={() => available && setSelectedDate(date)}
+                            className={`aspect-square flex items-center justify-center rounded-xl text-xs font-black transition-all
+                              ${isSelected ? "bg-purple-600 text-white scale-110 shadow-lg shadow-purple-400/30"
+                                : available ? "text-gray-800 hover:bg-purple-50 hover:text-purple-600 cursor-pointer"
+                                : "text-gray-200 cursor-not-allowed"}`}>
+                            {date}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    <p className="text-[10px] text-gray-400 font-bold">✓ Thứ 3, Thứ 4, Thứ 6 hàng tuần</p>
+                  </div>
+
+                  {/* Time slots */}
+                  <div className="sm:w-36 space-y-3">
+                    <h4 className="font-black text-xs text-gray-900 uppercase tracking-wider">Khung giờ</h4>
+                    <div className="grid grid-cols-2 sm:grid-cols-1 gap-2">
+                      {["19:00","19:30","20:00","20:30"].map((t) => (
+                        <button key={t} onClick={() => setSelectedTime(t)}
+                          className={`py-3 px-4 border-2 rounded-xl text-sm font-black transition-all text-center
+                            ${selectedTime === t
+                              ? "border-purple-600 text-purple-700 bg-purple-50"
+                              : "border-gray-100 text-gray-700 hover:border-purple-300 hover:bg-purple-50/40"}`}>
+                          {t}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Confirm button */}
+                <button
+                  disabled={!selectedDate || !selectedTime}
+                  onClick={() => {
+                    if (!selectedDate || !selectedTime) return;
+                    setIsCalendarModalOpen(false);
+                    setStepModalContext(isActiveMember ? "active-calendar" : "calendar");
+                    setShowStepModal(true);
+                  }}
+                  className={`btn-pop mt-6 w-full flex items-center justify-center gap-2 py-4 rounded-2xl font-black text-sm transition-all
+                    ${selectedDate && selectedTime
+                      ? "bg-purple-600 text-white shadow-lg shadow-purple-500/20 hover:bg-purple-700"
+                      : "bg-gray-100 text-gray-400 cursor-not-allowed"}`}
+                >
+                  📅 Xác nhận lịch hẹn
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Fullscreen image lightbox */}
       {isImageFullscreen && (
@@ -895,7 +1367,7 @@ const Dashboard = () => {
       {/* Return Member Quiz Modal */}
       <ReturnMemberQuizModal
         isOpen={showReturnQuiz}
-        onPass={() => { setReturnTestResult("pass"); setCurrentStep(2); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+        onPass={() => { setReturnTestResult("pass"); setStepModalContext("return-pass"); setShowStepModal(true); }}
         onFail={() => setReturnTestResult("fail")}
         onClose={() => setShowReturnQuiz(false)}
       />
@@ -913,6 +1385,31 @@ const Dashboard = () => {
         .overflow-y-auto { -ms-overflow-style: none; scrollbar-width: none; }
         @keyframes bounce-subtle { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
         .animate-bounce-subtle { animation: bounce-subtle 2s ease-in-out infinite; }
+
+        /* Modal pop-up animation */
+        @keyframes modal-pop {
+          0%   { opacity: 0; transform: scale(0.88) translateY(10px); }
+          60%  { opacity: 1; transform: scale(1.015) translateY(-2px); }
+          80%  { transform: scale(0.995) translateY(1px); }
+          100% { transform: scale(1) translateY(0); }
+        }
+        .modal-pop {
+          animation: modal-pop 0.28s cubic-bezier(0.34, 1.3, 0.64, 1) forwards;
+        }
+
+        /* Overlay fade-in */
+        @keyframes overlay-in {
+          from { opacity: 0; }
+          to   { opacity: 1; }
+        }
+        .overlay-in {
+          animation: overlay-in 0.2s ease forwards;
+        }
+
+        /* Button press effect */
+        .btn-pop:active { transform: scale(0.95); }
+        .btn-pop { transition: transform 0.1s ease, box-shadow 0.2s ease; }
+        .btn-pop:hover { transform: scale(1.02); }
       `}</style>
     </div>
   );
