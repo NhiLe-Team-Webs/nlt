@@ -22,6 +22,7 @@ import {
   ChevronLeft,
   FileText,
   Target,
+  MessageCircle,
 } from "lucide-react";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -106,6 +107,8 @@ const Dashboard = () => {
   const [selectedDate, setSelectedDate] = useState<number | null>(null);
 
   const [isImageFullscreen, setIsImageFullscreen] = useState(false);
+  const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
+  const openLightbox = (src: string) => setLightboxSrc(src);
   const [isLoaded, setIsLoaded] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -146,6 +149,11 @@ const Dashboard = () => {
   const [showStepModal, setShowStepModal] = useState(false);
   const [stepModalContext, setStepModalContext] = useState<"quiz" | "calendar" | "interview-result" | "active-culture" | "active-calendar" | "return-pass">("quiz");
   const [isCalendarModalOpen, setIsCalendarModalOpen] = useState(false);
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [chatInput, setChatInput] = useState("");
+  const [chatMessages, setChatMessages] = useState<{ from: "user" | "bot"; text: string }[]>([
+    { from: "bot", text: "Chào bạn! Bạn cần hỗ trợ gì trong quá trình Onboarding không? 😊" },
+  ]);
   const [roleAnswers, setRoleAnswers] = useState<number[]>([]);
 
   const cultureQuestions = CULTURE_QUESTIONS;
@@ -626,7 +634,7 @@ const Dashboard = () => {
       {/* Mobile Header */}
       <div className="md:hidden bg-white border-b border-gray-100 px-5 py-4 flex items-center justify-between sticky top-0 z-[100] shadow-sm">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-full bg-purple-600 flex items-center justify-center text-white font-black text-sm shrink-0">N</div>
+          <img src="/logo.svg" alt="NhiLe Team" className="w-8 h-8 rounded-full object-contain shrink-0" />
           <span className="font-black text-sm text-gray-900"><span className="text-purple-600">NHILE</span>TEAM</span>
         </div>
         <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="p-2 text-gray-500 hover:bg-gray-50 rounded-xl">
@@ -638,7 +646,7 @@ const Dashboard = () => {
       <aside className={`fixed inset-0 z-[90] md:relative md:flex md:w-64 lg:w-72 bg-white border-r border-gray-100 p-6 flex-col h-screen md:sticky md:top-0 transition-transform duration-500 ${isMobileMenuOpen ? "flex translate-y-0" : "-translate-y-full md:translate-y-0"}`}>
         {/* Logo */}
         <div className="flex items-center gap-3 mb-10 pt-4 md:pt-0">
-          <div className="w-10 h-10 rounded-full bg-purple-600 flex items-center justify-center text-white font-black text-lg shrink-0">N</div>
+          <img src="/logo.svg" alt="NhiLe Team" className="w-10 h-10 rounded-full object-contain shrink-0" />
           <span className="font-black text-gray-900 text-sm"><span className="text-purple-600">NHILE</span>TEAM</span>
         </div>
 
@@ -1027,13 +1035,33 @@ const Dashboard = () => {
                     return (
                       <>
                         <div className="text-5xl icon-float">🥰</div>
-                        <div className="space-y-1.5">
+                        <div className="space-y-3">
                           <h3 className="text-2xl font-black text-gray-900">Lựa chọn tuyệt vời!</h3>
-                          <p className="text-gray-500 text-sm font-medium leading-relaxed">
-                            {isMultiple
-                              ? "Chúc mừng bạn đã hoàn thành! Bạn phù hợp với nhiều team. Team nào cũng hay hết, tụi mình đang nóng lòng chờ bạn gia nhập đó!"
-                              : `Chúc mừng bạn đã hoàn thành! Team phù hợp sau khi những lựa chọn là ${TEAM_INFO[topTeams[0]]?.label}. Team nào cũng hay hết, tụi mình đang nóng lòng chờ bạn gia nhập đó!`}
-                          </p>
+                          {isMultiple ? (
+                            <>
+                              <div className="flex flex-wrap gap-2 justify-center">
+                                {topTeams.map(t => (
+                                  <span key={t} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-purple-500 to-indigo-500 text-white text-sm font-black shadow-md shadow-purple-300/40">
+                                    {TEAM_INFO[t]?.emoji} {TEAM_INFO[t]?.label}
+                                  </span>
+                                ))}
+                              </div>
+                              <p className="text-gray-500 text-sm font-medium leading-relaxed">
+                                Bạn phù hợp với nhiều team. Team nào cũng hay hết, tụi mình đang nóng lòng chờ bạn gia nhập đó!
+                              </p>
+                            </>
+                          ) : (
+                            <>
+                              <div className="flex justify-center">
+                                <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-purple-500 to-indigo-500 text-white text-base font-black shadow-lg shadow-purple-300/40 icon-pulse-scale">
+                                  {TEAM_INFO[topTeams[0]]?.emoji} {TEAM_INFO[topTeams[0]]?.label}
+                                </span>
+                              </div>
+                              <p className="text-gray-500 text-sm font-medium leading-relaxed">
+                                Chúc mừng bạn đã hoàn thành! Đây là team phù hợp nhất với bạn. Team nào cũng hay hết, tụi mình đang nóng lòng chờ bạn gia nhập đó!
+                              </p>
+                            </>
+                          )}
                         </div>
                         <button onClick={handleQuizContinue} className="w-full py-4 rounded-2xl bg-green-500 text-white font-black text-sm shadow-lg hover:bg-green-600 active:scale-95 transition-all">
                           Tiếp tục hành trình
@@ -1163,10 +1191,10 @@ const Dashboard = () => {
                   <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 text-lg ${signDone ? "bg-green-500" : "bg-purple-50"}`}>
                     {signDone ? <CheckCircle2 size={18} className="text-white" /> : "✍️"}
                   </div>
-                  <span className={`font-black text-sm flex-1 ${signDone ? "text-green-700" : "text-gray-800"}`}>Ký bảo mật (NDA)</span>
-                  <div className={`w-5 h-5 border-2 rounded flex items-center justify-center shrink-0 transition-all ${signDone ? "bg-green-500 border-green-500" : "border-gray-300"}`}>
-                    {signDone && <CheckCircle2 size={11} className="text-white" />}
-                  </div>
+                  <span className={`font-black text-sm flex-1 ${signDone ? "text-green-700" : "text-gray-800"}`}>Ký bảo mật</span>
+                  {!signDone && (
+                    <span className="text-xs font-black text-purple-500 border border-purple-200 rounded-lg px-2 py-1 bg-purple-50">ấn</span>
+                  )}
                 </button>
 
                 {/* Row 3: Upload photo */}
@@ -1177,6 +1205,37 @@ const Dashboard = () => {
                     </div>
                     <span className={`font-black text-sm flex-1 ${screenshotFile ? "text-green-700" : "text-gray-800"}`}>Gửi ảnh xác nhận ký NDA</span>
                   </div>
+
+                  {/* Example images: correct vs incorrect */}
+                  <div className="mx-4 mb-3 grid grid-cols-2 gap-3">
+                    {/* Correct */}
+                    <div className="relative rounded-xl overflow-hidden cursor-zoom-in" onClick={() => openLightbox("/nda-correct.png")}>
+                      <img src="/nda-correct.png" alt="Ảnh đúng" className="w-full h-28 object-cover" />
+                      <div className="absolute inset-0 bg-black/10" />
+                      <div className="absolute top-1.5 right-1.5 w-7 h-7 rounded-full bg-green-500 flex items-center justify-center shadow-md">
+                        <svg viewBox="0 0 24 24" className="w-4 h-4 text-white fill-none stroke-white stroke-[3] stroke-round">
+                          <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                      </div>
+                      <div className="absolute bottom-0 left-0 right-0 bg-green-500/80 py-1 text-center">
+                        <span className="text-white text-[10px] font-black">ĐÚNG</span>
+                      </div>
+                    </div>
+                    {/* Incorrect */}
+                    <div className="relative rounded-xl overflow-hidden cursor-zoom-in" onClick={() => openLightbox("/nda-wrong.png")}>
+                      <img src="/nda-wrong.png" alt="Ảnh sai" className="w-full h-28 object-cover" />
+                      <div className="absolute inset-0 bg-black/10" />
+                      <div className="absolute top-1.5 right-1.5 w-7 h-7 rounded-full bg-red-500 flex items-center justify-center shadow-md">
+                        <svg viewBox="0 0 24 24" className="w-4 h-4 fill-none stroke-white stroke-[3]">
+                          <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                        </svg>
+                      </div>
+                      <div className="absolute bottom-0 left-0 right-0 bg-red-500/80 py-1 text-center">
+                        <span className="text-white text-[10px] font-black">SAI</span>
+                      </div>
+                    </div>
+                  </div>
+
                   <label className="block mx-4 mb-4 p-4 border-2 border-dashed border-gray-200 rounded-xl cursor-pointer hover:border-purple-300 hover:bg-purple-50/30 transition-all text-center">
                     <input type="file" accept="image/*" className="hidden" onChange={(e) => { const f = (e.target as HTMLInputElement).files; setScreenshotFile(f?.[0] ?? null); }} />
                     <p className="text-sm text-gray-400 font-medium">{screenshotFile ? screenshotFile.name : "Nhấn để tải ảnh lên"}</p>
@@ -1355,10 +1414,13 @@ const Dashboard = () => {
       })()}
 
       {/* Fullscreen image lightbox */}
-      {isImageFullscreen && (
-        <div className="fixed inset-0 z-[200] bg-black/90 flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={() => setIsImageFullscreen(false)}>
+      {(isImageFullscreen || lightboxSrc) && (
+        <div className="fixed inset-0 z-[300] bg-black/90 flex items-center justify-center p-4 animate-in fade-in duration-200"
+          onClick={() => { setIsImageFullscreen(false); setLightboxSrc(null); }}>
           <button className="absolute top-4 right-4 text-white/70 hover:text-white transition-colors z-10"><X size={32} /></button>
-          <img src="https://lh3.googleusercontent.com/d/1dZvgi4ZLZoTD1-hGLeHStSO4v3J2CYzV" alt="Văn hoá NhiLe Team"
+          <img
+            src={lightboxSrc ?? "https://lh3.googleusercontent.com/d/1dZvgi4ZLZoTD1-hGLeHStSO4v3J2CYzV"}
+            alt="Xem ảnh"
             className="max-w-full max-h-full object-contain rounded-2xl animate-in zoom-in-95 duration-200"
             onClick={(e) => e.stopPropagation()} />
         </div>
@@ -1410,7 +1472,88 @@ const Dashboard = () => {
         .btn-pop:active { transform: scale(0.95); }
         .btn-pop { transition: transform 0.1s ease, box-shadow 0.2s ease; }
         .btn-pop:hover { transform: scale(1.02); }
+
+        /* Chat widget */
+        @keyframes chat-slide-up {
+          from { opacity: 0; transform: translateY(16px) scale(0.96); }
+          to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .chat-slide-up { animation: chat-slide-up 0.22s cubic-bezier(0.34, 1.3, 0.64, 1) forwards; }
       `}</style>
+
+      {/* ─── Chat Support Widget ─────────────────────────────────────────────── */}
+      <div className="fixed bottom-6 right-6 z-[200] flex flex-col items-end gap-3">
+        {/* Chat box */}
+        {isChatOpen && (
+          <div className="chat-slide-up w-80 bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-100">
+            {/* Header */}
+            <div className="flex items-center justify-between px-4 py-3 bg-purple-600">
+              <div className="flex items-center gap-2">
+                <img src="/logo.svg" alt="NhiLe Team" className="w-7 h-7 rounded-full object-contain bg-white/20 shrink-0" />
+                <span className="text-white font-black text-sm">HR Support</span>
+              </div>
+              <button onClick={() => setIsChatOpen(false)} className="text-white/70 hover:text-white transition-colors">
+                <X size={16} />
+              </button>
+            </div>
+
+            {/* Messages */}
+            <div className="p-4 space-y-3 max-h-64 overflow-y-auto">
+              {chatMessages.map((msg, i) => (
+                <div key={i} className={`flex ${msg.from === "user" ? "justify-end" : "justify-start"}`}>
+                  <div className={`max-w-[80%] px-3.5 py-2.5 rounded-2xl text-sm font-medium leading-relaxed
+                    ${msg.from === "user"
+                      ? "bg-purple-600 text-white rounded-br-sm"
+                      : "bg-gray-100 text-gray-700 rounded-bl-sm"}`}>
+                    {msg.text}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Input */}
+            <div className="px-3 py-3 border-t border-gray-100 flex items-center gap-2">
+              <input
+                type="text"
+                value={chatInput}
+                onChange={e => setChatInput(e.target.value)}
+                onKeyDown={e => {
+                  if (e.key === "Enter" && chatInput.trim()) {
+                    setChatMessages(prev => [...prev, { from: "user", text: chatInput.trim() }]);
+                    setChatInput("");
+                    setTimeout(() => {
+                      setChatMessages(prev => [...prev, { from: "bot", text: "Cảm ơn bạn đã nhắn tin! Team HR sẽ phản hồi sớm nhất có thể nhé 💜" }]);
+                    }, 800);
+                  }
+                }}
+                placeholder="Nhập tin nhắn..."
+                className="flex-1 text-sm px-3 py-2 rounded-xl bg-gray-50 border border-gray-200 outline-none focus:border-purple-400 transition-colors placeholder:text-gray-400"
+              />
+              <button
+                onClick={() => {
+                  if (!chatInput.trim()) return;
+                  setChatMessages(prev => [...prev, { from: "user", text: chatInput.trim() }]);
+                  setChatInput("");
+                  setTimeout(() => {
+                    setChatMessages(prev => [...prev, { from: "bot", text: "Cảm ơn bạn đã nhắn tin! Team HR sẽ phản hồi sớm nhất có thể nhé 💜" }]);
+                  }, 800);
+                }}
+                className="w-8 h-8 rounded-xl bg-purple-600 flex items-center justify-center hover:bg-purple-700 transition-colors shrink-0"
+              >
+                <Send size={14} className="text-white" />
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* FAB button */}
+        <button
+          onClick={() => setIsChatOpen(prev => !prev)}
+          className="w-14 h-14 rounded-full bg-purple-600 shadow-xl shadow-purple-500/30 flex items-center justify-center hover:bg-purple-700 hover:scale-110 active:scale-95 transition-all"
+        >
+          {isChatOpen ? <X size={22} className="text-white" /> : <MessageCircle size={22} className="text-white" />}
+        </button>
+      </div>
     </div>
   );
 };
