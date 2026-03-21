@@ -1207,7 +1207,7 @@ const Dashboard = () => {
                   </div>
                   <span className={`font-black text-sm flex-1 ${signDone ? "text-green-700" : "text-gray-800"}`}>Ký bảo mật</span>
                   {!signDone && (
-                    <span className="text-xs font-black text-purple-500 border border-purple-200 rounded-lg px-2 py-1 bg-purple-50">ấn</span>
+                    <span className="text-xs font-black text-purple-500 border border-purple-200 rounded-lg px-2 py-1 bg-purple-50">Ấn</span>
                   )}
                 </button>
 
