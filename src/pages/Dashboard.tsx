@@ -645,9 +645,8 @@ const Dashboard = () => {
       {/* Sidebar */}
       <aside className={`fixed inset-0 z-[90] md:relative md:flex md:w-64 lg:w-72 bg-white border-r border-gray-100 p-6 flex-col h-screen md:sticky md:top-0 transition-transform duration-500 ${isMobileMenuOpen ? "flex translate-y-0" : "-translate-y-full md:translate-y-0"}`}>
         {/* Logo */}
-        <div className="flex items-center gap-3 mb-10 pt-4 md:pt-0">
-          <img src="/logo.svg" alt="NhiLe Team" className="w-10 h-10 rounded-full object-contain shrink-0" />
-          <span className="font-black text-gray-900 text-sm"><span className="text-purple-600">NHILE</span>TEAM</span>
+        <div className="flex justify-center mb-10 pt-4 md:pt-0">
+          <img src="/logo.svg" alt="NhiLe Team" className="w-20 h-20 object-contain" />
         </div>
 
         {/* Step list */}
@@ -681,7 +680,22 @@ const Dashboard = () => {
       </aside>
 
       {/* Main content */}
-      <main className="flex-1 bg-gradient-to-br from-purple-100 via-purple-50 to-pink-100 flex flex-col items-center justify-center p-6 md:p-10 min-h-screen">
+      <main className="flex-1 relative bg-gradient-to-br from-purple-100 via-purple-50 to-pink-100 flex flex-col items-center justify-center p-6 md:p-10 min-h-screen overflow-hidden">
+        {/* Wave background */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          <svg className="wave-layer absolute bottom-0 left-0 w-[200%] h-[45%]" style={{animationDuration:"9s"}} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320" preserveAspectRatio="none">
+            <path d="M0,160 C180,220 360,80 540,160 C720,240 900,80 1080,160 C1260,240 1350,120 1440,160 L1440,320 L0,320 Z" fill="rgba(139,92,246,0.18)" />
+          </svg>
+          <svg className="wave-layer absolute bottom-0 left-0 w-[200%] h-[40%]" style={{animationDuration:"13s", animationDelay:"-4s"}} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320" preserveAspectRatio="none">
+            <path d="M0,120 C200,60 400,200 600,120 C800,40 1000,180 1200,110 C1320,70 1380,150 1440,120 L1440,320 L0,320 Z" fill="rgba(236,72,153,0.10)" />
+          </svg>
+          <svg className="wave-layer absolute bottom-0 left-0 w-[200%] h-[32%]" style={{animationDuration:"17s"}} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320" preserveAspectRatio="none">
+            <path d="M0,200 C160,140 320,260 480,200 C640,140 800,240 960,180 C1120,120 1300,220 1440,180 L1440,320 L0,320 Z" fill="rgba(196,181,253,0.20)" />
+          </svg>
+          <svg className="wave-layer absolute top-0 left-0 w-[200%] h-[30%]" style={{animationDuration:"11s", animationDelay:"-2s"}} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320" preserveAspectRatio="none">
+            <path d="M0,160 C240,220 480,100 720,160 C960,220 1200,100 1440,160 L1440,0 L0,0 Z" fill="rgba(167,139,250,0.10)" />
+          </svg>
+        </div>
         {/* Header */}
         <div className="text-center mb-8 max-w-md">
           <h1 className="text-3xl md:text-4xl font-black text-gray-900 tracking-tight">Chào mừng Thảo Nhi!</h1>
@@ -1472,6 +1486,16 @@ const Dashboard = () => {
         .btn-pop:active { transform: scale(0.95); }
         .btn-pop { transition: transform 0.1s ease, box-shadow 0.2s ease; }
         .btn-pop:hover { transform: scale(1.02); }
+
+        /* Wave animation */
+        @keyframes wave-flow {
+          0%   { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
+        }
+        .wave-layer {
+          animation: wave-flow ease-in-out infinite alternate;
+          will-change: transform;
+        }
 
         /* Chat widget */
         @keyframes chat-slide-up {
