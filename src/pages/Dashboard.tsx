@@ -1242,7 +1242,7 @@ const Dashboard = () => {
                     <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 text-lg ${screenshotFile ? "bg-green-500" : "bg-green-50"}`}>
                       {screenshotFile ? <CheckCircle2 size={18} className="text-white" /> : "☁️"}
                     </div>
-                    <span className={`font-black text-sm flex-1 ${screenshotFile ? "text-green-700" : "text-gray-800"}`}>Gửi ảnh xác nhận ký NDA</span>
+                    <span className={`font-black text-sm flex-1 ${screenshotFile ? "text-green-700" : "text-gray-800"}`}>Gửi ảnh xác nhận ký bảo mật</span>
                   </div>
 
                   {/* Example images: correct vs incorrect */}
