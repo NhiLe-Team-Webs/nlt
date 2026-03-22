@@ -20,6 +20,7 @@ import {
   Send,
   BookOpen,
   ChevronLeft,
+  ChevronRight,
   FileText,
   Target,
   MessageCircle,
@@ -111,6 +112,7 @@ const Dashboard = () => {
   const openLightbox = (src: string) => setLightboxSrc(src);
   const [isLoaded, setIsLoaded] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   // Quiz modal states
   const [isQuizModalOpen, setIsQuizModalOpen] = useState(false);
@@ -643,25 +645,48 @@ const Dashboard = () => {
       </div>
 
       {/* Sidebar */}
-      <aside className={`fixed inset-0 z-[90] md:relative md:flex md:w-64 lg:w-72 bg-white border-r border-gray-100 p-6 flex-col h-screen md:sticky md:top-0 transition-transform duration-500 ${isMobileMenuOpen ? "flex translate-y-0" : "-translate-y-full md:translate-y-0"}`}>
+      <aside className={`fixed inset-0 z-[90] md:relative md:flex bg-white border-r border-gray-100 flex-col h-screen md:sticky md:top-0 transition-all duration-300 ${isMobileMenuOpen ? "flex translate-y-0" : "-translate-y-full md:translate-y-0"} ${isSidebarCollapsed ? "md:w-[72px] p-3" : "md:w-56 p-5"}`}>
+        {/* Collapse toggle button */}
+        <button
+          onClick={() => setIsSidebarCollapsed(v => !v)}
+          className="hidden md:flex absolute -right-3 top-1/2 -translate-y-1/2 z-10 w-6 h-6 rounded-full bg-white border border-gray-200 shadow-md items-center justify-center text-gray-400 hover:text-purple-600 hover:border-purple-300 transition-all"
+        >
+          {isSidebarCollapsed ? <ChevronRight size={13} /> : <ChevronLeft size={13} />}
+        </button>
+
         {/* Logo */}
-        <div className="flex justify-center mb-10 pt-4 md:pt-0">
-          <img src="/logo.svg" alt="NhiLe Team" className="w-20 h-20 object-contain" />
+        <div className="flex justify-center mb-8 pt-4 md:pt-0">
+          <img src="/logo.svg" alt="NhiLe Team" className={`object-contain transition-all duration-300 ${isSidebarCollapsed ? "w-10 h-10" : "w-28 h-28"}`} />
         </div>
 
         {/* Step list */}
-        <nav className="flex-1 space-y-1">
-          {steps.map((step) => {
+        <nav className="flex-1">
+          {steps.map((step, idx) => {
             const isCompleted = step.status === "completed";
             const isActive = step.status === "active";
+            const isLast = idx === steps.length - 1;
+            const nextCompleted = !isLast && steps[idx + 1].status === "completed";
             return (
-              <div key={step.id} className="flex items-center gap-3 px-1 py-2.5">
-                <div className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 text-xs font-black transition-all duration-300 ${isCompleted ? "bg-green-500 text-white" : isActive ? "bg-purple-600 text-white" : "border-2 border-gray-200 text-gray-400"}`}>
-                  {isCompleted ? <CheckCircle2 size={13} /> : step.id}
+              <div key={step.id} className="flex gap-3">
+                {/* Left: circle + line */}
+                <div className="flex flex-col items-center">
+                  <div className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 text-xs font-black transition-all duration-500 ${isCompleted ? "bg-green-500 text-white shadow-md shadow-green-200" : isActive ? "bg-purple-600 text-white shadow-md shadow-purple-200" : "border-2 border-gray-200 text-gray-400"}`}>
+                    {isCompleted ? <CheckCircle2 size={13} /> : step.id}
+                  </div>
+                  {!isLast && (
+                    <div className="w-0.5 flex-1 my-1 rounded-full overflow-hidden bg-gray-100" style={{minHeight:"20px"}}>
+                      <div className={`w-full transition-all duration-700 ease-in-out rounded-full ${isCompleted && nextCompleted ? "h-full bg-green-400" : isCompleted ? "h-full bg-green-300" : "h-0"}`} />
+                    </div>
+                  )}
                 </div>
-                <span className={`text-[10px] font-black uppercase tracking-wide leading-tight transition-colors ${isActive ? "text-purple-600" : isCompleted ? "text-gray-600" : "text-gray-300"}`}>
-                  {step.title}
-                </span>
+                {/* Right: label */}
+                {!isSidebarCollapsed && (
+                  <div className="pb-3 pt-1">
+                    <span className={`text-[10px] font-black uppercase tracking-wide leading-tight transition-colors ${isActive ? "text-purple-600" : isCompleted ? "text-gray-500" : "text-gray-300"}`}>
+                      {step.title}
+                    </span>
+                  </div>
+                )}
               </div>
             );
           })}
@@ -671,10 +696,10 @@ const Dashboard = () => {
         <div className="space-y-1 mt-6 border-t border-gray-100 pt-4">
           <div className="flex items-center gap-2 px-1 py-1.5">
             <User size={15} className="shrink-0 text-gray-400" />
-            <span className="font-bold text-xs text-gray-500 uppercase tracking-wide truncate">Thảo Nhi Lê</span>
+            {!isSidebarCollapsed && <span className="font-bold text-xs text-gray-500 uppercase tracking-wide truncate">Thảo Nhi Lê</span>}
           </div>
           <button onClick={() => navigate("/")} className="flex items-center gap-2 px-1 py-1.5 text-xs text-gray-400 hover:text-red-500 transition-colors font-black">
-            <LogOut size={15} className="shrink-0" /> Đăng xuất
+            <LogOut size={15} className="shrink-0" /> {!isSidebarCollapsed && "Đăng xuất"}
           </button>
         </div>
       </aside>
