@@ -138,7 +138,8 @@ const Dashboard = () => {
   const [screenshotFile, setScreenshotFile] = useState<File | null>(null);
   const [isStep5ModalOpen, setIsStep5ModalOpen] = useState(false);
   const [step5View, setStep5View] = useState<"menu" | "profile">("menu");
-  const [step5ProfileForm, setStep5ProfileForm] = useState({ name: "", cungSun: "", username: "", cungMoon: "", gmail: "", cungMoc: "", ngaySinh: "", soChudao: "", sdt: "", soLinhHon: "", linkFb: "", soTruongThanh: "", linkLinkedIn: "", diaChi: "", thietBi: "" });
+  const [step5ProfileForm, setStep5ProfileForm] = useState({ name: "", cungSun: "", username: "", cungMoon: "", gmail: "", cungMoc: "", ngaySinh: "", soChudao: "", sdt: "", soLinhHon: "", soTruongThanh: "", linkFb: "", linkLinkedIn: "", diaChi: "", thietBi: "", gmailCaNhan: "", telegramId: "" });
+  const [profileFormTouched, setProfileFormTouched] = useState(false);
 
   // Per-question timer
   const [timer, setTimer] = useState(TIMER_SECONDS);
@@ -184,6 +185,22 @@ const Dashboard = () => {
     }, 1000);
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, [currentQuestionIndex, isQuizModalOpen, showQuizResult]);
+
+  // Auto-advance culture quiz when timer hits 0 (counts as wrong answer)
+  useEffect(() => {
+    if (timer !== 0 || activeQuizType !== "culture" || showQuizResult || !isQuizModalOpen) return;
+    const newAnswers = [...quizAnswers, -1]; // -1 = unanswered, won't match any correct answer
+    setQuizAnswers(newAnswers);
+    if (currentQuestionIndex < cultureQuestions.length - 1) {
+      setCurrentQuestionIndex(prev => prev + 1);
+    } else {
+      const score = newAnswers.filter((ans, i) => ans === cultureQuestions[i].correct).length;
+      setQuizScore(score);
+      setQuizPassed(score >= PASS_SCORE);
+      setShowQuizResult(true);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [timer]);
 
   useEffect(() => { setIsLoaded(true); }, []);
   useEffect(() => { if (isReturning) localStorage.setItem("nlt_rt_opened", returnTestOpened.toString()); }, [returnTestOpened, isReturning]);
@@ -1094,9 +1111,7 @@ const Dashboard = () => {
                           Đời mà ai không té, té thì đứng lên thôi. Ngại gì mà không làm lại, mình đọc tài liệu lại rồi chiến lại thôi nè.
                         </p>
                       </div>
-                      <button onClick={handleRetry} className="btn-pop w-full py-4 rounded-2xl bg-purple-600 text-white font-black text-sm shadow-lg hover:bg-purple-700 flex items-center justify-center gap-2">
-                        <RotateCcw size={16} /> Làm lại
-                      </button>
+                      <p className="text-gray-400 text-xs font-medium">Bạn đã hoàn thành bài test. Không thể làm lại.</p>
                     </>
                   )
                 ) : (
@@ -1332,67 +1347,141 @@ const Dashboard = () => {
                   <p className="text-xs text-gray-400 font-medium mt-0.5">Thông tin của bạn sẽ được bảo mật</p>
                 </div>
                 <div className="overflow-y-auto flex-1 px-6 py-4">
-                  <div className="grid grid-cols-2 gap-x-4 gap-y-3">
-                    {[
-                      { label: "Họ và tên", key: "name" },
-                      { label: "Cung Sun", key: "cungSun" },
-                      { label: "Username", key: "username" },
-                      { label: "Cung Moon", key: "cungMoon" },
-                      { label: "Gmail NhiLe Team", key: "gmail" },
-                      { label: "Cung Mộc", key: "cungMoc" },
-                      { label: "Số chủ đạo", key: "soChudao" },
-                      { label: "SĐT", key: "sdt" },
-                      { label: "Số linh hồn", key: "soLinhHon" },
-                      { label: "Link FB", key: "linkFb" },
-                      { label: "Số trưởng thành", key: "soTruongThanh" },
-                    ].reduce<JSX.Element[]>((acc, { label, key }, i, arr) => {
-                      if (i % 2 === 1) return acc;
-                      const right = arr[i + 1];
-                      acc.push(
-                        <div key={key} className="space-y-1">
-                          <label className="text-xs font-bold text-gray-600">{label}</label>
-                          <input value={step5ProfileForm[key as keyof typeof step5ProfileForm]} onChange={e => setStep5ProfileForm(prev => ({ ...prev, [key]: e.target.value }))} className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-blue-400 transition-colors" />
+                  {(() => {
+                    const f = step5ProfileForm;
+                    // Validation helpers
+                    const isNum = (v: string) => v.trim() !== "" && /^\d+$/.test(v.trim());
+                    const isFbUrl = (v: string) => v.trim() !== "" && v.toLowerCase().includes("facebook.com");
+                    const isLinkedInUrl = (v: string) => v.trim() !== "" && v.toLowerCase().includes("linkedin.com");
+                    const isEmail = (v: string) => v.trim() !== "" && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim());
+                    const req = (v: string) => v.trim() !== "";
+                    const err = profileFormTouched;
+                    const cls = (valid: boolean) => `w-full px-3 py-2.5 border rounded-xl text-sm focus:outline-none transition-colors ${err && !valid ? "border-red-400 bg-red-50 focus:border-red-500" : "border-gray-200 focus:border-blue-400"}`;
+                    // Guide icon helper
+                    const guide = (tip: string) => (
+                      <span title={tip} className="ml-1 cursor-help text-blue-400 hover:text-blue-600 text-[10px] font-bold underline underline-offset-2">xem hướng dẫn</span>
+                    );
+                    return (
+                      <div className="grid grid-cols-2 gap-x-4 gap-y-3">
+                        {/* Row 1: Họ và tên | Cung Sun */}
+                        <div className="space-y-1">
+                          <label className="text-xs font-bold text-gray-600">Họ và tên <span className="text-red-400">*</span></label>
+                          <input value={f.name} onChange={e => setStep5ProfileForm(p => ({ ...p, name: e.target.value }))} className={cls(req(f.name))} />
                         </div>
-                      );
-                      if (key === "soChudao") {
-                        acc.push(
-                          <div key="ngaySinh" className="space-y-1">
-                            <label className="text-xs font-bold text-gray-600">Ngày sinh</label>
-                            <input type="date" value={step5ProfileForm.ngaySinh} onChange={e => setStep5ProfileForm(prev => ({ ...prev, ngaySinh: e.target.value }))} className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-blue-400 transition-colors" />
-                          </div>
-                        );
-                        return acc;
-                      }
-                      if (right) {
-                        acc.push(
-                          <div key={right.key} className="space-y-1">
-                            <label className="text-xs font-bold text-gray-600">{right.label}</label>
-                            <input value={step5ProfileForm[right.key as keyof typeof step5ProfileForm]} onChange={e => setStep5ProfileForm(prev => ({ ...prev, [right.key]: e.target.value }))} className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-blue-400 transition-colors" />
-                          </div>
-                        );
-                      }
-                      return acc;
-                    }, [])}
-                    {[
-                      { label: "Link LinkedIn", key: "linkLinkedIn" },
-                      { label: "Địa chỉ", key: "diaChi" },
-                      { label: "Thiết bị dùng làm việc", key: "thietBi" },
-                    ].map(({ label, key }) => (
-                      <div key={key} className="col-span-2 space-y-1">
-                        <label className="text-xs font-bold text-gray-600">{label}</label>
-                        <input value={step5ProfileForm[key as keyof typeof step5ProfileForm]} onChange={e => setStep5ProfileForm(prev => ({ ...prev, [key]: e.target.value }))} className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-blue-400 transition-colors" />
+                        <div className="space-y-1">
+                          <label className="text-xs font-bold text-gray-600">Cung Sun <span className="text-red-400">*</span></label>
+                          <input value={f.cungSun} onChange={e => setStep5ProfileForm(p => ({ ...p, cungSun: e.target.value }))} className={cls(req(f.cungSun))} />
+                        </div>
+                        {/* Row 2: Username | Cung Moon */}
+                        <div className="space-y-1">
+                          <label className="text-xs font-bold text-gray-600">
+                            Username <span className="text-red-400">*</span>
+                            {guide("Tên người dùng Telegram của bạn (bắt đầu bằng @). Vào Telegram → Cài đặt → Tên người dùng")}
+                          </label>
+                          <input value={f.username} onChange={e => setStep5ProfileForm(p => ({ ...p, username: e.target.value }))} className={cls(req(f.username))} />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-xs font-bold text-gray-600">Cung Moon <span className="text-red-400">*</span></label>
+                          <input value={f.cungMoon} onChange={e => setStep5ProfileForm(p => ({ ...p, cungMoon: e.target.value }))} className={cls(req(f.cungMoon))} />
+                        </div>
+                        {/* Row 3: Gmail NhiLe | Cung Mộc */}
+                        <div className="space-y-1">
+                          <label className="text-xs font-bold text-gray-600">Gmail NhiLe Team <span className="text-red-400">*</span></label>
+                          <input value={f.gmail} onChange={e => setStep5ProfileForm(p => ({ ...p, gmail: e.target.value }))} className={cls(isEmail(f.gmail))} placeholder="example@gmail.com" />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-xs font-bold text-gray-600">Cung Mộc <span className="text-red-400">*</span></label>
+                          <input value={f.cungMoc} onChange={e => setStep5ProfileForm(p => ({ ...p, cungMoc: e.target.value }))} className={cls(req(f.cungMoc))} />
+                        </div>
+                        {/* Row 4: Số chủ đạo | Ngày sinh */}
+                        <div className="space-y-1">
+                          <label className="text-xs font-bold text-gray-600">Số chủ đạo <span className="text-red-400">*</span></label>
+                          <input value={f.soChudao} onChange={e => setStep5ProfileForm(p => ({ ...p, soChudao: e.target.value.replace(/\D/g, "") }))} className={cls(isNum(f.soChudao))} placeholder="Chỉ nhập số" inputMode="numeric" />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-xs font-bold text-gray-600">Ngày sinh <span className="text-red-400">*</span></label>
+                          <input type="date" value={f.ngaySinh} onChange={e => setStep5ProfileForm(p => ({ ...p, ngaySinh: e.target.value }))} className={cls(req(f.ngaySinh))} />
+                        </div>
+                        {/* Row 5: SĐT | Số linh hồn */}
+                        <div className="space-y-1">
+                          <label className="text-xs font-bold text-gray-600">SĐT <span className="text-red-400">*</span></label>
+                          <input value={f.sdt} onChange={e => setStep5ProfileForm(p => ({ ...p, sdt: e.target.value.replace(/\D/g, "") }))} className={cls(req(f.sdt))} placeholder="Chỉ nhập số" inputMode="numeric" />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-xs font-bold text-gray-600">Số linh hồn <span className="text-red-400">*</span></label>
+                          <input value={f.soLinhHon} onChange={e => setStep5ProfileForm(p => ({ ...p, soLinhHon: e.target.value.replace(/\D/g, "") }))} className={cls(isNum(f.soLinhHon))} placeholder="Chỉ nhập số" inputMode="numeric" />
+                        </div>
+                        {/* Row 6: Số trưởng thành | Link Facebook */}
+                        <div className="space-y-1">
+                          <label className="text-xs font-bold text-gray-600">Số trưởng thành <span className="text-red-400">*</span></label>
+                          <input value={f.soTruongThanh} onChange={e => setStep5ProfileForm(p => ({ ...p, soTruongThanh: e.target.value.replace(/\D/g, "") }))} className={cls(isNum(f.soTruongThanh))} placeholder="Chỉ nhập số" inputMode="numeric" />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-xs font-bold text-gray-600">Link Facebook <span className="text-red-400">*</span></label>
+                          <input value={f.linkFb} onChange={e => setStep5ProfileForm(p => ({ ...p, linkFb: e.target.value }))} className={cls(isFbUrl(f.linkFb))} placeholder="https://facebook.com/..." />
+                          {err && !isFbUrl(f.linkFb) && f.linkFb.trim() !== "" && (
+                            <p className="text-[10px] text-red-500 font-medium">Vui lòng nhập link Facebook hợp lệ</p>
+                          )}
+                        </div>
+                        {/* Full-width fields */}
+                        <div className="col-span-2 space-y-1">
+                          <label className="text-xs font-bold text-gray-600">Link LinkedIn <span className="text-red-400">*</span></label>
+                          <input value={f.linkLinkedIn} onChange={e => setStep5ProfileForm(p => ({ ...p, linkLinkedIn: e.target.value }))} className={cls(isLinkedInUrl(f.linkLinkedIn))} placeholder="https://linkedin.com/in/..." />
+                          {err && !isLinkedInUrl(f.linkLinkedIn) && f.linkLinkedIn.trim() !== "" && (
+                            <p className="text-[10px] text-red-500 font-medium">Vui lòng nhập link LinkedIn hợp lệ</p>
+                          )}
+                        </div>
+                        <div className="col-span-2 space-y-1">
+                          <label className="text-xs font-bold text-gray-600">Địa chỉ <span className="text-red-400">*</span></label>
+                          <input value={f.diaChi} onChange={e => setStep5ProfileForm(p => ({ ...p, diaChi: e.target.value }))} className={cls(req(f.diaChi))} />
+                        </div>
+                        <div className="col-span-2 space-y-1">
+                          <label className="text-xs font-bold text-gray-600">Thiết bị làm việc <span className="text-red-400">*</span></label>
+                          <select value={f.thietBi} onChange={e => setStep5ProfileForm(p => ({ ...p, thietBi: e.target.value }))} className={cls(req(f.thietBi))}>
+                            <option value="">-- Chọn thiết bị --</option>
+                            <option value="Máy tính/PC">Máy tính/PC</option>
+                            <option value="Điện thoại">Điện thoại</option>
+                          </select>
+                        </div>
+                        <div className="col-span-2 space-y-1">
+                          <label className="text-xs font-bold text-gray-600">Gmail cá nhân <span className="text-red-400">*</span></label>
+                          <input value={f.gmailCaNhan} onChange={e => setStep5ProfileForm(p => ({ ...p, gmailCaNhan: e.target.value }))} className={cls(isEmail(f.gmailCaNhan))} placeholder="example@gmail.com" />
+                        </div>
+                        <div className="col-span-2 space-y-1">
+                          <label className="text-xs font-bold text-gray-600">
+                            User ID Telegram <span className="text-red-400">*</span>
+                            {guide("Vào Telegram, tìm @userinfobot và nhắn bất kỳ để lấy User ID của bạn")}
+                          </label>
+                          <input value={f.telegramId} onChange={e => setStep5ProfileForm(p => ({ ...p, telegramId: e.target.value }))} className={cls(req(f.telegramId))} placeholder="Ví dụ: 123456789" />
+                        </div>
                       </div>
-                    ))}
-                  </div>
+                    );
+                  })()}
                 </div>
-                <div className="px-6 py-4 border-t border-gray-100 shrink-0 flex items-center justify-end gap-3">
-                  <button onClick={() => setStep5View("menu")} className="text-sm font-black text-gray-500 hover:text-gray-700 transition-colors px-4 py-2">
-                    Quay lại
-                  </button>
-                  <button onClick={() => { setProfileDone(true); setStep5View("menu"); }} className="btn-pop px-8 py-2.5 rounded-xl bg-blue-500 text-white font-black text-sm shadow hover:bg-blue-600 active:scale-95 transition-all">
-                    Next
-                  </button>
-                </div>
+                {(() => {
+                  const f = step5ProfileForm;
+                  const isNum = (v: string) => v.trim() !== "" && /^\d+$/.test(v.trim());
+                  const isFbUrl = (v: string) => v.trim() !== "" && v.toLowerCase().includes("facebook.com");
+                  const isEmail = (v: string) => v.trim() !== "" && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim());
+                  const req = (v: string) => v.trim() !== "";
+                  const isLinkedInUrl = (v: string) => v.trim() !== "" && v.toLowerCase().includes("linkedin.com");
+                  const isValid = req(f.name) && req(f.cungSun) && req(f.username) && req(f.cungMoon) && isEmail(f.gmail) && req(f.cungMoc) && isNum(f.soChudao) && req(f.ngaySinh) && req(f.sdt) && isNum(f.soLinhHon) && isNum(f.soTruongThanh) && isFbUrl(f.linkFb) && isLinkedInUrl(f.linkLinkedIn) && req(f.diaChi) && req(f.thietBi) && isEmail(f.gmailCaNhan) && req(f.telegramId);
+                  return (
+                    <div className="px-6 py-4 border-t border-gray-100 shrink-0 flex items-center justify-end gap-3">
+                      <button onClick={() => setStep5View("menu")} className="text-sm font-black text-gray-500 hover:text-gray-700 transition-colors px-4 py-2">
+                        Quay lại
+                      </button>
+                      <button
+                        onClick={() => {
+                          if (!isValid) { setProfileFormTouched(true); return; }
+                          setProfileDone(true); setStep5View("menu");
+                        }}
+                        className={`btn-pop px-8 py-2.5 rounded-xl font-black text-sm shadow active:scale-95 transition-all ${isValid ? "bg-blue-500 text-white hover:bg-blue-600" : "bg-gray-200 text-gray-400 cursor-not-allowed"}`}>
+                        Next
+                      </button>
+                    </div>
+                  );
+                })()}
               </div>
             )}
           </div>
