@@ -153,9 +153,19 @@ const Dashboard = () => {
   const [isCalendarModalOpen, setIsCalendarModalOpen] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [chatInput, setChatInput] = useState("");
-  const [chatMessages, setChatMessages] = useState<{ from: "user" | "bot"; text: string }[]>([
-    { from: "bot", text: "Chào bạn! Bạn cần hỗ trợ gì trong quá trình Onboarding không? 😊" },
+  const [chatMessages, setChatMessages] = useState<{ from: "user" | "bot"; text: string; buttons?: { label: string; action: string }[] }[]>([
+    {
+      from: "bot",
+      text: "Chào bạn! Rất vui vì bạn đã quan tâm đến NhiLe Team. Để hỗ trợ bạn nhanh nhất, bạn đang cần giúp đỡ về vấn đề nào dưới đây?",
+      buttons: [
+        { label: "📩 Kiểm tra kết quả/Lịch hẹn", action: "check_result" },
+        { label: "🗓️ Thay đổi lịch phỏng vấn", action: "reschedule" },
+        { label: "🔐 Thủ tục Ký bảo mật & Frame", action: "nda" },
+        { label: "💻 Yêu cầu thiết bị & Kết quả test", action: "device_test" },
+      ]
+    }
   ]);
+  const chatEndRef = useRef<HTMLDivElement>(null);
   const [roleAnswers, setRoleAnswers] = useState<number[]>([]);
 
   const cultureQuestions = CULTURE_QUESTIONS;
@@ -282,6 +292,29 @@ const Dashboard = () => {
     setRoleScores(newScores);
     setRoleAnswers(prev => prev.slice(0, -1));
     setCurrentQuestionIndex(prevIdx);
+  };
+
+  // Auto-scroll chat to bottom when messages change
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [chatMessages]);
+
+  // Bot response map for quick reply buttons
+  const BOT_RESPONSES: Record<string, string> = {
+    check_result: "Bạn ơi, tất cả thông tin quan trọng (Kết quả, lịch phỏng vấn, xác nhận ký bảo mật) đều được gửi qua Gmail bạn đã đăng ký.\n\nTip: Check cả mục Spam nếu chưa thấy nhé!\n\nLưu ý: Nếu sau 12-24h vẫn chưa nhận được, hãy nhắn tin tại đây để hệ thống kết nối bạn với Admin hỗ trợ ngay.",
+    reschedule: "Team hiểu là đôi khi có những việc đột xuất:\n\nMuốn đổi/Quên lịch: Vui lòng chờ trong ít phút, hệ thống đang kết nối bạn với Admin để sắp xếp lại nhé.\n\nLưu ý múi giờ: Mọi lịch hẹn đều tính theo giờ Việt Nam (GMT+7), bạn nhớ lưu ý để không bị lỡ hẹn nha!",
+    nda: "Về giải thích điều khoản: Bạn có thể copy nội dung đó và hỏi ChatGPT/Gemini với lệnh: 'Giải thích nội dung này đơn giản nhất cho tôi'. Nếu vẫn còn thắc mắc, hãy ấn gặp Admin nhé!\n\nNếu lỡ quá hạn: Đừng quá lo lắng, bạn có thể ứng tuyển lại sau 3 tiếng nữa nha.\n\nĐã xong hết các bước: Chúc mừng bạn đã chính thức gia nhập NhiLe Team! Chúc bạn có một hành trình trải nghiệm thật tuyệt vời cùng chúng mình! 🎉",
+    device_test: "Nếu chưa có Laptop: Rất tiếc là bạn cần chuẩn bị thiết bị trước khi ứng tuyển để đảm bảo công việc tốt nhất. Hẹn gặp lại bạn khi đã sẵn sàng nhé!\n\nVề bài Test: Bài test của Team đảm bảo minh bạch 100%. Nếu chưa đạt, đừng buồn nhé, bạn có thể quay trở lại lợi hại hơn sau 3 tháng nữa!",
+  };
+
+  const handleBotAction = (action: string, label: string) => {
+    setChatMessages(prev => [
+      ...prev,
+      { from: "user", text: label },
+    ]);
+    setTimeout(() => {
+      setChatMessages(prev => [...prev, { from: "bot", text: BOT_RESPONSES[action] ?? "Cảm ơn bạn! Team HR sẽ phản hồi sớm nhất có thể nhé 💜" }]);
+    }, 600);
   };
 
   // Compute winning team(s) for role quiz result
@@ -1549,15 +1582,30 @@ const Dashboard = () => {
             {/* Messages */}
             <div className="p-4 space-y-3 max-h-64 overflow-y-auto">
               {chatMessages.map((msg, i) => (
-                <div key={i} className={`flex ${msg.from === "user" ? "justify-end" : "justify-start"}`}>
-                  <div className={`max-w-[80%] px-3.5 py-2.5 rounded-2xl text-sm font-medium leading-relaxed
+                <div key={i} className={`flex flex-col ${msg.from === "user" ? "items-end" : "items-start"}`}>
+                  <div className={`max-w-[85%] px-3.5 py-2.5 rounded-2xl text-sm font-medium leading-relaxed whitespace-pre-line
                     ${msg.from === "user"
                       ? "bg-purple-600 text-white rounded-br-sm"
                       : "bg-gray-100 text-gray-700 rounded-bl-sm"}`}>
                     {msg.text}
                   </div>
+                  {/* Quick reply buttons */}
+                  {msg.buttons && (
+                    <div className="mt-2 flex flex-col gap-1.5 w-full">
+                      {msg.buttons.map((btn) => (
+                        <button
+                          key={btn.action}
+                          onClick={() => handleBotAction(btn.action, btn.label)}
+                          className="w-full text-left text-xs font-semibold px-3 py-2 rounded-xl bg-white border border-purple-200 text-purple-700 hover:bg-purple-50 hover:border-purple-400 transition-colors"
+                        >
+                          {btn.label}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
               ))}
+              <div ref={chatEndRef} />
             </div>
 
             {/* Input */}
