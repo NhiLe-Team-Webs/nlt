@@ -16,6 +16,7 @@ import StoryPage from "./pages/StoryPage";
 import CommunityLeadersPage from "./pages/CommunityLeadersPage";
 import CommunitySynergyPage from "./pages/CommunitySynergyPage";
 import PartnerProjectsPage from "./pages/PartnerProjectsPage";
+import PartnerProjectsAdminPage from "./pages/PartnerProjectsAdminPage";
 import PartnerTestimonialsPage from "./pages/PartnerTestimonialsPage";
 import AchievementsPage from "./pages/AchievementsPage";
 import BlogPage from "./pages/BlogPage";
@@ -101,6 +102,10 @@ const App = () => (
           <Route path="/community-leaders" element={<CommunityLeadersPage />} />
           <Route path="/community-synergy" element={<CommunitySynergyPage />} />
           <Route path="/partner-projects" element={<PartnerProjectsPage />} />
+          <Route
+            path="/admin/partner-projects"
+            element={<PartnerProjectsAdminPage />}
+          />
           <Route path="/partner-testimonials" element={<PartnerTestimonialsPage />} />
          
           {/* Route cho trang tổng quan thành tựu */}
