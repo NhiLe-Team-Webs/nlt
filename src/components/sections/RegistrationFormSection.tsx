@@ -1,270 +1,169 @@
-import { useState, useRef, useEffect } from "react";
-import { Button } from "../ui/button";
-import { Input } from "../ui/input";
-import { Textarea } from "../ui/textarea";
-import { Label } from "../ui/label";
-import { Checkbox } from "../ui/checkbox";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../ui/select";
-import { submitForm } from "../../lib/submitForm";
-
-interface FormData {
-  name: string;
-  email: string;
-  telegram: string;
-  motivation: string;
-  goals: string;
-  source: string;
-  time_commitment: string;
-  values_commitment: boolean;
-  privacy_commitment: boolean;
-}
+import { useRef, useEffect, useState } from "react";
 
 export const RegistrationFormSection = () => {
-  const [isSubmitted, setIsSubmitted] = useState(false);
-  const [loading, setLoading] = useState(false);
   const sectionRef = useRef<HTMLElement>(null);
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsVisible(true);
-        }
+        if (entry.isIntersecting) setIsVisible(true);
       },
       { threshold: 0.1 }
     );
 
-    if (sectionRef.current) {
-      observer.observe(sectionRef.current);
-    }
+    if (sectionRef.current) observer.observe(sectionRef.current);
 
     return () => observer.disconnect();
   }, []);
 
-  const [formData, setFormData] = useState<FormData>({
-    name: "",
-    email: "",
-    telegram: "",
-    motivation: "",
-    goals: "",
-    source: "",
-    time_commitment: "",
-    values_commitment: false,
-    privacy_commitment: false,
-  });
-
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
-
-  const handleSelectChange = (name: keyof FormData) => (value: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
-
-  const handleCheckboxChange = (name: keyof FormData) => (checked: boolean) => {
-    setFormData((prev) => ({
-      ...prev,
-      [name]: checked,
-    }));
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-
-    const result = await submitForm(formData);
-
-    if (result.success) {
-      setIsSubmitted(true);
-    } else {
-      alert('Đã xảy ra lỗi khi gửi form. Vui lòng thử lại sau.');
-    }
-
-    setLoading(false);
-  };
-
   return (
-    <section 
-      id="register-form" 
+    <section
+      id="register-form"
       ref={sectionRef}
-      className={`py-16 md:py-24 transition-all duration-700 ${
-        isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-5'
+      className={`transition-all duration-700 ${
+        isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
       }`}
+      style={{
+        fontFamily: "'Be Vietnam Pro', ui-sans-serif, system-ui, sans-serif",
+      }}
     >
-      <div className="container mx-auto px-6">
-        <div className="max-w-xl mx-auto text-center">
-          <h2 className="text-3xl md:text-4xl font-bold text-slate-900">Trở Thành Một Phần Của Hành Trình</h2>
-          <p className="text-slate-600 mt-4 mb-8">
-            Điền vào biểu mẫu dưới đây để đăng ký tham gia NhiLe Team. Chúng tôi sẽ liên hệ với bạn trong thời gian sớm nhất.
-          </p>
-        </div>
-        <div id="form-container" className="max-w-xl mx-auto bg-white p-8 sm:p-10 rounded-2xl shadow-2xl">
-          {isSubmitted ? (
-            <div id="success-message" className="max-w-xl mx-auto text-center bg-green-100 border border-green-200 text-green-800 px-6 py-8 rounded-2xl">
-              <h3 className="text-2xl font-bold mb-2">Cảm ơn bạn đã đăng ký!</h3>
-              <p>Chúng tôi đã nhận được đơn đăng ký của bạn và sẽ xem xét cẩn thận. Chào mừng bạn đến với hành trình của NhiLe Team!</p>
+      <div className="container mx-auto px-4 sm:px-6">
+        <div className="w-full max-w-[1160px] mx-auto">
+          {/* Outer card */}
+          <div
+            className="relative overflow-hidden rounded-[34px] pt-10 pb-12 sm:pt-12 sm:pb-14"
+            style={{
+              background:
+                "linear-gradient(180deg, #eaf2f7 0%, #e7f0f5 52%, #dfeeed 100%)",
+              boxShadow: "0 22px 60px rgba(31,58,74,0.08)",
+            }}
+          >
+            {/* Decorative background shapes */}
+            <div className="absolute inset-0 pointer-events-none overflow-hidden">
+              {/* left soft band */}
+              <div
+                className="absolute left-[-140px] top-[90px] w-[420px] h-[90px]"
+                style={{
+                  background: "rgba(183, 223, 223, 0.28)",
+                  transform: "rotate(12deg)",
+                  borderRadius: "999px",
+                }}
+              />
+
+              {/* left wider band */}
+              <div
+                className="absolute left-[-60px] bottom-[70px] w-[520px] h-[95px]"
+                style={{
+                  background: "rgba(189, 227, 225, 0.22)",
+                  transform: "rotate(12deg)",
+                  borderRadius: "999px",
+                }}
+              />
+
+              {/* right stripe 1 */}
+              <div
+                className="absolute right-[90px] top-[-120px] w-[110px] h-[760px]"
+                style={{
+                  background: "rgba(132, 194, 189, 0.18)",
+                  transform: "rotate(-18deg)",
+                  borderRadius: "14px",
+                }}
+              />
+
+              {/* right stripe 2 */}
+              <div
+                className="absolute right-[28px] top-[-120px] w-[56px] h-[760px]"
+                style={{
+                  background: "rgba(170, 214, 209, 0.14)",
+                  transform: "rotate(-18deg)",
+                  borderRadius: "14px",
+                }}
+              />
             </div>
-          ) : (
-            <form onSubmit={handleSubmit}>
-              <h3 className="text-lg font-semibold text-slate-800 mb-4 border-b pb-2">Thông Tin Cá Nhân</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-6">
-                <div>
-                  <Label htmlFor="name" className="block mb-2 text-sm font-medium text-slate-700">Họ và Tên</Label>
-                  <Input 
-                    id="name" 
-                    name="name" 
-                    placeholder="Nguyễn Văn A" 
-                    className="w-full px-4 py-3 bg-slate-100 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 transition" 
-                    required 
-                    value={formData.name}
-                    onChange={handleChange}
-                    autoComplete="name"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="email" className="block mb-2 text-sm font-medium text-slate-700">Địa chỉ Email</Label>
-                  <Input 
-                    id="email" 
-                    name="email" 
-                    type="email" 
-                    placeholder="email@example.com" 
-                    className="w-full px-4 py-3 bg-slate-100 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 transition" 
-                    required 
-                    value={formData.email}
-                    onChange={handleChange}
-                    autoComplete="email"
-                  />
-                </div>
-              </div>
-              <div className="mb-6">
-                <Label htmlFor="telegram" className="block mb-2 text-sm font-medium text-slate-700">Telegram Username</Label>
-                <Input 
-                  id="telegram" 
-                  name="telegram" 
-                  placeholder="@username" 
-                  className="w-full px-4 py-3 bg-slate-100 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 transition" 
-                  required 
-                  value={formData.telegram}
-                  onChange={handleChange}
-                  autoComplete="off"
-                />
-              </div>
-              <h3 className="text-lg font-semibold text-slate-800 mb-4 mt-8 border-b pb-2">Nhu Cầu & Mục Tiêu</h3>
-              <div className="mb-6">
-                <Label htmlFor="motivation" className="block mb-2 text-sm font-medium text-slate-700">Tại sao bạn muốn tham gia NhiLe Team?</Label>
-                <Textarea 
-                  id="motivation" 
-                  name="motivation" 
-                  rows={4} 
-                  placeholder="Chia sẻ lý do và câu chuyện của bạn..." 
-                  className="w-full px-4 py-3 bg-slate-100 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 transition" 
-                  required 
-                  value={formData.motivation}
-                  onChange={handleChange}
-                  autoComplete="off"
-                />
-              </div>
-              <div className="mb-6">
-                <Label htmlFor="goals" className="block mb-2 text-sm font-medium text-slate-700">Bạn mong muốn nhận được điều gì nhất từ NhiLe Team (ví dụ: học kỹ năng, kết nối, cơ hội nghề nghiệp)?</Label>
-                <Textarea 
-                  id="goals" 
-                  name="goals" 
-                  rows={4} 
-                  placeholder="Mục tiêu cụ thể của bạn là gì..." 
-                  className="w-full px-4 py-3 bg-slate-100 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 transition" 
-                  required 
-                  value={formData.goals}
-                  onChange={handleChange}
-                  autoComplete="off"
-                />
-              </div>
-              <div className="mb-6">
-                <Label htmlFor="source" className="block mb-2 text-sm font-medium text-slate-700">Bạn biết đến NhiLe Team từ đâu?</Label>
-                <Select
-                  name="source"
-                  value={formData.source}
-                  onValueChange={handleSelectChange('source')}
-                >
-                  <SelectTrigger className="w-full px-4 py-3 bg-slate-100 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 transition" id="source">
-                    <SelectValue placeholder="Vui lòng chọn" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="youtube">Kênh YouTube của chị Nhi Lê</SelectItem>
-                    <SelectItem value="facebook">Facebook</SelectItem>
-                    <SelectItem value="friend">Bạn bè giới thiệu</SelectItem>
-                    <SelectItem value="other">Nguồn khác</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <h3 className="text-lg font-semibold text-slate-800 mb-4 mt-8 border-b pb-2">Cam Kết</h3>
-              <div className="mb-6">
-                <Label htmlFor="time_commitment" className="block mb-2 text-sm font-medium text-slate-700">Bạn có thể cam kết dành bao nhiêu thời gian mỗi tuần cho việc học và thực tập cùng team?</Label>
-                <Select
-                  name="time_commitment"
-                  value={formData.time_commitment}
-                  onValueChange={handleSelectChange('time_commitment')}
-                >
-                  <SelectTrigger className="w-full px-4 py-3 bg-slate-100 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 transition" id="time_commitment">
-                    <SelectValue placeholder="Vui lòng chọn" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="3">3 giờ / ngày</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="mb-8 space-y-4">
-                <div className="flex items-start">
-                  <Checkbox 
-                    id="values_commitment" 
-                    name="values_commitment"
-                    className="h-4 w-4 text-blue-600 border-slate-300 rounded focus:ring-blue-600 mt-1" 
-                    checked={formData.values_commitment}
-                    onCheckedChange={handleCheckboxChange('values_commitment')}
-                    required 
-                  />
-                  <Label htmlFor="values_commitment" className="ml-3 text-sm text-slate-700">
-                    Tôi đã đọc và cam kết đồng hành cùng các giá trị cốt lõi của NhiLe Team: <strong>Tâm - Tầm - Đức.</strong>
-                  </Label>
-                </div>
-                <div className="flex items-start">
-                  <Checkbox 
-                    id="privacy_commitment" 
-                    name="privacy_commitment"
-                    className="h-4 w-4 text-blue-600 border-slate-300 rounded focus:ring-blue-600 mt-1" 
-                    checked={formData.privacy_commitment}
-                    onCheckedChange={handleCheckboxChange('privacy_commitment')}
-                    required 
-                  />
-                  <Label htmlFor="privacy_commitment" className="ml-3 text-sm text-slate-700">
-                    Tôi hiểu rằng tất cả thông tin cung cấp sẽ được <strong>bảo mật hoàn toàn</strong> và chỉ sử dụng cho mục đích tuyển chọn của NhiLe Team.
-                  </Label>
-                </div>
-              </div>
-              <Button 
-                type="submit" 
-                className="w-full bg-blue-600 text-white font-bold py-4 px-6 rounded-lg hover:bg-blue-700 transition-colors duration-300"
-                disabled={loading}
+
+            {/* Inner white card */}
+            <div
+              className="relative z-10 w-[92%] sm:w-[88%] mx-auto rounded-[28px] px-6 sm:px-10 md:px-16 py-10 sm:py-12 text-center"
+              style={{
+                background:
+                  "linear-gradient(180deg, rgba(255,255,255,0.97) 0%, rgba(252,255,255,0.96) 100%)",
+                boxShadow: "0 12px 32px rgba(31,58,74,0.05)",
+                border: "1px solid rgba(255,255,255,0.78)",
+              }}
+            >
+              {/* Eyebrow */}
+              <p
+                className="text-[12px] sm:text-[13px] font-bold uppercase mb-4"
+                style={{
+                  color: "#7f9aa0",
+                  letterSpacing: "0.34em",
+                }}
               >
-                {loading ? "Đang gửi..." : "Gửi Đơn Đăng Ký"}
-              </Button>
-            </form>
-          )}
+                Thông báo tuyển dụng
+              </p>
+
+              <div
+                className="h-px w-[240px] sm:w-[320px] mx-auto mb-7"
+                style={{ background: "rgba(144,171,177,0.26)" }}
+              />
+
+              {/* Title */}
+              <h2
+                className="text-[34px] sm:text-[46px] md:text-[64px] font-bold leading-[1.08] mb-5 md:whitespace-nowrap"
+                style={{
+                  color: "#223a48",
+                  fontFamily: "'Lora', serif",
+                  letterSpacing: "0.005em",
+                }}
+              >
+                Tạm dừng nhận hồ sơ
+              </h2>
+
+              {/* Subtitle */}
+              <p
+                className="text-[17px] sm:text-[20px] font-semibold mb-6"
+                style={{ color: "#6f8790" }}
+              >
+                Chúng tôi hiện không nhận hồ sơ ứng tuyển mới.
+              </p>
+
+              <div
+                className="h-px w-[180px] sm:w-[250px] mx-auto mb-5"
+                style={{ background: "rgba(144,171,177,0.22)" }}
+              />
+
+              {/* Reopen label */}
+              <p
+                className="text-[15px] sm:text-[17px] font-semibold mb-3"
+                style={{ color: "#6f8790" }}
+              >
+                Tuyển dụng sẽ chính thức mở lại vào
+              </p>
+
+              {/* Date */}
+              <p
+                className="text-[30px] sm:text-[42px] md:text-[52px] font-extrabold leading-none"
+                style={{
+                  color: "#223a48",
+                  letterSpacing: "0.14em",
+                }}
+              >
+                01 / 06 / 2026
+              </p>
+            </div>
+
+            {/* Footer outside white card */}
+            <p
+              className="relative z-10 text-center text-[12px] sm:text-[13px] font-bold uppercase mt-10"
+              style={{
+                color: "#8aa2a8",
+                letterSpacing: "0.38em",
+              }}
+            >
+              HR NHILE TEAM
+            </p>
+          </div>
         </div>
       </div>
     </section>
