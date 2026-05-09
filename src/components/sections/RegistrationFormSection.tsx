@@ -11,159 +11,105 @@ export const RegistrationFormSection = () => {
       },
       { threshold: 0.1 }
     );
-
     if (sectionRef.current) observer.observe(sectionRef.current);
-
     return () => observer.disconnect();
   }, []);
 
   return (
     <section
-      id="register-form"
       ref={sectionRef}
-      className={`transition-all duration-700 ${
-        isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+      className={`py-12 transition-all duration-1000 ease-out ${
+        isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
       }`}
-      style={{
-        fontFamily: "'Be Vietnam Pro', ui-sans-serif, system-ui, sans-serif",
-      }}
     >
-      <div className="container mx-auto px-4 sm:px-6">
-        <div className="w-full max-w-[1160px] mx-auto">
-          {/* Outer card */}
-          <div
-            className="relative overflow-hidden rounded-[34px] pt-10 pb-12 sm:pt-12 sm:pb-14"
-            style={{
-              background:
-                "linear-gradient(180deg, #eaf2f7 0%, #e7f0f5 52%, #dfeeed 100%)",
-              boxShadow: "0 22px 60px rgba(31,58,74,0.08)",
-            }}
-          >
-            {/* Decorative background shapes */}
-            <div className="absolute inset-0 pointer-events-none overflow-hidden">
-              {/* left soft band */}
-              <div
-                className="absolute left-[-140px] top-[90px] w-[420px] h-[90px]"
-                style={{
-                  background: "rgba(183, 223, 223, 0.28)",
-                  transform: "rotate(12deg)",
-                  borderRadius: "999px",
-                }}
-              />
+      <div className="container mx-auto px-4">
+        <div className="max-w-[920px] mx-auto">
 
-              {/* left wider band */}
-              <div
-                className="absolute left-[-60px] bottom-[70px] w-[520px] h-[95px]"
-                style={{
-                  background: "rgba(189, 227, 225, 0.22)",
-                  transform: "rotate(12deg)",
-                  borderRadius: "999px",
-                }}
-              />
+          {/* Banner */}
+          <div className="relative rounded-2xl overflow-hidden" style={{ backgroundColor: "#f0f7fb" }}>
 
-              {/* right stripe 1 */}
-              <div
-                className="absolute right-[90px] top-[-120px] w-[110px] h-[760px]"
-                style={{
-                  background: "rgba(132, 194, 189, 0.18)",
-                  transform: "rotate(-18deg)",
-                  borderRadius: "14px",
-                }}
-              />
-
-              {/* right stripe 2 */}
-              <div
-                className="absolute right-[28px] top-[-120px] w-[56px] h-[760px]"
-                style={{
-                  background: "rgba(170, 214, 209, 0.14)",
-                  transform: "rotate(-18deg)",
-                  borderRadius: "14px",
-                }}
-              />
-            </div>
-
-            {/* Inner white card */}
-            <div
-              className="relative z-10 w-[92%] sm:w-[88%] mx-auto rounded-[28px] px-6 sm:px-10 md:px-16 py-10 sm:py-12 text-center"
-              style={{
-                background:
-                  "linear-gradient(180deg, rgba(255,255,255,0.97) 0%, rgba(252,255,255,0.96) 100%)",
-                boxShadow: "0 12px 32px rgba(31,58,74,0.05)",
-                border: "1px solid rgba(255,255,255,0.78)",
-              }}
+            {/* SVG Waves — lấy nguyên từ file HTML gốc */}
+            <svg
+              viewBox="0 0 900 420"
+              xmlns="http://www.w3.org/2000/svg"
+              preserveAspectRatio="xMidYMid slice"
+              className="absolute inset-0 w-full h-full"
+              aria-hidden="true"
             >
-              {/* Eyebrow */}
-              <p
-                className="text-[12px] sm:text-[13px] font-bold uppercase mb-4"
-                style={{
-                  color: "#7f9aa0",
-                  letterSpacing: "0.34em",
-                }}
-              >
-                Thông báo tuyển dụng
-              </p>
+              <rect width="900" height="420" fill="#f0f7fb" />
+              <path d="M-50,120 C150,40 300,200 500,140 C700,80 800,220 980,160 L980,300 C800,360 650,200 440,270 C230,340 80,180 -50,240 Z" fill="#c8e6f0" opacity="0.55" />
+              <path d="M-50,150 C120,70 280,230 500,165 C720,100 830,250 980,190 L980,310 C800,375 640,215 420,290 C200,365 70,200 -50,265 Z" fill="#b8dce8" opacity="0.45" />
+              <path d="M-50,175 C130,100 290,255 510,190 C730,125 840,265 980,210 L980,330 C810,390 660,235 440,305 C220,375 80,225 -50,285 Z" fill="#c5e8e0" opacity="0.40" />
+              <path d="M-50,200 C140,125 300,275 520,210 C740,145 845,285 980,225 L980,355 C820,408 670,255 450,325 C230,395 85,245 -50,305 Z" fill="#afd9d0" opacity="0.30" />
+              <path d="M-50,230 C100,165 280,320 530,250 C780,180 870,330 980,270 L980,420 L-50,420 Z" fill="#d4eef5" opacity="0.25" />
+            </svg>
 
+            {/* Content */}
+            <div className="relative z-10 flex flex-col items-center justify-center py-10 sm:py-14 px-4">
+
+              {/* Inner white card */}
               <div
-                className="h-px w-[240px] sm:w-[320px] mx-auto mb-7"
-                style={{ background: "rgba(144,171,177,0.26)" }}
-              />
-
-              {/* Title */}
-              <h2
-                className="text-[34px] sm:text-[46px] md:text-[64px] font-bold leading-[1.08] mb-5 md:whitespace-nowrap"
+                className="w-full max-w-[580px] rounded-2xl px-6 sm:px-12 py-8 sm:py-10 text-center"
                 style={{
-                  color: "#223a48",
-                  fontFamily: "'Lora', serif",
-                  letterSpacing: "0.005em",
+                  background: "rgba(255,255,255,0.82)",
+                  boxShadow: "0 4px 24px rgba(26,58,74,0.07)",
                 }}
               >
-                Tạm dừng nhận hồ sơ
-              </h2>
+                {/* Label */}
+                <p
+                  className="text-[11px] sm:text-[12px] font-medium uppercase mb-3"
+                  style={{ letterSpacing: "4px", color: "#7aacbe", fontFamily: "'Be Vietnam Pro', sans-serif" }}
+                >
+                  Thông báo tuyển dụng
+                </p>
 
-              {/* Subtitle */}
+                {/* Divider */}
+                <hr style={{ border: "none", borderTop: "0.8px solid #b8dce8", width: "240px", margin: "0 auto 18px" }} />
+
+                {/* Title */}
+                <h2
+                  className="text-[28px] sm:text-[36px] md:text-[42px] font-bold leading-tight mb-3"
+                  style={{ color: "#1a3a4a", fontFamily: "'Lora', serif", letterSpacing: "0.5px" }}
+                >
+                  Tạm dừng nhận hồ sơ
+                </h2>
+
+                {/* Subtitle */}
+                <p
+                  className="text-[14px] sm:text-[15px]"
+                  style={{ color: "#4a7a8a", letterSpacing: "0.3px", fontFamily: "'Be Vietnam Pro', sans-serif" }}
+                >
+                  Chúng tôi hiện không nhận hồ sơ ứng tuyển mới.
+                </p>
+
+                {/* Divider sm */}
+                <hr style={{ border: "none", borderTop: "0.8px solid #c8e8e0", width: "180px", margin: "14px auto" }} />
+
+                {/* Reopen date */}
+                <p
+                  className="text-[13px] sm:text-[14px] mb-1"
+                  style={{ color: "#5a8a9a", fontFamily: "'Be Vietnam Pro', sans-serif" }}
+                >
+                  Tuyển dụng sẽ chính thức mở lại vào
+                </p>
+                <p
+                  className="text-[24px] sm:text-[30px] md:text-[34px] font-bold"
+                  style={{ color: "#1a5a70", fontFamily: "'Lora', serif", letterSpacing: "2px" }}
+                >
+                  01 / 06 / 2026
+                </p>
+              </div>
+
+              {/* Footer — ngoài card, căn giữa banner */}
               <p
-                className="text-[17px] sm:text-[20px] font-semibold mb-6"
-                style={{ color: "#6f8790" }}
+                className="text-[11px] sm:text-[12px] font-medium uppercase mt-6"
+                style={{ letterSpacing: "3px", color: "#8ab0be", fontFamily: "'Be Vietnam Pro', sans-serif" }}
               >
-                Chúng tôi hiện không nhận hồ sơ ứng tuyển mới.
-              </p>
-
-              <div
-                className="h-px w-[180px] sm:w-[250px] mx-auto mb-5"
-                style={{ background: "rgba(144,171,177,0.22)" }}
-              />
-
-              {/* Reopen label */}
-              <p
-                className="text-[15px] sm:text-[17px] font-semibold mb-3"
-                style={{ color: "#6f8790" }}
-              >
-                Tuyển dụng sẽ chính thức mở lại vào
-              </p>
-
-              {/* Date */}
-              <p
-                className="text-[30px] sm:text-[42px] md:text-[52px] font-extrabold leading-none"
-                style={{
-                  color: "#223a48",
-                  letterSpacing: "0.14em",
-                }}
-              >
-                01 / 06 / 2026
+                HR NHILE TEAM
               </p>
             </div>
-
-            {/* Footer outside white card */}
-            <p
-              className="relative z-10 text-center text-[12px] sm:text-[13px] font-bold uppercase mt-10"
-              style={{
-                color: "#8aa2a8",
-                letterSpacing: "0.38em",
-              }}
-            >
-              HR NHILE TEAM
-            </p>
           </div>
+
         </div>
       </div>
     </section>
