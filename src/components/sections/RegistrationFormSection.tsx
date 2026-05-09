@@ -17,6 +17,7 @@ export const RegistrationFormSection = () => {
 
   return (
     <section
+      id="register-form"
       ref={sectionRef}
       className={`py-12 transition-all duration-1000 ease-out ${
         isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
