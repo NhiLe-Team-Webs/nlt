@@ -1,116 +1,270 @@
-import { useRef, useEffect, useState } from "react";
+import { useState, useRef, useEffect } from "react";
+import { Button } from "../ui/button";
+import { Input } from "../ui/input";
+import { Textarea } from "../ui/textarea";
+import { Label } from "../ui/label";
+import { Checkbox } from "../ui/checkbox";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select";
+import { submitForm } from "../../lib/submitForm";
+
+interface FormData {
+  name: string;
+  email: string;
+  telegram: string;
+  motivation: string;
+  goals: string;
+  source: string;
+  time_commitment: string;
+  values_commitment: boolean;
+  privacy_commitment: boolean;
+}
 
 export const RegistrationFormSection = () => {
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
   const sectionRef = useRef<HTMLElement>(null);
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) setIsVisible(true);
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+        }
       },
       { threshold: 0.1 }
     );
-    if (sectionRef.current) observer.observe(sectionRef.current);
+
+    if (sectionRef.current) {
+      observer.observe(sectionRef.current);
+    }
+
     return () => observer.disconnect();
   }, []);
 
+  const [formData, setFormData] = useState<FormData>({
+    name: "",
+    email: "",
+    telegram: "",
+    motivation: "",
+    goals: "",
+    source: "",
+    time_commitment: "",
+    values_commitment: false,
+    privacy_commitment: false,
+  });
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleSelectChange = (name: keyof FormData) => (value: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleCheckboxChange = (name: keyof FormData) => (checked: boolean) => {
+    setFormData((prev) => ({
+      ...prev,
+      [name]: checked,
+    }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    const result = await submitForm(formData);
+
+    if (result.success) {
+      setIsSubmitted(true);
+    } else {
+      alert('Đã xảy ra lỗi khi gửi form. Vui lòng thử lại sau.');
+    }
+
+    setLoading(false);
+  };
+
   return (
-    <section
-      id="register-form"
+    <section 
+      id="register-form" 
       ref={sectionRef}
-      className={`py-12 transition-all duration-1000 ease-out ${
-        isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
+      className={`py-16 md:py-24 transition-all duration-700 ${
+        isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-5'
       }`}
     >
-      <div className="container mx-auto px-4">
-        <div className="max-w-[920px] mx-auto">
-
-          {/* Banner */}
-          <div className="relative rounded-2xl overflow-hidden" style={{ backgroundColor: "#f0f7fb" }}>
-
-            {/* SVG Waves — lấy nguyên từ file HTML gốc */}
-            <svg
-              viewBox="0 0 900 420"
-              xmlns="http://www.w3.org/2000/svg"
-              preserveAspectRatio="xMidYMid slice"
-              className="absolute inset-0 w-full h-full"
-              aria-hidden="true"
-            >
-              <rect width="900" height="420" fill="#f0f7fb" />
-              <path d="M-50,120 C150,40 300,200 500,140 C700,80 800,220 980,160 L980,300 C800,360 650,200 440,270 C230,340 80,180 -50,240 Z" fill="#c8e6f0" opacity="0.55" />
-              <path d="M-50,150 C120,70 280,230 500,165 C720,100 830,250 980,190 L980,310 C800,375 640,215 420,290 C200,365 70,200 -50,265 Z" fill="#b8dce8" opacity="0.45" />
-              <path d="M-50,175 C130,100 290,255 510,190 C730,125 840,265 980,210 L980,330 C810,390 660,235 440,305 C220,375 80,225 -50,285 Z" fill="#c5e8e0" opacity="0.40" />
-              <path d="M-50,200 C140,125 300,275 520,210 C740,145 845,285 980,225 L980,355 C820,408 670,255 450,325 C230,395 85,245 -50,305 Z" fill="#afd9d0" opacity="0.30" />
-              <path d="M-50,230 C100,165 280,320 530,250 C780,180 870,330 980,270 L980,420 L-50,420 Z" fill="#d4eef5" opacity="0.25" />
-            </svg>
-
-            {/* Content */}
-            <div className="relative z-10 flex flex-col items-center justify-center py-10 sm:py-14 px-4">
-
-              {/* Inner white card */}
-              <div
-                className="w-full max-w-[580px] rounded-2xl px-6 sm:px-12 py-8 sm:py-10 text-center"
-                style={{
-                  background: "rgba(255,255,255,0.82)",
-                  boxShadow: "0 4px 24px rgba(26,58,74,0.07)",
-                }}
-              >
-                {/* Label */}
-                <p
-                  className="text-[11px] sm:text-[12px] font-medium uppercase mb-3"
-                  style={{ letterSpacing: "4px", color: "#7aacbe", fontFamily: "'Be Vietnam Pro', sans-serif" }}
-                >
-                  Thông báo tuyển dụng
-                </p>
-
-                {/* Divider */}
-                <hr style={{ border: "none", borderTop: "0.8px solid #b8dce8", width: "240px", margin: "0 auto 18px" }} />
-
-                {/* Title */}
-                <h2
-                  className="text-[28px] sm:text-[36px] md:text-[42px] font-bold leading-tight mb-3"
-                  style={{ color: "#1a3a4a", fontFamily: "'Lora', serif", letterSpacing: "0.5px" }}
-                >
-                  Tạm dừng nhận hồ sơ
-                </h2>
-
-                {/* Subtitle */}
-                <p
-                  className="text-[14px] sm:text-[15px]"
-                  style={{ color: "#4a7a8a", letterSpacing: "0.3px", fontFamily: "'Be Vietnam Pro', sans-serif" }}
-                >
-                  Chúng tôi hiện không nhận hồ sơ ứng tuyển mới.
-                </p>
-
-                {/* Divider sm */}
-                <hr style={{ border: "none", borderTop: "0.8px solid #c8e8e0", width: "180px", margin: "14px auto" }} />
-
-                {/* Reopen date */}
-                <p
-                  className="text-[13px] sm:text-[14px] mb-1"
-                  style={{ color: "#5a8a9a", fontFamily: "'Be Vietnam Pro', sans-serif" }}
-                >
-                  Tuyển dụng sẽ chính thức mở lại vào
-                </p>
-                <p
-                  className="text-[24px] sm:text-[30px] md:text-[34px] font-bold"
-                  style={{ color: "#1a5a70", fontFamily: "'Lora', serif", letterSpacing: "2px" }}
-                >
-                  01 / 06 / 2026
-                </p>
-              </div>
-
-              {/* Footer — ngoài card, căn giữa banner */}
-              <p
-                className="text-[11px] sm:text-[12px] font-medium uppercase mt-6"
-                style={{ letterSpacing: "3px", color: "#8ab0be", fontFamily: "'Be Vietnam Pro', sans-serif" }}
-              >
-                HR NHILE TEAM
-              </p>
+      <div className="container mx-auto px-6">
+        <div className="max-w-xl mx-auto text-center">
+          <h2 className="text-3xl md:text-4xl font-bold text-slate-900">Trở Thành Một Phần Của Hành Trình</h2>
+          <p className="text-slate-600 mt-4 mb-8">
+            Điền vào biểu mẫu dưới đây để đăng ký tham gia NhiLe Team. Chúng tôi sẽ liên hệ với bạn trong thời gian sớm nhất.
+          </p>
+        </div>
+        <div id="form-container" className="max-w-xl mx-auto bg-white p-8 sm:p-10 rounded-2xl shadow-2xl">
+          {isSubmitted ? (
+            <div id="success-message" className="max-w-xl mx-auto text-center bg-green-100 border border-green-200 text-green-800 px-6 py-8 rounded-2xl">
+              <h3 className="text-2xl font-bold mb-2">Cảm ơn bạn đã đăng ký!</h3>
+              <p>Chúng tôi đã nhận được đơn đăng ký của bạn và sẽ xem xét cẩn thận. Chào mừng bạn đến với hành trình của NhiLe Team!</p>
             </div>
-          </div>
-
+          ) : (
+            <form onSubmit={handleSubmit}>
+              <h3 className="text-lg font-semibold text-slate-800 mb-4 border-b pb-2">Thông Tin Cá Nhân</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-6">
+                <div>
+                  <Label htmlFor="name" className="block mb-2 text-sm font-medium text-slate-700">Họ và Tên</Label>
+                  <Input 
+                    id="name" 
+                    name="name" 
+                    placeholder="Nguyễn Văn A" 
+                    className="w-full px-4 py-3 bg-slate-100 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 transition" 
+                    required 
+                    value={formData.name}
+                    onChange={handleChange}
+                    autoComplete="name"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="email" className="block mb-2 text-sm font-medium text-slate-700">Địa chỉ Email</Label>
+                  <Input 
+                    id="email" 
+                    name="email" 
+                    type="email" 
+                    placeholder="email@example.com" 
+                    className="w-full px-4 py-3 bg-slate-100 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 transition" 
+                    required 
+                    value={formData.email}
+                    onChange={handleChange}
+                    autoComplete="email"
+                  />
+                </div>
+              </div>
+              <div className="mb-6">
+                <Label htmlFor="telegram" className="block mb-2 text-sm font-medium text-slate-700">Telegram Username</Label>
+                <Input 
+                  id="telegram" 
+                  name="telegram" 
+                  placeholder="@username" 
+                  className="w-full px-4 py-3 bg-slate-100 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 transition" 
+                  required 
+                  value={formData.telegram}
+                  onChange={handleChange}
+                  autoComplete="off"
+                />
+              </div>
+              <h3 className="text-lg font-semibold text-slate-800 mb-4 mt-8 border-b pb-2">Nhu Cầu & Mục Tiêu</h3>
+              <div className="mb-6">
+                <Label htmlFor="motivation" className="block mb-2 text-sm font-medium text-slate-700">Tại sao bạn muốn tham gia NhiLe Team?</Label>
+                <Textarea 
+                  id="motivation" 
+                  name="motivation" 
+                  rows={4} 
+                  placeholder="Chia sẻ lý do và câu chuyện của bạn..." 
+                  className="w-full px-4 py-3 bg-slate-100 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 transition" 
+                  required 
+                  value={formData.motivation}
+                  onChange={handleChange}
+                  autoComplete="off"
+                />
+              </div>
+              <div className="mb-6">
+                <Label htmlFor="goals" className="block mb-2 text-sm font-medium text-slate-700">Bạn mong muốn nhận được điều gì nhất từ NhiLe Team (ví dụ: học kỹ năng, kết nối, cơ hội nghề nghiệp)?</Label>
+                <Textarea 
+                  id="goals" 
+                  name="goals" 
+                  rows={4} 
+                  placeholder="Mục tiêu cụ thể của bạn là gì..." 
+                  className="w-full px-4 py-3 bg-slate-100 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 transition" 
+                  required 
+                  value={formData.goals}
+                  onChange={handleChange}
+                  autoComplete="off"
+                />
+              </div>
+              <div className="mb-6">
+                <Label htmlFor="source" className="block mb-2 text-sm font-medium text-slate-700">Bạn biết đến NhiLe Team từ đâu?</Label>
+                <Select
+                  name="source"
+                  value={formData.source}
+                  onValueChange={handleSelectChange('source')}
+                >
+                  <SelectTrigger className="w-full px-4 py-3 bg-slate-100 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 transition" id="source">
+                    <SelectValue placeholder="Vui lòng chọn" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="youtube">Kênh YouTube của chị Nhi Lê</SelectItem>
+                    <SelectItem value="facebook">Facebook</SelectItem>
+                    <SelectItem value="friend">Bạn bè giới thiệu</SelectItem>
+                    <SelectItem value="other">Nguồn khác</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <h3 className="text-lg font-semibold text-slate-800 mb-4 mt-8 border-b pb-2">Cam Kết</h3>
+              <div className="mb-6">
+                <Label htmlFor="time_commitment" className="block mb-2 text-sm font-medium text-slate-700">Bạn có thể cam kết dành bao nhiêu thời gian mỗi tuần cho việc học và thực tập cùng team?</Label>
+                <Select
+                  name="time_commitment"
+                  value={formData.time_commitment}
+                  onValueChange={handleSelectChange('time_commitment')}
+                >
+                  <SelectTrigger className="w-full px-4 py-3 bg-slate-100 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 transition" id="time_commitment">
+                    <SelectValue placeholder="Vui lòng chọn" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="3">3 giờ / ngày</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="mb-8 space-y-4">
+                <div className="flex items-start">
+                  <Checkbox 
+                    id="values_commitment" 
+                    name="values_commitment"
+                    className="h-4 w-4 text-blue-600 border-slate-300 rounded focus:ring-blue-600 mt-1" 
+                    checked={formData.values_commitment}
+                    onCheckedChange={handleCheckboxChange('values_commitment')}
+                    required 
+                  />
+                  <Label htmlFor="values_commitment" className="ml-3 text-sm text-slate-700">
+                    Tôi đã đọc và cam kết đồng hành cùng các giá trị cốt lõi của NhiLe Team: <strong>Tâm - Tầm - Đức.</strong>
+                  </Label>
+                </div>
+                <div className="flex items-start">
+                  <Checkbox 
+                    id="privacy_commitment" 
+                    name="privacy_commitment"
+                    className="h-4 w-4 text-blue-600 border-slate-300 rounded focus:ring-blue-600 mt-1" 
+                    checked={formData.privacy_commitment}
+                    onCheckedChange={handleCheckboxChange('privacy_commitment')}
+                    required 
+                  />
+                  <Label htmlFor="privacy_commitment" className="ml-3 text-sm text-slate-700">
+                    Tôi hiểu rằng tất cả thông tin cung cấp sẽ được <strong>bảo mật hoàn toàn</strong> và chỉ sử dụng cho mục đích tuyển chọn của NhiLe Team.
+                  </Label>
+                </div>
+              </div>
+              <Button 
+                type="submit" 
+                className="w-full bg-blue-600 text-white font-bold py-4 px-6 rounded-lg hover:bg-blue-700 transition-colors duration-300"
+                disabled={loading}
+              >
+                {loading ? "Đang gửi..." : "Gửi Đơn Đăng Ký"}
+              </Button>
+            </form>
+          )}
         </div>
       </div>
     </section>
